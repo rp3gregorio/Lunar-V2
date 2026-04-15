@@ -67,15 +67,87 @@ class DEM:
         return float(abs(self.y[1] - self.y[0]))
 
 
-def load_lola_dem(path: str | Path) -> DEM:  # pragma: no cover
-    """Load a LOLA DEM GeoTIFF (rasterio / rioxarray).
+def load_lola_dem(
+    path: str | Path,
+    window: tuple[int, int, int, int] | None = None,
+    subsample: int = 1,
+) -> DEM:
+    """Load a LOLA polar-stereographic DEM GeoTIFF via rasterio.
 
-    Not implemented — awaiting data-ingestion layer.
+    Parameters
+    ----------
+    path : str or Path
+        GeoTIFF to load. Designed for the PGDA product 90 files
+        (``LDEM_80S_{20,40,80}MPP_ADJ.TIF``) but works for any
+        rasterio-readable single-band DEM.
+    window : (row_start, row_stop, col_start, col_stop), optional
+        Pixel window to read. If None, the full raster is read.
+        Rows/cols are 0-indexed and exclusive on the stop side.
+    subsample : int, default 1
+        Integer decimation factor along both axes. ``subsample=4``
+        reads every fourth pixel; useful for quicklooks of the 20 MPP
+        product (~43 Mpix) on memory-constrained hosts.
+
+    Returns
+    -------
+    DEM
+        Elevation [m] with x/y 1-D coordinate vectors in the DEM's
+        native projected CRS (polar stereographic for the PGDA files).
+
+    Notes
+    -----
+    The PGDA polar DEMs use EPSG-less custom "Moon (2015) - Sphere /
+    Ocentric / South Polar" CRS with ``latitude_of_origin = -90``,
+    ``central_meridian = 0``, sphere radius 1 737 400 m, and axes in
+    metres. ``nodata`` is NaN.
     """
-    raise NotImplementedError(
-        "load_lola_dem: implement via rasterio / rioxarray once the "
-        "DEM location is fixed in the pipeline config."
+    try:
+        import rasterio  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover
+        raise ImportError(
+            "load_lola_dem requires rasterio. "
+            "Install with `pip install 'lunar-clean[geo]'` or "
+            "`pip install rasterio`."
+        ) from exc
+
+    path = Path(path)
+    with rasterio.open(path) as src:
+        if window is not None:
+            r0, r1, c0, c1 = window
+            rio_window = rasterio.windows.Window(c0, r0, c1 - c0, r1 - r0)
+            elev = src.read(1, window=rio_window)
+            win_transform = src.window_transform(rio_window)
+        else:
+            elev = src.read(1)
+            win_transform = src.transform
+
+        if subsample > 1:
+            elev = elev[::subsample, ::subsample]
+            # Scale the affine so world coords still match the pixels.
+            win_transform = win_transform * win_transform.scale(subsample, subsample)
+
+        crs_str = src.crs.to_wkt() if src.crs is not None else ""
+
+    # Build 1-D coordinate arrays. rasterio affine uses
+    # (a, b, c, d, e, f): x = a*col + b*row + c, y = d*col + e*row + f.
+    # For a north-up raster b = 0, d = 0.
+    a, b, c, _d, e, f = (
+        win_transform.a,
+        win_transform.b,
+        win_transform.c,
+        win_transform.d,
+        win_transform.e,
+        win_transform.f,
     )
+    H, W = elev.shape
+    cols = np.arange(W, dtype=np.float64) + 0.5  # pixel centers
+    rows = np.arange(H, dtype=np.float64) + 0.5
+    x = a * cols + c
+    y = e * rows + f
+
+    # Cast to float64 for downstream math; rasterio gives float32.
+    elev64 = elev.astype(np.float64, copy=False)
+    return DEM(elevation=elev64, x=x, y=y, crs=crs_str)
 
 
 # ---------------------------------------------------------------------------

@@ -9,12 +9,18 @@ from __future__ import annotations
 
 import numpy as np
 
+import importlib.util
+from pathlib import Path
+
 from lunar.illumination import (
     azimuth_bin_centers,
     compute_horizon,
     is_illuminated,
     synthetic_crater_dem,
 )
+
+_HAVE_RASTERIO = importlib.util.find_spec("rasterio") is not None
+_DATA_DEM = Path(__file__).resolve().parent.parent / "data" / "dem"
 
 
 def test_horizon_on_flat_dem_is_zero():
@@ -80,6 +86,42 @@ def test_is_illuminated_flat_horizon_sun_above():
         horizon_profile=horizon_profile,
         az_angles=az_centers,
     )
+
+
+import pytest
+
+
+@pytest.mark.skipif(
+    not (_HAVE_RASTERIO and (_DATA_DEM / "LDEM_80S_80MPP_ADJ.TIF").is_file()),
+    reason="rasterio or 80MPP LOLA DEM missing",
+)
+def test_load_lola_dem_80mpp_subsampled():
+    """Spot-check the LOLA DEM loader against the PGDA 80 MPP polar product.
+
+    The 80 MPP GeoTIFF is a 7600 x 7600 polar-stereographic float32
+    raster covering +/- 304 km from the south pole. We load it with
+    subsample=4 to get a 1900 x 1900 quicklook and check the metadata.
+    """
+    from lunar.illumination import load_lola_dem
+
+    dem = load_lola_dem(
+        _DATA_DEM / "LDEM_80S_80MPP_ADJ.TIF", subsample=4
+    )
+    assert dem.elevation.shape == (1900, 1900)
+    assert dem.dx == pytest.approx(320.0)
+    assert dem.dy == pytest.approx(320.0)
+    # Coordinate extent: half a pixel short of +/-304 km.
+    assert -305000.0 < float(dem.x[0]) < -302000.0
+    assert 302000.0 < float(dem.x[-1]) < 305000.0
+    # Elevation should be bounded by +/- ~8 km (LOLA polar extremes).
+    import numpy as np
+
+    finite = dem.elevation[~np.isnan(dem.elevation)]
+    assert finite.size > 0
+    assert -10000.0 < float(finite.min()) < 0.0
+    assert 0.0 < float(finite.max()) < 10000.0
+    # CRS string must name polar stereographic.
+    assert "Polar_Stereographic" in dem.crs
 
 
 def test_is_illuminated_respects_horizon():
