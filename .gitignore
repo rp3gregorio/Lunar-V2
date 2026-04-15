@@ -43,8 +43,10 @@ htmlcov/
 *.swp
 .DS_Store
 
-# Project data and artifacts
-data/
+# Project data and artifacts — everything in data/ is external, but the
+# manifest (README.md) is tracked so others can reproduce the contents.
+data/*
+!data/README.md
 outputs/*
 !outputs/.gitkeep
 
