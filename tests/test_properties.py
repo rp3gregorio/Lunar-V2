@@ -93,14 +93,66 @@ def test_density_icy_adds_ice_mass():
     assert rho[0] > RHO_SURFACE
 
 
-# ---------- specific heat (intentionally stubbed) ----------------------------
+# ---------- specific heat (Hayne 2017 polynomial; Biele 2022 rational) -------
 
 
-def test_specific_heat_refuses_to_fabricate():
-    # Per the project scientific-integrity rule, this must raise until a
-    # verified polynomial from heat1d is wired in.
-    with pytest.raises(NotImplementedError):
-        properties.specific_heat(np.array([200.0]))
+def test_specific_heat_hayne_at_200_K():
+    # Hayne (2017) App. A polynomial, coefficients verified against
+    # lunar1Dheat/1DFunctions/updateC.m:
+    #   c_p(T) = -3.6125 + 2.7431*T + 2.3616e-3*T^2
+    #            - 1.2340e-5*T^3 + 8.9093e-9*T^4
+    expected = (
+        -3.6125
+        + 2.7431 * 200.0
+        + 2.3616e-3 * 200.0**2
+        - 1.2340e-5 * 200.0**3
+        + 8.9093e-9 * 200.0**4
+    )
+    got = float(properties.specific_heat(np.array([200.0]), model="hayne")[0])
+    assert got == pytest.approx(expected, rel=1e-10)
+    # And this should land in the physically sensible range ~500-600 J/(kg K)
+    # for lunar regolith at ~200 K.
+    assert 400.0 < got < 700.0
+
+
+def test_specific_heat_biele_monotonic_and_positive():
+    # Biele (2022) is positive for all T > 0 and monotonically increasing
+    # across the lunar temperature range.
+    T = np.linspace(20.0, 400.0, 50)
+    cp = properties.specific_heat(T, model="biele")
+    assert np.all(cp > 0)
+    assert np.all(np.diff(cp) > 0)
+
+
+def test_specific_heat_unknown_model_rejected():
+    with pytest.raises(ValueError):
+        properties.specific_heat(np.array([200.0]), model="bogus")
+
+
+# ---------- Martinez & Siegler (2021) conductivity -----------------------------
+
+
+def test_martinez_requires_z_or_rho():
+    with pytest.raises(ValueError):
+        properties.conductivity_martinez(np.array([200.0]))
+
+
+def test_martinez_density_form_monotonic_in_density():
+    # At fixed T, K should increase with density.
+    T = np.full(3, 100.0)
+    rho_low = np.full(3, 1000.0)
+    rho_hi = np.full(3, 1800.0)
+    K_low = properties.conductivity_martinez(T, rho=rho_low)
+    K_hi = properties.conductivity_martinez(T, rho=rho_hi)
+    assert np.all(K_hi > K_low)
+
+
+def test_martinez_positive_in_lunar_range():
+    # Must be positive across 40-400 K at typical lunar densities.
+    T = np.linspace(40.0, 400.0, 50)
+    rho = np.full_like(T, 1500.0)
+    K = properties.conductivity_martinez(T, rho=rho)
+    assert np.all(K > 0)
 
 
 # ---------- model registry ---------------------------------------------------

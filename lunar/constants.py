@@ -89,3 +89,74 @@ DZ0_DEFAULT: float = 0.002
 
 #: Default geometric-growth factor (new_dz = old_dz * (1 + GROWTH)).
 GROWTH_DEFAULT: float = 0.15
+
+
+# ---------------------------------------------------------------------------
+# Specific heat polynomial (Hayne 2017, Appendix A / Ledlow 1992 / Hemingway 1981)
+# ---------------------------------------------------------------------------
+# Source verified against heat1d/python/heat1d/properties.py::updateC equivalent
+# (also mirrored verbatim in lunar1Dheat/1DFunctions/updateC.m from
+# Martinez & Siegler 2021). The 4th-order polynomial is the standard lunar
+# regolith c_p model above ~10 K.
+#
+# c_p(T) = C0 + C1*T + C2*T^2 + C3*T^3 + C4*T^4  [J kg^-1 K^-1]
+#
+# Valid for T > ~10 K. Yields negative values for T < ~1.3 K; do NOT use
+# below the validity limit.
+CP_HAYNE_C0: float = -3.6125
+CP_HAYNE_C1: float = 2.7431
+CP_HAYNE_C2: float = 2.3616e-3
+CP_HAYNE_C3: float = -1.2340e-5
+CP_HAYNE_C4: float = 8.9093e-9
+
+# Biele et al. (2022) Int. J. Thermophys. 43:144, Eq. 24.
+# Rational function in log-log space that has the correct Debye T^3 limit
+# and is positive for all T > 0. Fits Apollo lunar sample data to < 3% for
+# 90-1000 K. Coefficient values taken verbatim from heat1d/properties.py.
+#
+# ln(c_p) = (p1 x^3 + p2 x^2 + p3 x + p4) / (x^2 + q1 x + q2),   x = ln(T)
+CP_BIELE_P1: float = 3.0
+CP_BIELE_P2: float = -54.45
+CP_BIELE_P3: float = 306.8
+CP_BIELE_P4: float = -376.6
+CP_BIELE_Q1: float = -16.81
+CP_BIELE_Q2: float = 87.32
+
+
+# ---------------------------------------------------------------------------
+# Martinez & Siegler (2021) "updated" thermal conductivity — density form.
+# ---------------------------------------------------------------------------
+# Source verified against lunar1Dheat/1DFunctions/updateRK.m
+# (github.com/angelicam01/lunar1Dheat), the accompanying code release for
+# Martinez & Siegler (2021), "A Global Thermal Conductivity Model for Lunar
+# Regolith at Low Temperatures". The functional form is:
+#
+#   k_am(T) = A + B*T^-4 + C*T^-3 + D*T^-2 + E*T^-1 + F*T + G*T^2 + H*T^3 + I*T^4
+#   K(T, rho) = (A1 * rho + A2) * k_am(T) + (B1 * rho + B2) * T^3
+#
+# where k_am is the Woods-Robinson et al. (2019) amorphous solid polynomial.
+# The first term is the temperature- and density-dependent contact ("phonon")
+# conductivity; the second term is the radiative contribution.
+#
+# Unlike the Hayne (2017) H-parameter form, this model takes bulk density
+# directly rather than through an exponential depth profile. It is the
+# Martinez-Siegler recommended form for PSR temperatures.
+
+# Woods-Robinson et al. (2019) amorphous-solid conductivity polynomial
+# coefficients (for k_am(T) in W m^-1 K^-1).
+MS_KAM_A: float = -2.03297e-1
+MS_KAM_B: float = -11.472
+MS_KAM_C: float = 22.5793
+MS_KAM_D: float = -14.3084
+MS_KAM_E: float = 3.41742
+MS_KAM_F: float = 0.01101
+MS_KAM_G: float = -2.80491e-5
+MS_KAM_H: float = 3.35837e-8
+MS_KAM_I: float = -1.40021e-11
+
+# Martinez & Siegler (2021) density-scaling coefficients for the contact
+# and radiative parts of K(T, rho).
+MS_A1: float = 5.0821e-6
+MS_A2: float = -0.0051
+MS_B1: float = 2.022e-13
+MS_B2: float = -1.953e-10

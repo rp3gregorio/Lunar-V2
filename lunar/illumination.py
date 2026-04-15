@@ -4,11 +4,10 @@ Primary reference: Mazarico et al. (2011), Icarus 211, 1066-1081.
 Primary DEM product: ``LDEM_80S_20MPP_ADJ.TIF`` (20 m / pixel, 80-90 S),
 Barker et al. (2023), https://pgda.gsfc.nasa.gov/products/90 .
 
-This module is intentionally a scaffold: each function has the signature
-the pipeline will call, but raises :class:`NotImplementedError` until the
-horizon tracer and view-factor computation are written. See the
-illumination agent in ``.claude/skills/agents/illumination.md`` for the
-algorithmic details (nested grid, SPICE ephemeris, reciprocity check).
+This module implements the horizon tracer used by the illumination
+pipeline. The view-factor computation is still a scaffold pending the
+Phase 1 (sparse) implementation — see
+``.claude/skills/agents/illumination.md``.
 """
 
 from __future__ import annotations
@@ -18,15 +17,54 @@ from pathlib import Path
 
 import numpy as np
 
+try:
+    from numba import njit, prange
+    _HAVE_NUMBA = True
+except ImportError:  # pragma: no cover
+    _HAVE_NUMBA = False
+
+    def njit(*args, **kwargs):  # type: ignore[no-redef]
+        if len(args) == 1 and callable(args[0]):
+            return args[0]
+
+        def wrap(fn):
+            return fn
+
+        return wrap
+
+    def prange(*args, **kwargs):  # type: ignore[no-redef]
+        return range(*args, **kwargs)
+
 
 @dataclass
 class DEM:
-    """Projected digital elevation model subset."""
+    """Projected digital elevation model subset.
 
-    elevation: np.ndarray  # [m], shape (H, W)
-    x: np.ndarray  # easting [m], shape (W,)
-    y: np.ndarray  # northing [m], shape (H,)
-    crs: str  # e.g., 'EPSG:...' polar stereographic
+    Attributes
+    ----------
+    elevation : np.ndarray
+        Elevation values [m], shape ``(H, W)`` where rows index
+        northing (``y``) and columns index easting (``x``).
+    x, y : np.ndarray
+        1-D coordinate arrays [m]. Must be uniformly spaced. ``y`` is
+        ordered *north-to-south* in the raster, i.e. ``y[0] > y[-1]``.
+    crs : str
+        Coordinate reference system identifier, e.g.
+        ``'EPSG:32761'`` (south polar stereographic).
+    """
+
+    elevation: np.ndarray
+    x: np.ndarray
+    y: np.ndarray
+    crs: str
+
+    @property
+    def dx(self) -> float:
+        return float(abs(self.x[1] - self.x[0]))
+
+    @property
+    def dy(self) -> float:
+        return float(abs(self.y[1] - self.y[0]))
 
 
 def load_lola_dem(path: str | Path) -> DEM:  # pragma: no cover
@@ -40,25 +78,168 @@ def load_lola_dem(path: str | Path) -> DEM:  # pragma: no cover
     )
 
 
+# ---------------------------------------------------------------------------
+# Horizon tracing (Mazarico et al. 2011)
+# ---------------------------------------------------------------------------
+
+
+@njit(cache=True)
+def _bilinear_sample(elev: np.ndarray, fx: float, fy: float) -> float:
+    """Bilinear sample of a 2-D elevation array at fractional (row, col)
+    indices. Returns NaN outside the grid.
+    """
+    H, W = elev.shape
+    if fy < 0.0 or fy > H - 1.0 or fx < 0.0 or fx > W - 1.0:
+        return np.nan
+    i0 = int(np.floor(fy))
+    j0 = int(np.floor(fx))
+    i1 = min(i0 + 1, H - 1)
+    j1 = min(j0 + 1, W - 1)
+    wy = fy - i0
+    wx = fx - j0
+    return (
+        (1.0 - wy) * (1.0 - wx) * elev[i0, j0]
+        + (1.0 - wy) * wx * elev[i0, j1]
+        + wy * (1.0 - wx) * elev[i1, j0]
+        + wy * wx * elev[i1, j1]
+    )
+
+
+@njit(cache=True, parallel=True)
+def _horizon_grid(
+    elev: np.ndarray,
+    dx: float,
+    dy: float,
+    n_az: int,
+    max_range_m: float,
+    step_m: float,
+) -> np.ndarray:
+    """Trace the horizon at every DEM pixel.
+
+    Parameters
+    ----------
+    elev : np.ndarray, shape (H, W)
+        Elevation [m]. Row index = northing index (north-to-south).
+    dx, dy : float
+        Pixel spacing [m] in the x (easting) and y (northing) directions.
+    n_az : int
+        Number of azimuth bins (equally spaced in [0, 2*pi)).
+    max_range_m : float
+        How far out to march the ray [m]. Mazarico (2011) recommends
+        at least the horizontal range to the tallest off-grid feature;
+        for polar crater work ~100 km is typical.
+    step_m : float
+        Ray-march step size [m]. Should be smaller than ``min(dx, dy)``
+        to avoid aliasing across narrow rim features.
+
+    Returns
+    -------
+    horizon : np.ndarray, shape (H, W, n_az)
+        Maximum elevation angle of the horizon in each azimuth
+        direction, in radians. 0 means a flat horizon; pi/2 means an
+        obstruction is directly overhead.
+    """
+    H, W = elev.shape
+    horizon = np.zeros((H, W, n_az), dtype=np.float64)
+    n_steps = int(max_range_m / step_m)
+
+    # Precompute per-azimuth unit vectors in world coordinates. Azimuth
+    # is measured clockwise from north, matching planetary convention.
+    sin_az = np.empty(n_az, dtype=np.float64)
+    cos_az = np.empty(n_az, dtype=np.float64)
+    for k in range(n_az):
+        az = 2.0 * np.pi * k / n_az
+        sin_az[k] = np.sin(az)  # east component
+        cos_az[k] = np.cos(az)  # north component
+
+    for i in prange(H):
+        for j in range(W):
+            z0 = elev[i, j]
+            for k in range(n_az):
+                # World-coordinate unit vector along this azimuth.
+                vx = sin_az[k]
+                vy = cos_az[k]
+                max_ang = 0.0
+                for s in range(1, n_steps + 1):
+                    r = s * step_m
+                    # Target world offset from pixel center.
+                    wx = r * vx
+                    wy = r * vy
+                    # Convert to fractional grid indices. Row index
+                    # decreases with +y (north-up raster).
+                    fj = j + wx / dx
+                    fi = i - wy / dy
+                    z = _bilinear_sample(elev, fj, fi)
+                    if np.isnan(z):
+                        break
+                    ang = np.arctan2(z - z0, r)
+                    if ang > max_ang:
+                        max_ang = ang
+                horizon[i, j, k] = max_ang
+    return horizon
+
+
 def compute_horizon(
     dem: DEM,
     n_azimuth: int = 720,
+    max_range_m: float | None = None,
+    step_m: float | None = None,
     nested_dems: list[DEM] | None = None,
-) -> np.ndarray:  # pragma: no cover
-    """Compute horizon elevation angles per pixel and azimuth.
+) -> np.ndarray:
+    """Compute the horizon elevation angles per pixel and azimuth.
 
-    Returns an array of shape ``(dem.elevation.shape..., n_azimuth)``
-    giving the maximum elevation angle of the horizon in each azimuth
-    direction, in radians. Uses the Mazarico et al. (2011) ray-marching
-    algorithm with a nested-grid hand-off for far-field shadows.
+    Ray-marches from each pixel center outward in ``n_azimuth`` uniformly
+    spaced directions, returning the maximum elevation angle in each
+    direction. This is the core Mazarico et al. (2011) algorithm; the
+    nested-grid extension for far-field shadows is left as a follow-up
+    (``nested_dems`` is accepted for API stability but not yet used).
 
-    Per the illumination agent's audit checklist: n_azimuth must be
-    >= 360 (720 recommended), and nested_dems must be supplied at the
-    south pole so that distant crater rims >100 km away are captured.
+    Parameters
+    ----------
+    dem : DEM
+        Input DEM. ``dem.x`` and ``dem.y`` must be uniformly spaced.
+    n_azimuth : int, default 720
+        Number of azimuth bins. >=360 is recommended per the illumination
+        agent's audit checklist.
+    max_range_m : float, optional
+        Maximum ray-march range [m]. Defaults to the DEM diagonal.
+    step_m : float, optional
+        Ray-march step size [m]. Defaults to ``0.5 * min(dx, dy)``.
+    nested_dems : list[DEM], optional
+        Coarser-resolution DEMs covering a wider footprint, for the
+        far-field hand-off. Not yet implemented; accepted as a no-op
+        for API compatibility.
+
+    Returns
+    -------
+    horizon : np.ndarray, shape ``(H, W, n_azimuth)``
+        Horizon elevation angles [rad].
     """
-    raise NotImplementedError(
-        "compute_horizon: Mazarico (2011) horizon tracer not yet written."
+    if nested_dems is not None:  # pragma: no cover
+        # Explicit no-op for now so callers can start wiring the API.
+        pass
+
+    dx = dem.dx
+    dy = dem.dy
+    if step_m is None:
+        step_m = 0.5 * min(dx, dy)
+    if max_range_m is None:
+        H, W = dem.elevation.shape
+        max_range_m = float(np.hypot(W * dx, H * dy))
+
+    return _horizon_grid(
+        np.ascontiguousarray(dem.elevation, dtype=np.float64),
+        float(dx),
+        float(dy),
+        int(n_azimuth),
+        float(max_range_m),
+        float(step_m),
     )
+
+
+def azimuth_bin_centers(n_azimuth: int) -> np.ndarray:
+    """Azimuth-bin centers [rad], measured clockwise from north."""
+    return 2.0 * np.pi * np.arange(n_azimuth) / n_azimuth
 
 
 def is_illuminated(
@@ -72,16 +253,55 @@ def is_illuminated(
     Parameters
     ----------
     solar_elev, solar_azimuth : float
-        Solar elevation and azimuth [rad].
+        Solar elevation and azimuth [rad]. Azimuth is clockwise from
+        north to match :func:`compute_horizon`.
     horizon_profile : np.ndarray
         Per-azimuth maximum elevation [rad], shape ``(n_azimuth,)``.
     az_angles : np.ndarray
-        Azimuth bin centers [rad], shape ``(n_azimuth,)``.
+        Azimuth bin centers [rad], shape ``(n_azimuth,)``. Must be
+        monotonically increasing and span ``[0, 2*pi)``.
     """
     if solar_elev <= 0.0:
         return False
-    idx = int(np.searchsorted(az_angles, solar_azimuth)) % az_angles.size
-    return solar_elev > horizon_profile[idx]
+    # Wrap the solar azimuth into [0, 2*pi) then find the nearest bin.
+    sa = float(solar_azimuth) % (2.0 * np.pi)
+    idx = int(np.argmin(np.abs(az_angles - sa)))
+    return bool(solar_elev > horizon_profile[idx])
+
+
+# ---------------------------------------------------------------------------
+# Synthetic test fixtures
+# ---------------------------------------------------------------------------
+
+
+def synthetic_crater_dem(
+    n: int = 101,
+    pixel_m: float = 20.0,
+    rim_radius_m: float = 400.0,
+    rim_height_m: float = 200.0,
+    rim_width_m: float = 60.0,
+) -> DEM:
+    """Build a circular crater DEM for horizon-tracer unit tests.
+
+    Produces an ``n x n`` square grid with a Gaussian rim at
+    ``rim_radius_m`` from the center. The interior is flat at z=0.
+    A ray from the center in any azimuth therefore hits the rim at
+    ``r = rim_radius_m`` with apparent elevation angle
+    ``arctan(rim_height_m / rim_radius_m)`` — a closed-form answer the
+    tracer must reproduce.
+    """
+    half = (n - 1) / 2
+    x = (np.arange(n) - half) * pixel_m
+    y = (np.arange(n) - half)[::-1] * pixel_m  # north-up
+    xx, yy = np.meshgrid(x, y, indexing="xy")
+    r = np.hypot(xx, yy)
+    elev = rim_height_m * np.exp(-((r - rim_radius_m) ** 2) / (2.0 * rim_width_m**2))
+    return DEM(elevation=elev, x=x, y=y, crs="synthetic")
+
+
+# ---------------------------------------------------------------------------
+# View factors — still a scaffold
+# ---------------------------------------------------------------------------
 
 
 def compute_view_factors(dem: DEM) -> np.ndarray:  # pragma: no cover

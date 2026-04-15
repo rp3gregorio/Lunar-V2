@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-  { name = "Ramon III Palinguba Gregorio", email = "gregorio@kasai.iis.titech.ac.jp" },
+  { name = "Ramon III Palinguba Gregorio", email = "rp3gregorio@gmail.com" },
 ]
 keywords = [
   "lunar",
