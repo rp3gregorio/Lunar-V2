@@ -77,6 +77,131 @@ def apply_lunar_style():
     mpl.rcParams['ytick.minor.visible'] = True
 ```
 
+---
+
+## Layout Rules — Preventing Overlap (MANDATORY)
+
+These rules are **non-negotiable**. Every figure produced by this agent must
+pass all of them. Overlapping text, legends, or labels are a submission
+rejection risk.
+
+### Rule L1 — Always use `constrained_layout`, never `tight_layout` alone
+
+```python
+# CORRECT — constrained_layout handles colorbars, multi-axis spacing, suptitle
+fig, axes = plt.subplots(nrows, ncols, figsize=(...), constrained_layout=True)
+
+# ALSO ACCEPTABLE for simple single-axis figures
+fig, ax = plt.subplots(figsize=(...))
+fig.tight_layout(pad=1.2)
+
+# NEVER do this — tight_layout doesn't know about colorbars or suptitle
+fig.suptitle("Title")
+plt.tight_layout()   # suptitle will overlap the top axes
+```
+
+### Rule L2 — Legends must never sit on top of data
+
+Default `loc='best'` often lands on data. Follow this decision tree:
+
+```python
+# Step 1: try a fixed corner that is usually data-free
+ax.legend(loc='upper right')   # T(z) profiles: data is dense at top-left
+ax.legend(loc='lower right')   # diurnal curves: minimum at night, data-free bottom-right
+
+# Step 2: if any corner is busy, move outside the axes entirely
+ax.legend(
+    loc='upper left',
+    bbox_to_anchor=(1.02, 1.0),   # just to the right of the axes
+    borderaxespad=0,
+    frameon=True,
+)
+fig.tight_layout()   # or constrained_layout=True handles this automatically
+
+# Step 3: many-line legends (>5 entries) — use two columns
+ax.legend(ncols=2, loc='lower center', bbox_to_anchor=(0.5, -0.18))
+fig.tight_layout(rect=[0, 0.08, 1, 1])   # reserve space at bottom
+```
+
+### Rule L3 — `fig.suptitle` must have explicit vertical clearance
+
+```python
+# CORRECT
+fig.suptitle("Figure title", fontsize=12, fontweight='bold', y=1.01)
+fig.tight_layout(rect=[0, 0, 1, 0.97])   # reserve 3% at top for suptitle
+
+# WITH constrained_layout (preferred — no manual rect needed)
+fig, axes = plt.subplots(1, 2, constrained_layout=True)
+fig.suptitle("Title")   # constrained_layout auto-reserves space
+```
+
+### Rule L4 — Axis labels must not overlap tick labels
+
+```python
+# CORRECT — add padding to push label away from ticks
+ax.set_xlabel('Temperature [K]', labelpad=8)
+ax.set_ylabel('Depth [cm]',      labelpad=8)
+
+# Rotated tick labels: increase bottom or left margin
+fig.subplots_adjust(bottom=0.18)   # or use constrained_layout
+```
+
+### Rule L5 — In-axes text annotations must be offset and boxed
+
+```python
+# Annotation style: semi-transparent box so text is readable over any background
+box_props = dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.75, edgecolor='none')
+ax.text(0.05, 0.95, 'RMS = 2.1 K',
+        transform=ax.transAxes,
+        va='top', ha='left',
+        fontsize=9,
+        bbox=box_props)
+
+# NEVER place text at a hard-coded data coordinate without a bbox
+# ax.text(250, 30, 'label')   ← will overlap data if axis limits change
+```
+
+### Rule L6 — Multi-panel figures: share axes where appropriate
+
+```python
+# CORRECT — shared x-axis removes duplicate tick labels that clutter inter-panel space
+fig, axes = plt.subplots(3, 1, figsize=(7, 9), sharex=True, constrained_layout=True)
+# Only the bottom panel gets an x-axis label
+axes[-1].set_xlabel('Days', labelpad=8)
+# Other panels: suppress tick labels (sharex already hides them, but be explicit)
+for ax in axes[:-1]:
+    ax.tick_params(labelbottom=False)
+```
+
+### Rule L7 — Colorbars must not clip or overlap the axes
+
+```python
+# CORRECT — always use fig.colorbar, never ax.colorbar
+im = ax.imshow(data, cmap='magma')
+cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+cbar.set_label('Temperature [K]', labelpad=8)
+
+# For constrained_layout figures, fraction/pad are ignored;
+# just call fig.colorbar(im, ax=ax) — the layout engine handles spacing.
+
+# NEVER shrink=0.8 or similar; use constrained_layout instead.
+```
+
+### Rule L8 — Check every figure before returning it
+
+Run this mental checklist on every figure before saving or returning:
+
+- [ ] Do any legend entries touch a line or scatter point?
+- [ ] Does the suptitle overlap the top axis title?
+- [ ] Do x/y-axis labels touch the tick labels?
+- [ ] Do any in-axes text boxes cover data?
+- [ ] Are colorbar labels cut off by the figure edge?
+- [ ] On log-scale axes, do minor tick labels collide?
+
+If any box is checked, fix it with the rules above before finishing.
+
+---
+
 ### Color palettes
 
 **Sequential (for temperature maps):**
