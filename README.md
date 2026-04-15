@@ -9,6 +9,42 @@ radiative-transfer model.
 > a continuous H-parameter regolith model, a geometric depth grid, and the
 > novel ice-coupled conductivity feedback loop.
 
+## Zero-effort quickstart (VS Code)
+
+No venv, no `pip install`, no data downloads to worry about. Just do this:
+
+1. **Clone and switch to the active branch:**
+   ```bash
+   git clone https://github.com/rp3gregorio/Lunar-V2.git
+   cd Lunar-V2
+   git checkout claude/thermal-lunar-profile-repo-ZF4Mm
+   ```
+2. **Open the folder in VS Code** (`File → Open Folder…` → pick `Lunar-V2`).
+3. **Open any notebook** under `notebooks/` — start with `00_quickstart.ipynb`.
+4. Click **Run All** (the ▶️▶️ button at the top of the notebook).
+
+The first cell (`Bootstrap`) auto-installs any missing Python packages into
+the notebook kernel and downloads the external data files that notebook needs.
+Re-running it any time is a no-op once everything is present.
+
+**Requirement**: Python 3.10+ available as `python3`, and an internet connection
+on first run. If the notebook kernel picker asks which Python to use, pick
+whatever version is on your machine — the bootstrap will install the packages
+into whichever kernel you choose.
+
+See [`MANUAL.md`](MANUAL.md) for a deeper reference and troubleshooting.
+
+### Pulling updates
+
+When I push new changes to the branch, run:
+```bash
+cd ~/Documents/Lunar-V2        # wherever you cloned it
+git checkout claude/thermal-lunar-profile-repo-ZF4Mm
+git pull origin claude/thermal-lunar-profile-repo-ZF4Mm
+```
+
+Then restart the notebook kernel and click Run All again.
+
 ## Project
 
 | | |
