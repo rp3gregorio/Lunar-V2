@@ -26,6 +26,11 @@ from .style_guide import (
     panel_label,
     save_figure,
 )
+from .animations import (
+    animate_diurnal_cycle,
+    animate_thermal_wave,
+    animate_model_comparison,
+)
 
 __all__ = [
     "COLORS",
@@ -43,4 +48,7 @@ __all__ = [
     "cmap_thermal",
     "cmap_ice",
     "cmap_illumination",
+    "animate_diurnal_cycle",
+    "animate_thermal_wave",
+    "animate_model_comparison",
 ]

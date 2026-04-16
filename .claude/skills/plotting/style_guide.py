@@ -209,7 +209,7 @@ def save_figure(fig, name, formats=('pdf', 'png'), output_dir='figures'):
 
 
 def add_colorbar(fig, im, ax, label, **kwargs):
-    """Add a well-formatted colorbar.
+    """Add a well-formatted external colorbar on the right.
 
     Parameters
     ----------
@@ -218,12 +218,64 @@ def add_colorbar(fig, im, ax, label, **kwargs):
     ax : matplotlib.axes.Axes
     label : str — colorbar label with units
     """
-    defaults = dict(shrink=0.85, pad=0.02, aspect=25)
+    defaults = dict(location='right', pad=0.03)
     defaults.update(kwargs)
     cbar = fig.colorbar(im, ax=ax, **defaults)
     cbar.set_label(label, fontsize=9)
     cbar.ax.tick_params(labelsize=8)
     return cbar
+
+
+def add_colorbar_external(fig, im, cax, label, **kwargs):
+    """Attach a colorbar to a dedicated side axis.
+
+    Use this for dense multi-panel figures where colorbar overlap is risky.
+    """
+    cbar = fig.colorbar(im, cax=cax, **kwargs)
+    cbar.set_label(label, fontsize=9)
+    cbar.ax.tick_params(labelsize=8)
+    return cbar
+
+
+def legend_outside(ax=None, fig=None, handles=None, labels=None,
+                   where='right', ncol=1, **kwargs):
+    """Place legends outside plotting axes by default.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        Used for outside-right legends.
+    fig : matplotlib.figure.Figure, optional
+        Used for figure-level legends.
+    handles, labels : optional
+        Explicit legend entries.
+    where : {'right', 'top', 'bottom'}
+        Preferred outside placement.
+    ncol : int
+        Number of legend columns for figure-level legends.
+    """
+    if where == 'right':
+        if ax is None:
+            raise ValueError("legend_outside(where='right') requires ax")
+        defaults = dict(
+            loc='upper left', bbox_to_anchor=(1.02, 1.0),
+            borderaxespad=0.0, frameon=True,
+        )
+        defaults.update(kwargs)
+        return ax.legend(handles=handles, labels=labels, **defaults)
+
+    if fig is None:
+        raise ValueError("legend_outside(where='top'/'bottom') requires fig")
+
+    if where == 'top':
+        defaults = dict(loc='lower center', bbox_to_anchor=(0.5, 1.02), ncol=ncol, frameon=True)
+    elif where == 'bottom':
+        defaults = dict(loc='upper center', bbox_to_anchor=(0.5, -0.04), ncol=ncol, frameon=True)
+    else:
+        raise ValueError("where must be 'right', 'top', or 'bottom'")
+
+    defaults.update(kwargs)
+    return fig.legend(handles=handles, labels=labels, **defaults)
 
 
 # ═══════════════════════════════════════════════════
@@ -245,4 +297,3 @@ def make_figure(ncols=1, nrows=1, width='single', height_per_row=3.0,
     h = height_per_row * nrows
     fig, axes = plt.subplots(nrows, ncols, figsize=(w, h), **kwargs)
     return fig, axes
-```

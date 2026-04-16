@@ -100,27 +100,31 @@ fig.suptitle("Title")
 plt.tight_layout()   # suptitle will overlap the top axes
 ```
 
-### Rule L2 — Legends must never sit on top of data
+### Rule L2 — Legends must always be outside data axes
 
-Default `loc='best'` often lands on data. Follow this decision tree:
+Legends are never allowed inside plotting rectangles. Use one of these two
+patterns only:
 
 ```python
-# Step 1: try a fixed corner that is usually data-free
-ax.legend(loc='upper right')   # T(z) profiles: data is dense at top-left
-ax.legend(loc='lower right')   # diurnal curves: minimum at night, data-free bottom-right
-
-# Step 2: if any corner is busy, move outside the axes entirely
+# Pattern A: outside-right (single axis)
 ax.legend(
     loc='upper left',
-    bbox_to_anchor=(1.02, 1.0),   # just to the right of the axes
+    bbox_to_anchor=(1.02, 1.0),
     borderaxespad=0,
     frameon=True,
 )
-fig.tight_layout()   # or constrained_layout=True handles this automatically
 
-# Step 3: many-line legends (>5 entries) — use two columns
-ax.legend(ncols=2, loc='lower center', bbox_to_anchor=(0.5, -0.18))
-fig.tight_layout(rect=[0, 0.08, 1, 1])   # reserve space at bottom
+# Pattern B: figure-level legend above or below (multi-panel)
+fig.legend(
+    handles=handles,
+    loc='lower center',
+    bbox_to_anchor=(0.5, 1.02),
+    ncol=3,
+    frameon=True,
+)
+
+# NEVER use ax.legend(loc='best')
+# NEVER place legend in 'upper right'/'lower right' if inside axes
 ```
 
 ### Rule L3 — `fig.suptitle` must have explicit vertical clearance
@@ -173,18 +177,28 @@ for ax in axes[:-1]:
     ax.tick_params(labelbottom=False)
 ```
 
-### Rule L7 — Colorbars must not clip or overlap the axes
+### Rule L7 — Colorbars must never overlap data axes
 
 ```python
-# CORRECT — always use fig.colorbar, never ax.colorbar
+# CORRECT — create a dedicated side axis for colorbar (preferred)
+from matplotlib import pyplot as plt
+
+fig = plt.figure(figsize=(8, 4.5), constrained_layout=True)
+gs = fig.add_gridspec(1, 2, width_ratios=[1.0, 0.05])
+ax = fig.add_subplot(gs[0, 0])
+cax = fig.add_subplot(gs[0, 1])
+
 im = ax.imshow(data, cmap='magma')
-cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+cbar = fig.colorbar(im, cax=cax)
 cbar.set_label('Temperature [K]', labelpad=8)
 
-# For constrained_layout figures, fraction/pad are ignored;
-# just call fig.colorbar(im, ax=ax) — the layout engine handles spacing.
+# Acceptable fallback for simple layouts (still external)
+fig, ax = plt.subplots(constrained_layout=True)
+im = ax.imshow(data, cmap='magma')
+fig.colorbar(im, ax=ax, location='right', pad=0.03)
 
-# NEVER shrink=0.8 or similar; use constrained_layout instead.
+# NEVER place colorbar inside the plotting rectangle.
+# NEVER allow colorbar to occlude lines, markers, or heatmap cells.
 ```
 
 ### Rule L8 — Check every figure before returning it
@@ -258,7 +272,7 @@ def plot_temperature_profile(z, T_profiles, labels, colors,
     ax.set_ylabel('Depth [cm]')
     ax.invert_yaxis()
     ax.set_xlim(left=0)
-    ax.legend(loc='lower right')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0), borderaxespad=0)
     
     if title:
         ax.set_title(title)
@@ -326,7 +340,7 @@ def plot_model_comparison(z, T_hayne, T_martinez, T_ice, T_obs=None,
     ax.set_xlabel('Temperature [K]')
     ax.set_ylabel('Depth [cm]')
     ax.invert_yaxis()
-    ax.legend(fontsize=7, loc='lower right')
+    ax.legend(fontsize=7, loc='upper left', bbox_to_anchor=(1.02, 1.0), borderaxespad=0)
     ax.text(0.02, 0.98, '(a)', transform=ax.transAxes, 
             fontweight='bold', va='top', fontsize=10)
     
@@ -338,7 +352,7 @@ def plot_model_comparison(z, T_hayne, T_martinez, T_ice, T_obs=None,
     ax.plot(T_ice - T_hayne, z_cm, color=COLORS['ice_coupled'],
             label='Ice \u2212 Hayne')
     ax.set_xlabel('\u0394T [K]')
-    ax.legend(fontsize=7)
+    ax.legend(fontsize=7, loc='upper left', bbox_to_anchor=(1.02, 1.0), borderaxespad=0)
     ax.text(0.02, 0.98, '(b)', transform=ax.transAxes,
             fontweight='bold', va='top', fontsize=10)
     
@@ -373,7 +387,7 @@ def plot_diurnal_curves(local_time, T_surface, T_depths, depth_labels,
     ax.set_xlim(0, 29.53 * 24)
     ax.set_xticks([0, 6*29.53, 12*29.53, 18*29.53, 24*29.53])
     ax.set_xticklabels(['0', '6', '12', '18', '24'])
-    ax.legend(fontsize=7, ncol=2)
+    fig.legend(loc='lower center', bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=True)
     
     plt.tight_layout()
     if filename:
@@ -400,7 +414,7 @@ def plot_sensitivity_bars(param_names, delta_T_surface, delta_T_1m,
     ax.set_yticks(y)
     ax.set_yticklabels(param_names)
     ax.set_xlabel('\u0394T [K]')
-    ax.legend()
+    ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0), borderaxespad=0)
     ax.axvline(0, color='black', lw=0.5)
     
     plt.tight_layout()

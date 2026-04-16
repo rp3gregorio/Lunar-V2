@@ -98,6 +98,7 @@ class PixelOutputs:
     T: np.ndarray  # shape (N_z, N_t) [K]
     z: np.ndarray  # shape (N_z,) [m]
     t: np.ndarray  # shape (N_t,) [s]
+    T_surface: np.ndarray | None = None  # shape (N_t,) [K] — true skin temperature
     n_spinup_cycles: int = 0
     converged: bool = False
     diagnostics: dict = field(default_factory=dict)
@@ -393,7 +394,7 @@ def _step(
     b[-1] -= 0.5 * alpha_r[-1]
     d[-1] += dt * inputs.Q_b / cap[-1]
 
-    return _thomas(a, b, c, d)
+    return _thomas(a, b, c, d), T_s_new
 
 
 def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
@@ -431,6 +432,8 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
 
     out = np.empty((n_z, n_t))
     out[:, 0] = T
+    T_surf_arr = np.empty(n_t)
+    T_surf_arr[0] = T[0]  # initial guess
 
     if inputs.bc_mode == "dirichlet":
         if inputs.T_surface_forced is None:
@@ -440,7 +443,7 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
             raise ValueError("T_surface_forced must have the same length as t")
         for k in range(1, n_t):
             dt = float(inputs.t[k] - inputs.t[k - 1])
-            T = _step(
+            T, T_s_k = _step(
                 grid,
                 T_prev=T,
                 T_surface_prev=float(T_s_arr[k - 1]),
@@ -450,8 +453,10 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
                 dt=dt,
             )
             out[:, k] = T
+            T_surf_arr[k] = T_s_k
         return PixelOutputs(
             T=out, z=grid.z_mid, t=inputs.t,
+            T_surface=T_s_arr,
             converged=True, n_spinup_cycles=0,
         )
 
@@ -466,9 +471,20 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
     cycle = 0
     for cycle in range(1, inputs.n_lunations_spinup + 1):
         T_cycle_start = T.copy()
+        # Record the cycle-start state as t=0 so the output is seamless
+        out[:, 0] = T.copy()
+        T_surf_arr[0] = _solve_surface_newton(
+            insolation=float(inputs.insolation[0]),
+            albedo=inputs.albedo,
+            emissivity=inputs.emissivity,
+            K_surf=float((inputs.K_func or _default_K)(T, grid.z_mid)[0]),
+            dz_surf=float(grid.dz[0]),
+            T_subsurf=float(T[0]),
+            T_s_guess=float(T[0]),
+        )
         for k in range(1, n_t):
             dt = float(inputs.t[k] - inputs.t[k - 1])
-            T = _step(
+            T, T_s_k = _step(
                 grid,
                 T_prev=T,
                 T_surface_prev=None,
@@ -478,6 +494,7 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
                 dt=dt,
             )
             out[:, k] = T
+            T_surf_arr[k] = T_s_k
         delta = float(np.max(np.abs(T - T_cycle_start)))
         if delta < inputs.spinup_tol_K and cycle >= 2:
             converged = True
@@ -485,6 +502,7 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
 
     return PixelOutputs(
         T=out, z=grid.z_mid, t=inputs.t,
+        T_surface=T_surf_arr,
         n_spinup_cycles=cycle, converged=converged,
         diagnostics={"last_cycle_max_dT": delta},
     )

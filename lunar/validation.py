@@ -82,12 +82,43 @@ def load_apollo_hfe_temperature(mission: str, probe: str) -> HFERecord:
         raise FileNotFoundError(f"Apollo HFE file not found: {path}")
 
     data = np.loadtxt(path, skiprows=1)
+    ncols = data.shape[1]
+
+    if ncols == 5:
+        # Standard fast-sensor format: Time, T, dT, dT_corr, flags
+        time_s = data[:, 0]
+        T = data[:, 1]
+        dT = data[:, 2]
+        dT_corr = data[:, 3]
+        flags = data[:, 4]
+    elif ncols == 4:
+        # Reduced format (e.g. p1f2): Time, T, dT, flags — no dT_corr
+        time_s = data[:, 0]
+        T = data[:, 1]
+        dT = data[:, 2]
+        dT_corr = np.full(data.shape[0], np.nan)
+        flags = data[:, 3]
+    elif ncols >= 8:
+        # Thermocouple ring format (e.g. p1f3):
+        # Time, HTR, TREF, TC1, TC2, TC3, TC4, flags
+        # Use TREF (col 2) as the representative temperature.
+        time_s = data[:, 0]
+        T = data[:, 2]
+        dT = np.full(data.shape[0], np.nan)
+        dT_corr = np.full(data.shape[0], np.nan)
+        flags = data[:, -1]
+    else:
+        raise ValueError(
+            f"Unexpected column count {ncols} in {path}. "
+            "Expected 4, 5, or 8 columns."
+        )
+
     return HFERecord(
-        time_s=data[:, 0],
-        T=data[:, 1],
-        dT=data[:, 2],
-        dT_corr=data[:, 3],
-        flags=data[:, 4].astype(np.int64),
+        time_s=time_s,
+        T=T,
+        dT=dT,
+        dT_corr=dT_corr,
+        flags=flags.astype(np.int64),
         mission=mission,
         probe_name=f"{mission}{probe}",
     )
