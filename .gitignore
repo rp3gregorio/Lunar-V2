@@ -45,8 +45,12 @@ htmlcov/
 
 # Project data and artifacts — everything in data/ is external, but the
 # manifest (README.md) is tracked so others can reproduce the contents.
+# Bundled peer-reviewed reference tables (Huang 2022, Murty 2025, etc.)
+# ship with the repo under data/reference/ and are version-controlled.
 data/*
 !data/README.md
+!data/reference/
+!data/reference/*.csv
 outputs/*
 !outputs/.gitkeep
 
