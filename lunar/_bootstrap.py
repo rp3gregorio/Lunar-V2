@@ -325,6 +325,98 @@ def ensure_apollo_hfe(
     return ok
 
 
+def ensure_change4(repo_root: pathlib.Path | None = None) -> bool:
+    """Ensure Chang'E-4 in-situ thermal reference values are available.
+
+    Chang'E-4 temperature-probe time-series lives on China's Lunar and
+    Planetary Data Release System (http://moon.bao.ac.cn) which requires
+    free user registration. There is no unauthenticated direct-download
+    URL, so this function does three things in order:
+
+    1. Verify the bundled reference table ``data/reference/change4_huang2022.csv``
+       exists (ships with the repo). This holds the derived scalar
+       quantities reported in Huang et al. 2022 (NSR 9, nwac175): probe
+       peak temperatures, inferred K_c(z), bulk density, landing
+       coordinates.
+    2. Try a small set of optional public mirrors that may host the
+       supplementary data. Currently empty — update with any Zenodo/
+       figshare DOI if Huang et al. deposit a public mirror.
+    3. If the reference table is present, return True and print a one-
+       line note telling the user where to obtain the full time-series.
+
+    Returns True iff the reference table is usable.
+    """
+    repo = repo_root or find_repo_root()
+    ref_dir = repo / "data" / "reference"
+    ref_file = ref_dir / "change4_huang2022.csv"
+    ts_dir = repo / "data" / "change4"
+    ts_dir.mkdir(parents=True, exist_ok=True)
+
+    print("Ensuring Chang'E-4 reference table ...")
+
+    # Any public mirror URLs go here. None known at time of writing — the
+    # authoritative archive is login-gated. Entries should point to
+    # unauthenticated direct-download .csv / .tab files only.
+    mirror_urls: list[tuple[str, str]] = []
+    for url, fname in mirror_urls:
+        _download(url, ts_dir / fname)
+
+    if not ref_file.is_file():
+        print(f"  ERROR: bundled reference table missing: {ref_file}")
+        print("  This file ships with the Lunar-V2 repo — re-clone or")
+        print("  restore data/reference/change4_huang2022.csv from git.")
+        return False
+
+    print(f"  ok     : {ref_file.name}")
+    print("  NOTE   : Full Chang'E-4 T(t) time-series lives on CLPDS")
+    print("           (http://moon.bao.ac.cn) — free registration required.")
+    print("           The bundled CSV has all scalar quantities needed")
+    print("           for Lunar-V2 model cross-checks (Huang et al. 2022).")
+    return True
+
+
+def ensure_chaste(repo_root: pathlib.Path | None = None) -> bool:
+    """Ensure Chandrayaan-3 ChaSTE in-situ thermal reference values are available.
+
+    The ChaSTE time-series lives on ISRO PRADAN
+    (https://pradan.issdc.gov.in/ch3/) which is login-gated. There is no
+    unauthenticated direct-download URL, so this function:
+
+    1. Verifies the bundled reference table
+       ``data/reference/chaste_murty2025.csv`` (Murty et al. 2025,
+       Sci Rep 15 91866-4; Seth et al. 2025, MNRAS 538 2330; Das et al.
+       2025, Commun Earth Environ 6 02114-6).
+    2. Attempts an optional public mirror list (currently empty).
+    3. Prints manual-download instructions for the full time-series.
+
+    Returns True iff the reference table is usable.
+    """
+    repo = repo_root or find_repo_root()
+    ref_dir = repo / "data" / "reference"
+    ref_file = ref_dir / "chaste_murty2025.csv"
+    ts_dir = repo / "data" / "chaste"
+    ts_dir.mkdir(parents=True, exist_ok=True)
+
+    print("Ensuring ChaSTE reference table ...")
+
+    mirror_urls: list[tuple[str, str]] = []
+    for url, fname in mirror_urls:
+        _download(url, ts_dir / fname)
+
+    if not ref_file.is_file():
+        print(f"  ERROR: bundled reference table missing: {ref_file}")
+        print("  This file ships with the Lunar-V2 repo — re-clone or")
+        print("  restore data/reference/chaste_murty2025.csv from git.")
+        return False
+
+    print(f"  ok     : {ref_file.name}")
+    print("  NOTE   : Full ChaSTE T(t,z) time-series lives on ISRO PRADAN")
+    print("           (https://pradan.issdc.gov.in/ch3/) — login required.")
+    print("           Place downloaded file at data/chaste/chaste_profile.csv")
+    print("           for automatic use once available.")
+    return True
+
+
 def ensure_lola_dem_80mpp(repo_root: pathlib.Path | None = None) -> bool:
     """Download the 80 m/pixel south polar LOLA DEM (~180 MB).
 
