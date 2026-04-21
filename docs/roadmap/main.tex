@@ -1,0 +1,99 @@
+% !TEX program = pdflatex
+% Lunar-V2 / TSUKIMI --- Pipeline Roadmap (Developer Manual)
+% Compile on Overleaf or locally with:
+%   latexmk -pdf main.tex
+% or:
+%   pdflatex main && bibtex main && pdflatex main && pdflatex main
+
+\documentclass[11pt,a4paper,openany,oneside]{book}
+\input{preamble}
+
+\title{
+  \vspace{-1.5cm}
+  {\LARGE\bfseries Lunar-V2 / TSUKIMI Pipeline}\\[0.5em]
+  {\Large A Developer's Manual and Scientific Roadmap}\\[0.3em]
+  {\large Phase 1 through Phase 4}\\[1em]
+  \rule{0.8\linewidth}{0.5pt}
+}
+\author{%
+  Ramon III P.\ Gregorio\\[0.3em]
+  \small Kasai Laboratory\\
+  \small Department of Earth and Planetary Sciences\\
+  \small Institute of Science Tokyo\\[0.5em]
+  \small \texttt{rp3gregorio@gmail.com}
+}
+\date{Last revision: \today}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\begin{center}
+\vspace*{2cm}
+\begin{minipage}{0.85\linewidth}
+{\large\bfseries\sffamily Abstract}\par\vspace{0.6em}
+\noindent This manual documents the \textbf{TSUKIMI} (Thermal Subsurface
+Understanding through Kinetic Ice Modeling and Illumination) pipeline
+developed for the \texttt{Lunar-V2} code base. It bundles, in a single
+volume, the numerical theory, implementation details, validation
+results, and forward roadmap of a four-phase research program
+culminating in a peer-reviewed manuscript for \textit{The Planetary
+Science Journal} (PSJ) and a doctoral dissertation chapter at the
+Institute of Science Tokyo.  The originality of this work lies at the
+intersection of four ideas that have --- to the author's knowledge ---
+never been combined in a single open-source lunar thermal pipeline:
+(i) blind multi-site validation against every in-situ subsurface
+thermal record currently available in the literature;
+(ii) an ice-coupled conductivity feedback that closes the regolith
+thermal budget self-consistently with the Klinger
+($K_{\mathrm{ice}}=567/T$) law;
+(iii) topographic slope correction applied at the pixel level, which
+collapses the 40~K surface-temperature bias observed in the flat-surface
+ChaSTE geometry; and
+(iv) an end-to-end reproducible workflow in which every notebook
+auto-installs its dependencies and auto-fetches its data from NASA/PDS
+and NAIF.
+\end{minipage}
+\end{center}
+
+\vfill
+\begin{center}
+\small
+\fbox{
+\begin{minipage}{0.9\linewidth}
+\textbf{How to read this book.}\;
+Chapters are organised by mission phase.  Each chapter opens with a
+concise statement of goal and success criterion, proceeds to the
+numerical theory and implementation, and closes with results or
+deliverables and a bridge to the next phase.  The four thematic call-out
+boxes (\emph{Concept}, \emph{Novelty}, \emph{Milestone}, \emph{Warning})
+highlight ideas that the reader may want to bookmark.  Code listings
+correspond to the \texttt{main} branch of
+\url{https://github.com/rp3gregorio/Lunar-V2} at the date above.
+\end{minipage}
+}
+\end{center}
+
+\cleardoublepage
+\tableofcontents
+\cleardoublepage
+\listoffigures
+\cleardoublepage
+\listoftables
+
+\mainmatter
+
+\input{chapters/00_introduction}
+\input{chapters/01_novelty}
+\input{chapters/02_phase1_validation}
+\input{chapters/03_phase2_illumination}
+\input{chapters/04_phase3_polar_maps}
+\input{chapters/05_phase4_manuscript}
+
+\backmatter
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

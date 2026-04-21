@@ -1,0 +1,187 @@
+% ---------------------------------------------------------------------------
+% Lunar-V2 / TSUKIMI  --  preamble.tex
+% Overleaf-safe.  No shell-escape, no minted, no external tooling required.
+% ---------------------------------------------------------------------------
+
+% --- Core typesetting ------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.7cm,bindingoffset=0.3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% --- Math ------------------------------------------------------------------
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{siunitx}
+\sisetup{
+  detect-all            = true,
+  per-mode              = symbol,
+  inter-unit-product    = \ensuremath{\cdot}
+}
+
+% --- Graphics --------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+% Figures live in output/figures/ at the repo root.  Both paths are tried so
+% the same preamble works (a) locally from docs/roadmap/ and (b) on Overleaf
+% after flattening the figures into docs/roadmap/figures/.
+\graphicspath{%
+  {../../output/figures/}%
+  {./figures/}%
+  {figures/}%
+}
+
+% --- Tables ----------------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{tabularx}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+% --- Colour & callouts ------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0.0,0.45,0.0}
+\definecolor{codegray}{rgb}{0.45,0.45,0.45}
+\definecolor{codepurple}{rgb}{0.58,0.00,0.82}
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\definecolor{noveltyOrange}{HTML}{D97706}
+\definecolor{warningRed}{HTML}{B91C1C}
+\definecolor{milestoneGreen}{HTML}{047857}
+\definecolor{conceptBlue}{HTML}{1D4ED8}
+
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{novelty}[1][]{%
+  enhanced, breakable, sharp corners=downhill,
+  colback=yellow!6, colframe=noveltyOrange,
+  title=Research Novelty,
+  fonttitle=\bfseries\sffamily,
+  boxrule=0.8pt, left=4mm, right=4mm,
+  #1%
+}
+\newtcolorbox{warning}[1][]{%
+  enhanced, breakable, sharp corners=downhill,
+  colback=red!4, colframe=warningRed,
+  title=Warning,
+  fonttitle=\bfseries\sffamily,
+  boxrule=0.8pt, left=4mm, right=4mm,
+  #1%
+}
+\newtcolorbox{milestone}[1][]{%
+  enhanced, breakable, sharp corners=downhill,
+  colback=green!4, colframe=milestoneGreen,
+  title=Milestone,
+  fonttitle=\bfseries\sffamily,
+  boxrule=0.8pt, left=4mm, right=4mm,
+  #1%
+}
+\newtcolorbox{concept}[1][]{%
+  enhanced, breakable, sharp corners=downhill,
+  colback=blue!4, colframe=conceptBlue,
+  title=Concept,
+  fonttitle=\bfseries\sffamily,
+  boxrule=0.8pt, left=4mm, right=4mm,
+  #1%
+}
+
+% --- Code listings ---------------------------------------------------------
+\usepackage{listings}
+
+\lstdefinestyle{pythonstyle}{%
+  language=Python,
+  backgroundcolor=\color{codebg},
+  commentstyle=\color{codegreen}\itshape,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=6pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+  frame=single,
+  rulecolor=\color{codegray!60},
+  framesep=3pt,
+  xleftmargin=12pt,
+  xrightmargin=2pt,
+  aboveskip=1.0em,
+  belowskip=1.0em,
+}
+\lstset{style=pythonstyle}
+
+% --- TikZ for flowcharts ---------------------------------------------------
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc,fit,backgrounds}
+
+\tikzset{%
+  phaseBlock/.style={
+    rectangle, rounded corners=2mm, draw=black!70,
+    minimum width=3.0cm, minimum height=1.1cm, align=center,
+    font=\small\sffamily, fill=white},
+  doneBlock/.style   ={phaseBlock, fill=green!12,  draw=milestoneGreen},
+  activeBlock/.style ={phaseBlock, fill=yellow!18, draw=noveltyOrange},
+  plannedBlock/.style={phaseBlock, fill=gray!10,   draw=black!60, dashed},
+  arrowThick/.style={-{Stealth[length=3mm]}, thick, black!70},
+}
+
+% --- Hyperlinks & references -----------------------------------------------
+\usepackage[colorlinks=true,
+            linkcolor=blue!55!black,
+            citecolor=green!40!black,
+            urlcolor=cyan!60!black,
+            bookmarksnumbered=true]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+% --- Bibliography ----------------------------------------------------------
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{bibentry}
+
+% --- Page style ------------------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}{}}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{\nouppercase\rightmark}
+\fancyhead[RE]{\nouppercase\leftmark}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Chapter style ---------------------------------------------------------
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\Huge\bfseries\sffamily}
+  {\filleft\textcolor{black!40}{\fontsize{64}{74}\selectfont\thechapter}}
+  {-0.3ex}
+  {\titlerule[1pt]\vspace{1ex}\raggedright}
+  [\vspace{0.4ex}\titlerule]
+\titlespacing*{\chapter}{0pt}{-30pt}{30pt}
+
+% --- Utility macros --------------------------------------------------------
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\repo}{\href{https://github.com/rp3gregorio/Lunar-V2}{\code{rp3gregorio/Lunar-V2}}}
+\newcommand{\branch}{\code{claude/thermal-lunar-profile-repo-ZF4Mm}}
+
+% Physical symbols used repeatedly
+\newcommand{\Tsurf}{T_{\mathrm{surf}}}
+\newcommand{\Tsub}{T_{\mathrm{sub}}}
+\newcommand{\Kreg}{k_{\mathrm{reg}}}
+\newcommand{\Kice}{k_{\mathrm{ice}}}
+\newcommand{\Ksurf}{K_{s}}
+\newcommand{\Kdeep}{K_{d}}
+\newcommand{\Hscale}{H}
+\newcommand{\Qb}{Q_{b}}
+\newcommand{\Rsolar}{S_{\odot}}

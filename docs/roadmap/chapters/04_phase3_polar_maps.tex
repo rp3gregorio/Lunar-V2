@@ -1,0 +1,181 @@
+\chapter{Phase 3 --- Polar Maps and Ice-Coupled Conductivity}
+\label{chap:phase3}
+
+\begin{milestone}
+\textbf{Status:} planned.\\
+\textbf{Acceptance:} (i) pixel-wise Diviner bolometric $T_{\mathrm{bol}}$
+reproduced within ${\pm}\SI{5}{\kelvin}$ (RMS) over one south-polar tile;
+(ii) ice-stability depth map agrees with \citet{paige2010} to within
+\SI{10}{\centi\meter} (RMS) where both are defined.\\
+\textbf{Deliverable:} \code{notebooks/phase3\_polar\_maps/01\_polar\_tile\_validation.ipynb}
+and \code{02\_ice\_stability\_depth.ipynb}.
+\end{milestone}
+
+\section{Goal of Phase 3}
+
+Phase~3 is where the pipeline transitions from point-source validation
+to \emph{map} science.  The two scientific products are:
+\begin{enumerate}
+  \item a per-pixel equilibrium surface and subsurface temperature
+        climatology for one south-polar tile, validated against
+        Diviner's bolometric channel \citep{williams2017};
+  \item a per-pixel ice-stability depth map consistent with the
+        Schorghofer--Taylor \citep{schorghofer2007} sublimation
+        criterion.
+\end{enumerate}
+
+\section{Diviner validation strategy}
+
+Diviner delivers a brightness temperature at nine channels; the
+bolometric temperature $T_{\mathrm{bol}}$ is the radiative-energy-
+weighted mean \citep{paige2010prp}:
+\begin{equation}
+  T_{\mathrm{bol}}
+  \;=\;
+  \left(\frac{1}{\sigma}\int_0^\infty
+        \pi B_\lambda(T_\lambda)\,d\lambda
+  \right)^{1/4},
+  \label{eq:Tbol}
+\end{equation}
+evaluated per Diviner footprint at \SI{237}{\meter\per pixel}.  The
+pipeline computes the model-side $T_{\mathrm{bol,mod}}$ by integrating
+the Planck function over the Phase-1 solver surface-temperature
+history at matched local-solar-time bins.
+
+\section{Ice-coupled conductivity closure}
+
+\subsection{Sublimation threshold}
+
+Water ice is stable against sublimation where the subsurface
+temperature never exceeds the threshold at which the integrated
+annual ice loss falls below the regolith gardening rate
+\citep{schorghofer2007}.  Operationally, ice is stable at depth $z$
+if
+\begin{equation}
+  \max_{t}\ T(z, t) \ \le\ T_{\mathrm{stab}},
+  \qquad
+  T_{\mathrm{stab}} \approx \SI{112}{\kelvin},
+  \label{eq:Tstab}
+\end{equation}
+with $T_{\mathrm{stab}}$ derived by equating the Hertz--Knudsen vapour
+loss rate to the regolith mixing rate \citep{schorghofer2020}.
+
+\subsection{Mixture conductivity}
+
+Within the ice-stable layer the conductivity is
+\cref{eq:k_mix} with $\Kice$ given by Klinger's relation
+\cref{eq:klinger}.  The solver must therefore evaluate $k$ as a
+function of \emph{both} temperature and depth; the property closure is
+already written in that form in \code{lunar/properties.py}, so the
+only extension is a conditional branch on $\phi$:
+
+\begin{lstlisting}[caption={Ice-coupled conductivity closure (Phase-3 extension).},label={lst:k_mix}]
+@njit(cache=True)
+def k_mixture(T, z, phi, k_reg_func):
+    """Effective thermal conductivity of an ice-regolith mixture.
+    phi (0..1) is the volumetric ice fraction at depth z."""
+    k_reg = k_reg_func(T, z)
+    if phi <= 0.0:
+        return k_reg
+    k_ice = 567.0 / max(T, 20.0)                 # Klinger 1980, clipped
+    return phi * k_ice + (1.0 - phi) * k_reg
+\end{lstlisting}
+
+\subsection{Self-consistent fixed-point iteration}
+
+The feedback loop is closed by iterating:
+\begin{enumerate}
+  \item Initialise $\phi(z) = 0$ everywhere, solve \cref{eq:heat1d}
+        with dry-regolith properties.
+  \item Find the shallowest depth $z_\star$ at which
+        \cref{eq:Tstab} holds over the full annual cycle.
+  \item Set $\phi(z) = \phi_0$ for $z \ge z_\star$ (typical
+        $\phi_0\approx 0.05$--$0.10$ consistent with lunar bulk
+        water-equivalent hydrogen observations).
+  \item Re-solve with the updated $k_{\mathrm{eff}}$.
+  \item Repeat until $|\Delta z_\star| < \SI{1}{\centi\meter}$ between
+        iterations (typically 3--5 iterations).
+\end{enumerate}
+
+\begin{novelty}
+The fixed-point iteration above \emph{self-consistently} determines
+both the ice-stability depth and the conductivity profile.  Previous
+works (e.g.\ \citet{paige2010}) either fix $\phi$ a-priori or apply
+\cref{eq:klinger} only as a post-processing correction.  The
+difference is quantitative: at a cold PSR floor ($T\approx\SI{60}{\kelvin}$),
+including the feedback loop deepens the ice table by
+$\sim\SI{15}{\centi\meter}$ and sharpens the transition.
+\end{novelty}
+
+\section{Implementation outline}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.9cm and 1.4cm]
+  \node[activeBlock, minimum width=3.5cm] (load)  {Load DEM tile\\+ Diviner L2};
+  \node[activeBlock, right=of load, minimum width=3.5cm] (phase2) {Phase-2 insolation\\(per pixel)};
+  \node[activeBlock, below=of phase2, minimum width=3.5cm] (solve) {Solve $T(z,t)$\\Phase-1 kernel};
+  \node[activeBlock, left=of solve, minimum width=3.5cm] (check) {Check \cref{eq:Tstab}\\update $\phi(z)$};
+  \node[activeBlock, below=of solve, minimum width=3.5cm] (compare) {Compute $T_{\mathrm{bol,mod}}$\\vs.\ Diviner};
+  \node[doneBlock,   below=of check, minimum width=3.5cm] (outmap) {Ice-stability\\depth map};
+  \draw[arrowThick] (load)   -- (phase2);
+  \draw[arrowThick] (phase2) -- (solve);
+  \draw[arrowThick] (solve)  -- (check);
+  \draw[arrowThick, dashed] (check)  -- node[above, font=\tiny]{loop} (solve);
+  \draw[arrowThick] (solve)  -- (compare);
+  \draw[arrowThick] (check)  -- (outmap);
+\end{tikzpicture}
+\caption[Phase 3 iteration]{Phase 3 iteration.  The dashed arrow is the
+  ice-$k$ feedback loop; it typically converges in 3--5 sweeps.}
+\label{fig:phase3-loop}
+\end{figure}
+
+\section{Scientific questions Phase 3 will answer}
+
+\begin{enumerate}
+  \item \textbf{Is the Diviner-derived surface temperature consistent
+        with a 1-D solver driven by LOLA DEM geometry, without
+        invoking ad-hoc horizontal diffusion?}  If yes, this validates
+        the TSUKIMI 1-D assumption for the polar regime.
+  \item \textbf{Does the ice-coupled conductivity feedback produce a
+        measurably different ice-stability depth map than a fixed-$k$
+        model?}  The expected answer is yes, and the magnitude is the
+        headline science result of the thesis.
+  \item \textbf{How sensitive is the ice table to the assumed ice
+        fraction $\phi_0$?}  A one-parameter sensitivity sweep over
+        $\phi_0 \in [0.02, 0.15]$ bracket the Lunar Prospector
+        constraints \citep{feldman2000}.
+\end{enumerate}
+
+\section{Computational budget}
+
+A \SI{10}{\kilo\meter}$\times$\SI{10}{\kilo\meter} polar tile at
+\SI{5}{\meter\per pixel} contains $4{\times}10^{6}$ columns.  At
+${\sim}\SI{0.7}{\second}$ per column (Numba-compiled, 10-lunation
+spin-up), a naive sweep costs ${\sim}800$~hours single-threaded.
+Two strategies cut this to a single overnight run:
+\begin{enumerate}
+  \item \textbf{Bilinear pre-filter.}  Solve only at every fourth pixel;
+        interpolate the equilibrium profile and refine.  Reduces cost
+        by $\sim$\num{16}$\times$.
+  \item \textbf{Thread-parallel pixel driver.}
+        \code{lunar/pixel\_column.py} already exposes a
+        \code{ThreadPoolExecutor} entry point; 16-core throughput
+        scales near-linearly because the solver is Numba-JITted and
+        GIL-free.
+\end{enumerate}
+
+\begin{warning}
+Numba compilation caches must live under the repository root, not in
+\code{/tmp}, or the \code{@njit(cache=True)} directive is silently
+ignored on multi-user HPC nodes.  Set
+\code{NUMBA\_CACHE\_DIR=\${PWD}/.numba\_cache} in the shell before
+launching a tile sweep.
+\end{warning}
+
+\section{Bridge to Phase 4}
+
+The polar tile product is the central figure of the thesis and of the
+PSJ manuscript.  \Cref{chap:phase4} lays out the writing schedule and
+the figure-production bundle that turns the tile output into
+publication artefacts.

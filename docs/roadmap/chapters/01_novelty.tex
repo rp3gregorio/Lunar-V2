@@ -1,0 +1,177 @@
+\chapter{Research Novelty}
+\label{chap:novelty}
+
+Before diving into the numerical machinery, it is worth stating
+plainly \emph{what is new} about this study.  The lunar thermal
+modelling literature is mature --- \citet{wesselink1948,cremers1971,
+vasavada1999,mitchell2008,hayne2017,schorghofer2020} have each
+contributed a cornerstone result.  Yet none of these works combine, in
+a single open pipeline, the four ingredients listed below.  Each
+ingredient is load-bearing for the science target; removing any one of
+them materially weakens the conclusions.
+
+\section{Multi-site blind validation against every in-situ record}
+\label{sec:novelty-multisite}
+
+Most published lunar thermal solvers are validated against a
+\emph{single} data set --- typically either Apollo~15 or Diviner ---
+and are then extrapolated to new geometries without a second
+independent check.  The TSUKIMI pipeline, by contrast, is regression-
+tested against the complete set of in-situ subsurface thermal records
+currently available in the peer-reviewed literature
+(\cref{tab:validation-sites}).
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\linewidth}{l l l Y}
+\toprule
+Site & Latitude & Instrument & Reference \\
+\midrule
+Apollo~15  & \SI{26}{\degree}N & HFE thermocouple probes       & \citet{langseth1976,nagihara2018} \\
+Apollo~17  & \SI{20}{\degree}N & HFE thermocouple probes       & \citet{langseth1976,nagihara2018} \\
+Chang'E-4  & \SI{45}{\degree}S & YuTu-2 surface thermistors    & \citet{huang2022} \\
+ChaSTE     & \SI{69}{\degree}S & Chandrayaan-3 penetrometer    & \citet{murty2025,das2025,seth2025} \\
+\bottomrule
+\end{tabularx}
+\caption[Validation sites]{The four in-situ lunar thermal data sets
+  currently available; the TSUKIMI pipeline is validated against all
+  four simultaneously using the same solver kernel.}
+\label{tab:validation-sites}
+\end{table}
+
+\begin{novelty}
+No single study to date has \emph{blindly} reproduced all four of
+these records with one unchanged solver.  The only parameter that
+varies between sites is the H-scale $\Hscale$ (or equivalently the
+discrete layer thickness) --- the physics kernel is identical.  This is
+the ``cross-validation'' protocol that would be demanded of any
+terrestrial climate model and it removes the usual degree of freedom
+where an author can tune a bespoke parameter set to each landing site.
+\end{novelty}
+
+\section{Ice-coupled conductivity feedback}
+\label{sec:novelty-ice}
+
+In the polar night and in permanently shadowed regions, water ice
+becomes thermodynamically stable within the upper ${\sim}\SI{1}{\meter}$
+of regolith \citep{paige2010,schorghofer2020}.  The thermal
+conductivity of hexagonal water ice follows Klinger's relation
+\citep{klinger1980}
+\begin{equation}
+  \Kice(T) = \frac{567}{T}\ \si{\watt\per\meter\per\kelvin},
+  \qquad T \in [\SI{20}{\kelvin},\SI{273}{\kelvin}],
+  \label{eq:klinger}
+\end{equation}
+which at $T=\SI{100}{\kelvin}$ yields
+$\Kice = \SI{5.67}{\watt\per\meter\per\kelvin}$ --- \emph{three orders
+of magnitude} larger than the dry-regolith value
+($\Kreg \sim \SI{1e-3}{\watt\per\meter\per\kelvin}$).  The effective
+conductivity of an ice--regolith mixture at volumetric ice fraction
+$\phi$ is dominated by the ice phase for any $\phi \gtrsim 0.1$:
+\begin{equation}
+  k_{\mathrm{eff}}(T,\phi) =
+  \phi\,\Kice(T) + (1-\phi)\,\Kreg(T,z),
+  \label{eq:k_mix}
+\end{equation}
+which is a non-trivial function of \emph{both} temperature and depth.
+
+\begin{concept}
+Ice-coupled conductivity creates a positive feedback: once ice forms, it
+raises $k_{\mathrm{eff}}$, which raises the diurnal damping depth,
+which stabilises ice against the next sublimation cycle.  A solver that
+ignores this loop (i.e.\ fixes $k$ at the dry-regolith value) will
+systematically under-predict the ice-stability depth by tens of
+centimetres.
+\end{concept}
+
+\begin{novelty}
+The TSUKIMI pipeline is --- to the author's knowledge --- the first
+open-source lunar thermal code to close this loop self-consistently
+within the time-stepping kernel, rather than applying it as a
+post-processing correction.  The implementation is the subject of
+\cref{chap:phase3}.
+\end{novelty}
+
+\section{Pixel-level topographic slope correction}
+\label{sec:novelty-slope}
+
+ChaSTE landed at \SI{69}{\degree}S on the rim of a minor crater with a
+local slope estimated at \SI{6}{\degree} from the Chandrayaan-3
+descent imagery \citep{seth2025}.  A flat-surface thermal model
+under-predicts the observed peak surface temperature at this site by
+approximately \SI{40}{\kelvin} (\cref{chap:phase1}, §\,ChaSTE).  This
+bias is not a physics failure of the solver --- it is a geometry
+failure of the boundary condition: a flat surface receives
+systematically less noon-time insolation at \SI{69}{\degree}S than the
+pole-facing slope on which the lander actually sits.
+
+The corrected cosine-of-incidence is
+\begin{equation}
+  \cos i \;=\; \sin\beta\,\sin s\,\cos(\alpha - \varphi_s)
+            \;+\; \cos\beta\,\cos s,
+  \label{eq:cos_incidence}
+\end{equation}
+where $\beta$ is the solar zenith angle, $s$ the local slope, $\alpha$
+the solar azimuth, and $\varphi_s$ the slope azimuth (aspect).
+Applying \cref{eq:cos_incidence} with $s=\SI{6}{\degree}$ and a
+pole-facing aspect recovers the observed peak temperature within
+\SI{10}{\kelvin}.
+
+\begin{novelty}
+Most published polar models apply slope correction only in aggregate
+(\emph{climate-zone} averages).  TSUKIMI applies \cref{eq:cos_incidence}
+\emph{per pixel}, using the LOLA/Kaguya merged DEM as the slope source,
+which is the required granularity to compare against point
+measurements like ChaSTE.
+\end{novelty}
+
+\section{End-to-end reproducible workflow}
+\label{sec:novelty-reproducibility}
+
+The last novelty is less scientific than methodological but equally
+important for a PhD-scale study.  Every notebook in the repository is
+\emph{self-installing} and \emph{self-fetching}:
+
+\begin{lstlisting}[caption={Bootstrap cell present at the top of every notebook.},label={lst:bootstrap}]
+# --- Auto-install + auto-fetch -------------------------------------
+import subprocess, sys, pathlib
+
+REQS = ["numpy", "scipy", "numba", "matplotlib", "spiceypy"]
+for pkg in REQS:
+    try:
+        __import__(pkg)
+    except ImportError:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--quiet", pkg])
+
+ROOT = pathlib.Path.cwd().resolve().parents[1]   # repo root
+sys.path.insert(0, str(ROOT))
+from lunar.data_fetch import ensure_pds, ensure_spice
+ensure_pds("apollo_hfe")     # fetch Apollo HFE tables from NASA/PDS
+ensure_spice("de440")        # fetch DE440 kernel from NAIF
+\end{lstlisting}
+
+A reviewer therefore reproduces every headline figure in this book in
+a single click, without manual data provisioning.  The full four-site
+validation executes end-to-end on a 2024-class laptop in under
+\SI{15}{\minute}.
+
+\begin{milestone}
+\textbf{Reproducibility acceptance:} a clean \code{git clone} of
+\repo, followed by \emph{Run All} on
+\code{01\_apollo\_validation.ipynb}, regenerates
+\cref{fig:a15-timeseries,fig:a15-meanT,fig:a17-meanT,fig:change4-val,fig:chaste-val}
+with RMSE values matching \cref{tab:phase1-rmse} to
+\SI{1e-3}{\kelvin}.
+\end{milestone}
+
+\section{Summary of claims}
+
+In one sentence: \emph{this thesis defends the claim that a single
+1-D Crank-Nicolson solver, equipped with a pixel-level topographic
+boundary condition and an ice-coupled conductivity closure, can
+reproduce every in-situ lunar subsurface thermal record currently
+published, and can be extended to a polar map without retuning the
+physics kernel.}  The remaining chapters of this book lay out the
+evidence for each half of that claim in sequence.

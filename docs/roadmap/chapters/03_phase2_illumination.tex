@@ -1,0 +1,201 @@
+\chapter{Phase 2 --- Topographic Illumination Coupling}
+\label{chap:phase2}
+
+\begin{milestone}
+\textbf{Status:} in progress.\\
+\textbf{Acceptance:} with a local slope $s=\SI{6}{\degree}$ and
+pole-facing aspect, the ChaSTE peak-surface-temperature bias of
+$\sim\SI{-40}{\kelvin}$ identified in \cref{fig:chaste-val} is reduced
+to $|{\rm bias}|\le\SI{10}{\kelvin}$.\\
+\textbf{Deliverable:} \code{notebooks/phase2\_illumination/01\_slope\_horizon\_shadow.ipynb}
+and \code{02\_chaste\_slope\_rerun.ipynb}.
+\end{milestone}
+
+\section{Goal of Phase 2}
+
+Phase~1 proved that the vertical physics is correct.  Phase~2 closes
+the last degree of freedom in the \emph{horizontal} boundary condition
+by coupling each solver column to its local DEM context: slope,
+aspect, horizon, and sky view factor.  This is the minimum machinery
+required to (i)~reproduce the ChaSTE point measurement and (ii)~make
+Phase~3's polar mapping meaningful.
+
+\section{Pipeline data flow}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.9cm and 1.4cm,
+    every node/.style={phaseBlock, minimum width=3.1cm, minimum height=1.0cm}]
+  \node                                       (dem)   {DEM mosaic\\\tiny LOLA\,+\,Kaguya};
+  \node[right=of dem]                         (slope) {Slope/aspect\\\tiny $s,\varphi_s$};
+  \node[right=of slope]                       (hor)   {Horizon raycast\\\tiny $h(\phi)$};
+  \node[below=of hor]                         (sky)   {Sky view factor\\\tiny $F_{\mathrm{sky}}$};
+  \node[left=of sky]                          (shad)  {Shadow mask\\\tiny $m(t)$};
+  \node[left=of shad]                         (ins)   {Corrected $Q(t)$\\\tiny \cref{eq:Qtotal}};
+  \node[below=of ins, activeBlock, minimum width=3.1cm] (cn) {Phase-1 solver\\\small (reused)};
+  \draw[arrowThick] (dem)   -- (slope);
+  \draw[arrowThick] (slope) -- (hor);
+  \draw[arrowThick] (hor)   -- (sky);
+  \draw[arrowThick] (hor)   -| (shad);
+  \draw[arrowThick] (slope.south) |- (shad.east);
+  \draw[arrowThick] (sky)   -- (shad);
+  \draw[arrowThick] (shad)  -- (ins);
+  \draw[arrowThick] (ins)   -- (cn);
+\end{tikzpicture}
+\caption[Phase 2 data flow]{Phase 2 data flow.  The Phase-1 solver is
+  reused unchanged; only its surface forcing is replaced by the
+  topographically-corrected $Q(t)$.}
+\label{fig:phase2-flow}
+\end{figure}
+
+\section{Digital elevation model}
+
+The preferred DEM is the merged LOLA/Kaguya product
+\citep{barker2016,araki2009} at \SI{5}{\meter\per pixel} polar
+stereographic, cropped to a \SI{10}{\kilo\meter} square around each
+target column.  Loading is delegated to \code{rasterio}:
+
+\begin{lstlisting}[caption={DEM loader from \code{lunar/dem.py}.},label={lst:dem_load}]
+import rasterio
+from rasterio.warp import transform
+
+def load_dem_window(path, centre_lonlat, half_size_m=5000.0, resolution=5.0):
+    """Load a square window of the DEM centred on (lon, lat)."""
+    with rasterio.open(path) as src:
+        xs, ys = transform("EPSG:4326", src.crs,
+                           [centre_lonlat[0]], [centre_lonlat[1]])
+        row, col = src.index(xs[0], ys[0])
+        half_px  = int(half_size_m / resolution)
+        window   = rasterio.windows.Window(
+            col - half_px, row - half_px, 2 * half_px, 2 * half_px)
+        elev = src.read(1, window=window)
+        transform_w = src.window_transform(window)
+    return elev, transform_w
+\end{lstlisting}
+
+\section{Slope and aspect}
+
+The local slope magnitude $s$ and aspect $\varphi_s$ are obtained from
+the DEM by central-difference gradients:
+\begin{equation}
+  s = \arctan\!\sqrt{(\partial_x z)^2 + (\partial_y z)^2},
+  \qquad
+  \varphi_s = \mathrm{atan2}(-\partial_y z,\ \partial_x z).
+  \label{eq:slope_aspect}
+\end{equation}
+
+\section{Horizon raycast}
+
+For each DEM pixel, the horizon elevation $h(\phi)$ is the maximum
+apparent elevation angle sampled along $N_\phi$ azimuth rays
+($N_\phi = 360$ by default):
+\begin{equation}
+  h(\phi) \;=\; \max_{r \in (0, r_{\max}]}
+  \arctan\!\left(\frac{z(\mathbf{x} + r\,\hat{\bm{n}}_\phi) - z(\mathbf{x})}{r}\right),
+  \label{eq:horizon}
+\end{equation}
+where $\hat{\bm{n}}_\phi = (\cos\phi, \sin\phi)$.  The raycast is
+embarrassingly parallel across pixels and is GPU-ready; a Numba
+CPU implementation is sufficient for single-column work.
+
+\begin{lstlisting}[caption={Horizon raycast kernel (sketch) from \code{lunar/horizon.py}.},label={lst:horizon}]
+@njit(cache=True, parallel=True)
+def horizon_profile(elev, i0, j0, n_phi=360, r_max=1000):
+    """Return horizon elevation (rad) at pixel (i0, j0) for n_phi azimuths."""
+    H = np.empty(n_phi)
+    for k in prange(n_phi):
+        phi = 2.0 * np.pi * k / n_phi
+        dx, dy = np.cos(phi), np.sin(phi)
+        h_max = -np.pi / 2.0
+        for r in range(1, r_max + 1):
+            ii = int(round(i0 + r * dy))
+            jj = int(round(j0 + r * dx))
+            if ii < 0 or ii >= elev.shape[0] or jj < 0 or jj >= elev.shape[1]:
+                break
+            dz = elev[ii, jj] - elev[i0, j0]
+            h = np.arctan2(dz, float(r))           # pixel distance -> metres upstream
+            if h > h_max:
+                h_max = h
+        H[k] = h_max
+    return H
+\end{lstlisting}
+
+\section{Sky view factor}
+
+The diffuse-sky multiplier on the infrared background and the scattered
+solar multiplier on albedo-reflected photons share the same geometric
+kernel: the fraction of the hemisphere not occluded by the surrounding
+terrain.  Under the flat-sky Lambertian approximation
+\citep{dozier1990},
+\begin{equation}
+  F_{\mathrm{sky}}
+  \;=\;
+  \frac{1}{2\pi}\int_{0}^{2\pi}
+  \left[\,\cos^{2}\!\max(h(\phi),0)\,\right]\,d\phi.
+  \label{eq:Fsky}
+\end{equation}
+For a flat surface $h(\phi)\equiv 0$ and $F_{\mathrm{sky}}=1$; for the
+ChaSTE site with $s=\SI{6}{\degree}$ and the surrounding crater rim,
+$F_{\mathrm{sky}}\approx 0.94$, a \SI{6}{\percent} reduction that
+cools the night-side temperature by $\sim\SI{2}{\kelvin}$.
+
+\section{Shadow mask}
+
+Given the instantaneous solar zenith $\beta(t)$ and azimuth
+$\alpha(t)$ from SPICE, a pixel is in shadow when
+\begin{equation}
+  \beta(t) > \pi/2 - h(\alpha(t)).
+  \label{eq:shadow}
+\end{equation}
+This is checked once per solver step and multiplies the direct-beam
+term in $Q(t)$ by a binary mask.
+
+\section{Corrected surface forcing}
+
+The full corrected top-of-regolith flux seen by the Phase-1 solver is
+\begin{equation}
+  Q(t) =
+  m(t)\,\Rsolar \,\cos i(t)
+  \,+\, F_{\mathrm{sky}}\,Q_{\mathrm{IR,sky}}
+  \,+\, A\,\Rsolar\,\cos i(t)\,(1-F_{\mathrm{sky}}),
+  \label{eq:Qtotal}
+\end{equation}
+with $\cos i$ given by \cref{eq:cos_incidence}, $m(t)$ by
+\cref{eq:shadow}, and the third term a first-order treatment of
+reflected-light enhancement from surrounding rims.  Inserting
+\cref{eq:Qtotal} into \cref{eq:surface_bc} is a one-line change in the
+solver; the rest of the Phase-1 kernel is untouched.
+
+\begin{novelty}
+The \emph{same} 1-D Crank--Nicolson kernel that passed Phase~1 accepts
+the topographically-corrected forcing \cref{eq:Qtotal} without any
+architectural change.  This preserves the Phase-1 acceptance tests as
+a regression suite for Phase~2, and is only possible because the
+solver is written around the abstract \code{InsolationDriver}
+interface rather than a hard-coded flat-surface kernel.
+\end{novelty}
+
+\section{Validation plan}
+
+\begin{enumerate}
+  \item \textbf{Unit tests.}  \code{tests/test\_horizon.py} compares
+        the raycast against analytic limits (pyramid, cone, hemisphere).
+  \item \textbf{Flat-surface regression.}  With $s=0$ and a flat DEM,
+        \cref{eq:Qtotal} must reduce to the Phase-1 flat forcing to
+        machine precision.  This guarantees Phase~1 acceptance is not
+        broken.
+  \item \textbf{ChaSTE slope re-run.}  With $s=\SI{6}{\degree}$ and
+        pole-facing aspect at \SI{69}{\degree}S, the peak-surface
+        temperature bias must fall below \SI{10}{\kelvin}.
+  \item \textbf{Apollo~15/17 re-run.}  With their near-zero local
+        slopes, the Apollo RMSE values from \cref{tab:phase1-rmse}
+        must shift by less than \SI{0.1}{\kelvin}.
+\end{enumerate}
+
+\section{Bridge to Phase 3}
+
+With pixel-level topographic forcing in place, the solver can be swept
+across a DEM mosaic to build a \emph{map} of equilibrium temperatures
+and --- for the first time in the pipeline --- ice-stability depths.
+\Cref{chap:phase3} extends the kernel with the ice-coupled
+conductivity closure (\cref{eq:k_mix}) and Diviner validation.

@@ -1,0 +1,131 @@
+\chapter{Introduction}
+\label{chap:introduction}
+
+\section{Context: why lunar subsurface thermal models still matter}
+
+Sixty years after the first Surveyor landers, the Moon's thermal
+environment remains the single most important \emph{boundary condition}
+for every volatile-stability, in-situ-resource-utilisation (ISRU), and
+permanently shadowed region (PSR) study in the run-up to the Artemis
+programme.  The Diviner radiometer on the Lunar Reconnaissance Orbiter
+(LRO) has mapped top-of-regolith bolometric temperatures at
+\SI{237}{\meter} pixel scale, but the \emph{subsurface} is
+intrinsically opaque: we see it only through the handful of in-situ
+probes emplaced by Apollo~15/17, Chang'E-4, and Chandrayaan-3's ChaSTE
+instrument.
+
+Every published lunar thermal model must therefore survive the same
+four sanity checks:
+\begin{enumerate}
+  \item does it reproduce the Apollo HFE deep-sensor equilibrium
+        temperatures ($\sim$\SI{250}{\kelvin}) at each site?
+  \item does it recover the diurnal surface-temperature amplitude
+        observed by Diviner and Chang'E-4?
+  \item can it be extended to a polar geometry where self-shadowing and
+        ice-coupled conductivity dominate?
+  \item does it conserve energy down to a realistic geothermal flux at
+        the bottom boundary?
+\end{enumerate}
+\noindent The \texttt{Lunar-V2} pipeline was written to answer all four
+simultaneously and to do so in code that a graduate student --- without
+legacy Fortran infrastructure --- can run on a laptop in a handful of
+minutes per site.
+
+\section{Scope of this manual}
+
+\Cref{fig:pipeline-flow} summarises the four mission phases covered in
+this book.  Phase~0 (\emph{quickstart}) is not a research phase; it is
+a smoke-test notebook that verifies the \code{lunar} package imports
+cleanly on a freshly cloned repository.  The chapters that follow treat
+Phases~1 through~4 in order, each ending with a bridge to the next.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.0cm and 1.6cm]
+  \node[doneBlock]   (p0) {\textbf{Phase 0}\\Quickstart\\\tiny shipped};
+  \node[doneBlock,   right=of p0]   (p1) {\textbf{Phase 1}\\Point-source\\validation\\\tiny shipped};
+  \node[activeBlock, right=of p1]   (p2) {\textbf{Phase 2}\\Illumination\\coupling\\\tiny in progress};
+  \node[plannedBlock,right=of p2]   (p3) {\textbf{Phase 3}\\Polar maps\\+ ice\\\tiny planned};
+  \node[plannedBlock,right=of p3]   (p4) {\textbf{Phase 4}\\Manuscript\\+ thesis\\\tiny planned};
+  \draw[arrowThick] (p0) -- (p1);
+  \draw[arrowThick] (p1) -- (p2);
+  \draw[arrowThick] (p2) -- (p3);
+  \draw[arrowThick] (p3) -- (p4);
+\end{tikzpicture}
+\caption[Pipeline phase flow]{The five-stage \texttt{Lunar-V2} / TSUKIMI
+  pipeline.  Green = shipped; amber = in progress; grey = planned.
+  The book covers Phases~1--4.}
+\label{fig:pipeline-flow}
+\end{figure}
+
+\begin{concept}
+The pipeline is deliberately \emph{linear}.  Each phase receives the
+previous phase's validated output (parameter set, DEM mosaic, solver
+configuration) and returns a new validated deliverable.  No phase
+short-circuits another; failure to meet a phase's acceptance criterion
+blocks the next.
+\end{concept}
+
+\section{Code base at a glance}
+
+The repository\footnote{\repo, branch \branch.} follows a conventional
+Python scientific layout:
+
+\begin{lstlisting}[caption={Top-level directory layout (abridged).},label={lst:repo-layout},language=bash]
+Lunar-V2/
+|-- lunar/                        # importable package
+|   |-- solver_cn.py              # 1-D Crank-Nicolson core
+|   |-- properties.py             # regolith property closures
+|   |-- insolation.py             # solar forcing + SPICE wrapper
+|   |-- apollo_helpers.py         # Phase-1 validation helpers
+|   `-- pixel_column.py           # per-pixel column driver
+|-- notebooks/
+|   |-- phase0_quickstart/
+|   |-- phase1_validation/        # 01_apollo_validation.ipynb + ...
+|   |-- phase2_illumination/      # DEM + horizon + shadow
+|   |-- phase3_polar_maps/        # Diviner + ice stability
+|   `-- phase4_manuscript/        # PSJ figure bundle
+|-- scripts/                      # standalone CLI utilities
+|-- output/
+|   |-- figures/                  # publication-ready PDF + PNG
+|   |-- gifs/                     # thermal-evolution animations
+|   `-- docs/                     # compiled PDF roadmap
+`-- docs/roadmap/                 # this book (LaTeX source)
+\end{lstlisting}
+
+Every notebook is self-installing and self-fetching: \code{pip}
+dependencies, SPICE kernels, and PDS HFE archives are downloaded on
+first \emph{Run All}.  This is a deliberate design choice that
+supports the reproducibility requirement (\cref{sec:novelty-reproducibility}).
+
+\section{Nomenclature}
+
+Throughout the book, we adopt SI units exclusively.  The symbol
+conventions used in the equations are summarised in
+\cref{tab:symbols}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\linewidth}{l l Y}
+\toprule
+Symbol & Unit & Meaning \\
+\midrule
+$T$        & K         & Temperature \\
+$\rho$     & \si{\kilogram\per\meter\cubed} & Bulk density \\
+$c_p$      & \si{\joule\per\kilogram\per\kelvin} & Specific heat capacity \\
+$k$        & \si{\watt\per\meter\per\kelvin} & Thermal conductivity \\
+$\Ksurf,\Kdeep$ & \si{\watt\per\meter\per\kelvin} & Surface / deep $k$ endpoints \\
+$\Hscale$  & \si{\meter} & Hayne e-folding scale for $k$ \\
+$\Qb$      & \si{\milli\watt\per\meter\squared} & Basal geothermal flux \\
+$A$        & --        & Hemispherical bond albedo \\
+$\varepsilon$ & --     & Thermal infrared emissivity \\
+$\sigma$   & \SI{5.6704e-8}{\watt\per\meter\squared\per\kelvin\tothe{4}} & Stefan--Boltzmann constant \\
+$\Rsolar$  & \SI{1361}{\watt\per\meter\squared} & Solar constant at \SI{1}{au} \\
+$F_{\mathrm{sky}}$ & --  & Sky view factor (\cref{chap:phase2}) \\
+$\phi$     & --        & Volumetric ice fraction (\cref{chap:phase3}) \\
+\bottomrule
+\end{tabularx}
+\caption{Nomenclature used throughout the book.}
+\label{tab:symbols}
+\end{table}

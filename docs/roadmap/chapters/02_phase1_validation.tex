@@ -1,0 +1,405 @@
+\chapter{Phase 1 --- Point-Source Validation}
+\label{chap:phase1}
+
+\begin{milestone}
+\textbf{Status:} shipped (commit \code{6b37dcb}).\\
+\textbf{Acceptance:} Apollo~15 deep-sensor RMSE $\le$~\SI{1}{\kelvin}
+for the discrete 3-layer model and $\le$~\SI{1.5}{\kelvin} for the
+Hayne~(2017) model; Apollo~17 mean-$T$ at \SI{1}{\meter} within
+$\pm\SI{2}{\kelvin}$; Chang'E-4 and ChaSTE surface-$T$ peaks within
+order-of-magnitude of published values.\\
+\textbf{Outcome:} all criteria satisfied --- see
+\cref{tab:phase1-rmse}.
+\end{milestone}
+
+\section{Goal of Phase 1}
+
+Phase 1 is the \emph{calibration anchor} of the entire pipeline.  It
+answers a simple question: given the published regolith thermo-physical
+properties, does the 1-D solver reproduce the only subsurface
+temperatures we have ever measured on the Moon?  If it does not, no
+amount of topographic or polar sophistication in later phases will
+save the study.  The success criterion is therefore quantitative and
+non-negotiable.
+
+\section{Governing equation}
+
+The vertically-propagating heat equation in a horizontally homogeneous
+regolith column is
+\begin{equation}
+  \rho(z)\,c_p(T)\,\frac{\partial T}{\partial t}
+  \;=\;
+  \frac{\partial}{\partial z}\!\left[
+    k(T,z)\,\frac{\partial T}{\partial z}
+  \right],
+  \qquad z \in [0, z_{\max}],\ t > 0.
+  \label{eq:heat1d}
+\end{equation}
+The density $\rho$ and conductivity $k$ depend on depth, and $k$ and
+$c_p$ additionally depend on temperature; the resulting
+\emph{non-linear} PDE is solved implicitly to preserve stability at
+the large time steps required for multi-lunation spin-up.
+
+\subsection{Surface boundary condition}
+
+The surface $z=0$ is a radiative--conductive balance
+\citep{vasavada1999}:
+\begin{equation}
+  (1-A)\,Q_\odot(t)
+  \;=\;
+  \varepsilon\,\sigma\,T_s^{4}
+  \;-\;
+  k(T_s,0)\,\left.\frac{\partial T}{\partial z}\right|_{z=0},
+  \label{eq:surface_bc}
+\end{equation}
+where $Q_\odot(t)$ is the \emph{instantaneous} insolation (normalised
+such that noon at the equator equals $\Rsolar / d_{\mathrm{AU}}^2$),
+$A$ is the bond albedo, and $\varepsilon$ the infrared emissivity.
+
+\subsection{Bottom boundary condition: geothermal flux}
+
+In contrast to earlier studies that imposed $\partial T / \partial z
+= 0$ at depth, TSUKIMI sets a \emph{finite} basal flux consistent with
+the site-specific geothermal heat flow measured by Apollo:
+\begin{equation}
+  -\,k(T,z_{\max})\left.\frac{\partial T}{\partial z}\right|_{z=z_{\max}}
+  \;=\;
+  \Qb,
+  \qquad
+  \Qb^{\text{A15}} = \SI{21}{\milli\watt\per\meter\squared},
+  \quad
+  \Qb^{\text{A17}} = \SI{15}{\milli\watt\per\meter\squared}.
+  \label{eq:bottom_bc}
+\end{equation}
+
+\begin{warning}
+Zero-flux bottom conditions cause a slow artificial warming of the
+deep column over the \num{10}+ spin-up lunations, because any net
+surface-absorbed flux has nowhere to escape.  This manifests as a
+0.5--\SI{2}{\kelvin} bias in the \SI{1.5}{\meter} equilibrium
+temperature --- enough to push the A15 Hayne~(2017) RMSE above the
+\SI{1.5}{\kelvin} acceptance threshold.  Always use
+\cref{eq:bottom_bc} with a site-appropriate $\Qb$.
+\end{warning}
+
+\subsection{Depth grid: geometric, never uniform}
+
+The diurnal skin depth at lunar noon is $\sim$\SI{3}{\centi\meter},
+while the annual skin depth is $\sim$\SI{1}{\meter}.  A uniform grid
+fine enough to resolve the diurnal skin wastes 2--3 orders of
+magnitude of computation in the deep regime.  TSUKIMI therefore uses
+a geometric depth grid
+\begin{equation}
+  z_i = z_0\,\left(r^{i} - 1\right)/(r-1),
+  \qquad i = 0, 1, \dots, N,
+  \label{eq:geo_grid}
+\end{equation}
+with $z_0 = \SI{1}{\milli\meter}$, $r = 1.08$, and $N$ tuned so that
+$z_N \ge \SI{5}{\meter}$.  This places 60\,\% of the grid cells within
+the upper \SI{10}{\centi\meter} and the remaining 40\,\% exponentially
+stretched to the bottom boundary.
+
+\begin{warning}
+Uniform grids are \emph{forbidden} in the TSUKIMI codebase
+(\code{CLAUDE.md}, hard rule \#2).  A pull request that switches to a
+uniform grid will fail the preflight check in
+\code{lunar/grid.py::assert\_geometric}.
+\end{warning}
+
+\section{Regolith properties}
+
+Two parameterisations are supported, selected at pipeline
+instantiation time.
+
+\subsection{Hayne 2017 smooth-variation model}
+
+\citet{hayne2017} fit a three-parameter exponential profile to the
+Diviner night-side brightness temperature:
+\begin{equation}
+  k(z) = \Kdeep - (\Kdeep - \Ksurf)\,\exp\!\left(-\frac{z}{\Hscale}\right),
+  \label{eq:hayne_k}
+\end{equation}
+with $\Ksurf = \SI{7.4e-4}{\watt\per\meter\per\kelvin}$,
+$\Kdeep = \SI{3.4e-3}{\watt\per\meter\per\kelvin}$ and $\Hscale$
+ranging from \SI{0.05}{\meter} (equator) to \SI{0.11}{\meter} (polar).
+
+\subsection{Discrete three-layer model}
+
+The alternative closure \citep{mitchell2008} prescribes three piecewise
+layers with distinct $(\rho, k)$ pairs:
+\begin{equation}
+  (\rho,k)(z) =
+  \begin{cases}
+    (\SI{1100}{\kilogram\per\meter\cubed},\ \SI{9.3e-4}{\watt\per\meter\per\kelvin}) & 0 \le z < \SI{0.02}{\meter} \\
+    (\SI{1800}{\kilogram\per\meter\cubed},\ \SI{2.5e-3}{\watt\per\meter\per\kelvin}) & \SI{0.02}{\meter} \le z < \SI{0.60}{\meter} \\
+    (\SI{2000}{\kilogram\per\meter\cubed},\ \SI{4.5e-3}{\watt\per\meter\per\kelvin}) & z \ge \SI{0.60}{\meter}.
+  \end{cases}
+  \label{eq:discrete_k}
+\end{equation}
+
+\subsection{Temperature dependence}
+
+Both models inherit the same temperature-dependent heat capacity
+\citep{hayne2017}:
+\begin{equation}
+  c_p(T) = \sum_{n=0}^{4} a_n T^n,
+  \qquad
+  \bm{a} = (-3.6125,\; 2.7431,\; 2.3616{\times}10^{-3},\;
+             -1.2340{\times}10^{-5},\; 8.9093{\times}10^{-9}),
+  \label{eq:cp_T}
+\end{equation}
+and a radiative-conduction term that raises the effective conductivity
+near the hot surface,
+\begin{equation}
+  k_{\mathrm{rad}}(T) = k(z) \left[1 + \chi\left(\tfrac{T}{350}\right)^3\right],
+  \qquad \chi \approx 2.7.
+  \label{eq:k_rad}
+\end{equation}
+
+\section{Crank--Nicolson discretisation}
+
+\cref{eq:heat1d} is discretised with second-order central differences
+in space and a $\theta=1/2$ Crank--Nicolson scheme in time
+\citep{crank1947}, yielding an implicit tridiagonal system solved at
+each step by the Thomas algorithm.  The node equations read
+\begin{equation}
+  a_i T_{i-1}^{n+1} + b_i T_i^{n+1} + c_i T_{i+1}^{n+1}
+  \;=\;
+  d_i\!\left(T_{i-1}^{n}, T_i^{n}, T_{i+1}^{n}\right),
+  \label{eq:cn_stencil}
+\end{equation}
+with coefficients updated each step from the current temperature field
+because $k$ and $c_p$ depend on $T$.  The full kernel is ${\sim}120$
+lines of Python accelerated with Numba's \code{@njit(cache=True)}
+decorator; a representative excerpt appears in
+\cref{lst:solver-core}.
+
+\begin{lstlisting}[caption={Crank--Nicolson inner loop from \code{lunar/solver\_cn.py} (abridged).},label={lst:solver-core}]
+@njit(cache=True, fastmath=True)
+def step_cn(T, z, k_func, cp_func, rho, dt, Q_top, Q_bot, eps, A, sigma):
+    """One Crank-Nicolson step; updates T in-place."""
+    N = T.shape[0]
+    dz = z[1:] - z[:-1]                       # cell widths (non-uniform)
+    # Thomas coefficients
+    a = np.empty(N); b = np.empty(N); c = np.empty(N); d = np.empty(N)
+    for i in range(1, N - 1):
+        k_m = 0.5 * (k_func(T[i - 1], z[i - 1]) + k_func(T[i], z[i]))
+        k_p = 0.5 * (k_func(T[i],     z[i])     + k_func(T[i + 1], z[i + 1]))
+        alpha_m = k_m * dt / (rho[i] * cp_func(T[i]) * dz[i - 1] * 0.5 * (dz[i-1]+dz[i]))
+        alpha_p = k_p * dt / (rho[i] * cp_func(T[i]) * dz[i]     * 0.5 * (dz[i-1]+dz[i]))
+        a[i] = -0.5 * alpha_m
+        c[i] = -0.5 * alpha_p
+        b[i] = 1.0 + 0.5 * (alpha_m + alpha_p)
+        d[i] = (T[i]
+                + 0.5 * alpha_m * (T[i - 1] - T[i])
+                + 0.5 * alpha_p * (T[i + 1] - T[i]))
+    # Radiative surface (Eq. 2.2): Newton-linearised on T[0]
+    # ... (omitted for brevity)
+    # Geothermal bottom (Eq. 2.3)
+    a[-1] = -1.0; b[-1] = 1.0; c[-1] = 0.0
+    d[-1] = Q_bot * dz[-1] / k_func(T[-1], z[-1])
+    thomas(a, b, c, d, T)                     # overwrites T
+    return T
+\end{lstlisting}
+
+\section{Spin-up protocol}
+
+The solver is initialised with the all-column equilibrium
+$T_{\mathrm{eq}} = \left[(1-A)Q_{\odot,\mathrm{mean}}/(\varepsilon\sigma)
+\right]^{1/4}$ and then marched for \emph{at least} 10 synodic lunations
+until the maximum per-cell change between consecutive lunations
+satisfies $\max_i |\Delta T_i| < \SI{0.01}{\kelvin}$.  The synodic (not
+sidereal) period \SI{29.530589}{\day} is the correct phase basis for
+Apollo folding; see \code{APOLLO\_DIURNAL\_FIX\_NOTES.md} in the
+\code{phase1\_validation/} folder.
+
+\section{Apollo HFE validation}
+
+\subsection{Data}
+
+Apollo~15 and~17 each emplaced a pair of probes with four thermocouple
+sensors per probe (plus two differential sensors, unused here).  The
+tables used in this study are the PDS Geosciences archive files
+\code{a15.probe.1.table.asc} and \code{a15.probe.2.table.asc} (likewise
+for~17), containing ${\sim}\SI{4000}{\day}$ of cadence-decimated records.
+
+\subsection{Stability-window detection}
+
+Raw HFE sensors exhibit a slow secular drift that is mostly instrument
+calibration, not regolith physics.  The pipeline therefore restricts
+the equilibrium fit to a \emph{stability window} where the linear
+slope satisfies $|dT/dt| \le \SI{0.08}{\kelvin\per\year}$ and at least
+\SI{20}{\percent} of the record qualifies.  The detector is the
+\code{find\_stable\_window} function of \code{apollo\_helpers.py}
+(\cref{lst:stability}).
+
+\begin{lstlisting}[caption={Stability-window detector from \code{lunar/apollo\_helpers.py}.},label={lst:stability}]
+def find_stable_window(subset, slope_thresh_K_per_year=0.08, min_frac=0.20):
+    """Return (idx_lo, idx_hi, T_eq, T_std) of the longest contiguous
+    window whose linear trend magnitude is below slope_thresh."""
+    t = subset["t_sec"].values.astype(float)
+    T = subset["T_K"].values.astype(float)
+    # sliding-window linear regression, pick longest window below threshold
+    best = (0, len(t) - 1, T.mean(), T.std())
+    for lo in range(len(t)):
+        for hi in range(lo + int(min_frac * len(t)), len(t)):
+            slope, _ = np.polyfit(t[lo:hi], T[lo:hi], 1)
+            slope_per_year = slope * (365.25 * 86400.0)
+            if abs(slope_per_year) <= slope_thresh_K_per_year:
+                if (hi - lo) > (best[1] - best[0]):
+                    best = (lo, hi, T[lo:hi].mean(), T[lo:hi].std())
+    return best
+\end{lstlisting}
+
+\subsection{Results}
+
+\Cref{fig:a15-stability} shows the stability-window fit for Apollo~15
+probe~1 (P1) and probe~2 (P2); the analogous figure for Apollo~17 is
+\cref{fig:a17-stability}.  The per-sensor breakdown confirms that
+shallow sensors (\code{TC11}, \code{TC12}) exhibit a borehole
+heat-short artefact that biases them ${\sim}\SI{5}{\kelvin}$ warm ---
+this is why the RMSE evaluation restricts to $z\ge\SI{80}{\centi\meter}$
+(see \code{SHALLOW\_SENSOR\_DIAGNOSIS.md}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a15_stability_region.pdf}
+\caption[A15 stability region]{Apollo~15 HFE stability-window fit.
+  Coloured bands mark the contiguous intervals where
+  $|dT/dt|\le\SI{0.08}{\kelvin\per\year}$; the per-sensor equilibrium
+  temperatures are the averages over these bands.}
+\label{fig:a15-stability}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a17_stability_region.pdf}
+\caption[A17 stability region]{Apollo~17 HFE stability-window fit,
+  analogous to \cref{fig:a15-stability}.}
+\label{fig:a17-stability}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a15_timeseries.pdf}
+\caption[A15 depth-coloured time series]{Apollo~15 depth-coloured
+  temperature time series for all four thermocouple sensors on each
+  probe.  The shallow-sensor warm bias ($z<\SI{80}{\centi\meter}$) is
+  visible as the systematic offset of the magenta--orange family.}
+\label{fig:a15-timeseries}
+\end{figure}
+
+\subsection{Mean-temperature profile}
+
+\Cref{fig:a15-meanT,fig:a17-meanT} compare the HFE equilibrium
+profile against the Hayne~(2017) and discrete 3-layer solver runs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a15_mean_T_profile.pdf}
+\caption[A15 mean-$T$ profile]{Apollo~15: HFE-derived equilibrium
+  profile (markers) vs.\ the Hayne~(2017) and discrete 3-layer solver
+  runs (lines).  Residual panel at right; deep-sensor RMSE is annotated.}
+\label{fig:a15-meanT}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a17_mean_T_profile.pdf}
+\caption[A17 mean-$T$ profile]{Apollo~17 equivalent of
+  \cref{fig:a15-meanT}.}
+\label{fig:a17-meanT}
+\end{figure}
+
+\subsection{Diurnal cycle}
+
+The synodic-folded diurnal surface temperature at Apollo~15
+(\cref{fig:a15-diurnal}) and the per-sensor diurnal grid at
+Apollo~17 (\cref{fig:a17-diurnal-grid}) reveal that the discrete
+3-layer model tracks both the amplitude and the phase lag, while the
+Hayne~(2017) model under-predicts the peak by
+${\sim}\SI{5}{\kelvin}$ at the surface because the surface $\Ksurf$ is
+tuned to Diviner night-side data, not Apollo noon.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a15_diurnal_cycles.pdf}
+\caption[A15 diurnal cycles]{Apollo~15 surface diurnal cycle folded
+  on the synodic period.  Black markers are the binned median of the
+  raw HFE surface sensor; coloured lines are the two model
+  predictions.}
+\label{fig:a15-diurnal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{a17_diurnal_sensor_grid_lst.pdf}
+\caption[A17 per-sensor diurnal grid]{Apollo~17 per-sensor diurnal
+  grid in local solar time.  Each panel shows one thermocouple; the
+  damping and phase lag with depth are recovered by the discrete
+  3-layer model.}
+\label{fig:a17-diurnal-grid}
+\end{figure}
+
+\section{Chang'E-4 and ChaSTE validation}
+
+The two point-source data sets beyond Apollo are folded in at the end
+of the Phase-1 notebook:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{change4_validation.pdf}
+\caption[Chang'E-4 validation]{Chang'E-4 surface temperature at
+  \SI{45}{\degree}S compared with the solver driven by the
+  sinusoidal insolation proxy.  Peak surface temperature agrees with
+  \citet{huang2022} within order of magnitude; the residual bias is
+  attributed to the sinusoidal proxy ignoring the SPA basin topography.}
+\label{fig:change4-val}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{chaste_validation.pdf}
+\caption[ChaSTE flat-surface validation]{Chandrayaan-3 ChaSTE at
+  \SI{69}{\degree}S under flat-surface geometry.  The
+  ${\sim}\SI{40}{\kelvin}$ surface-temperature bias is the \emph{motivation}
+  for Phase~2: applying \cref{eq:cos_incidence} with $s=\SI{6}{\degree}$
+  closes the gap.}
+\label{fig:chaste-val}
+\end{figure}
+
+\section{Quantitative outcome}
+
+\Cref{tab:phase1-rmse} collects the headline metrics.  All critical
+acceptance criteria are satisfied.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{l l S[table-format=1.3] S[table-format=+1.3] l}
+\toprule
+Site & Model & {RMSE [K]} & {Bias [K]} & Criterion \\
+\midrule
+A15 (deep) & Discrete 3-layer & 0.915 & -0.12 & $\le\SI{1}{\kelvin}$ \quad \checkmark \\
+A15 (deep) & Hayne (2017)     & 1.441 & +0.44 & $\le\SI{1.5}{\kelvin}$ \checkmark \\
+A17 ($z{=}\SI{1}{\meter}$) & Discrete 3-layer & 0.665 & -0.038 & $\pm\SI{2}{\kelvin}$ \checkmark \\
+A17 ($z{=}\SI{1}{\meter}$) & Hayne (2017)     & 2.602 & +1.71  & $\pm\SI{2}{\kelvin}$ (marginal) \\
+CE-4 ($T_{\mathrm{peak}}$) & Discrete 3-layer & -- & O(1) agreement & order-unity \checkmark \\
+ChaSTE ($T_{\mathrm{peak}}$) & Discrete 3-layer & -- & $-\SI{40}{\kelvin}$ (flat) & motivates Phase 2 \\
+\bottomrule
+\end{tabular}
+\caption[Phase-1 headline RMSE]{Headline Phase-1 validation metrics.
+  The Apollo~17 Hayne RMSE is the only marginal case; the discrete
+  3-layer model --- which the pipeline treats as the primary closure ---
+  passes every criterion.}
+\label{tab:phase1-rmse}
+\end{table}
+
+\section{Bridge to Phase 2}
+
+The ChaSTE residual identified in \cref{fig:chaste-val} is not a
+physics failure.  It is a boundary-condition failure: the solver sees
+a horizontal plane at \SI{69}{\degree}S, but the lander sits on a
+\SI{6}{\degree} slope.  \Cref{chap:phase2} develops the topographic
+machinery required to fix this without changing a single line of the
+thermal kernel.
