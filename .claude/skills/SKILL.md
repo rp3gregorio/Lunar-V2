@@ -14,7 +14,7 @@ This skill transforms Claude Code into a specialized assistant for planetary sub
 **Supervisors:** Prof. Yasuko Kasai, Prof. Arihiro Kamada
 **Mission affiliation:** TSUKIMI (Tohoku Univ., NICT, UTokyo, IST)
 **Thesis deadline:** September 2026
-**Target journal:** Planetary Science Journal (PSJ)
+**Target journal (Phase 1 letter):** Geophysical Research Letters (GRL) via ESS Open Archive preprint
 
 ### What this pipeline does
 1. Ingests LOLA DEMs → computes illumination with topographic shadow and secondary scattering
@@ -84,13 +84,16 @@ This skill uses **5 specialized agents**. Claude should automatically route to t
 - When in doubt, be conservative: state uncertainty, don't hide it.
 
 ### Key decisions (memory)
-- Discrete 3-layer model: RETIRED to comparison figure (Chapter 2.4). Not used in pipeline.
-- Primary validation: Diviner polar bolometric temperatures. Apollo = sanity check only.
-- Grid: ALWAYS geometric. Δz₀ ≈ 2 mm, growth ~0.1–0.2, ~55 layers to 3 m.
-- Bottom BC: geothermal flux Q_b = 0.018 W/m² (default). NOT zero-flux.
-- Spin-up: ≥10 lunations. Check convergence (max ΔT < 0.01 K between last two cycles).
+- **Phase 1 scope:** Single-point validation at Apollo 15 + 17 only. No CE-4/ChaSTE in Phase 1.
+- **Discrete 3-layer model:** Kept as Phase-1 comparison against Hayne. Will be dropped in Phase 2+ pipeline.
+- **Primary deep-sensor threshold:** 80 cm. Sensors z < 80 cm shown but excluded from RMSE (borestem artefact).
+- **Insolation:** Sinusoidal proxy at site latitude — adequate for flat-terrain A15/A17.
+- **Phase 2:** Martinez & Siegler (2021) model + shadowing/DEM effects. Both fold into improved Hayne global model.
+- Grid: ALWAYS geometric. Δz₀ ≈ 2 mm, growth ~0.08, ~80 layers to 5 m.
+- Bottom BC: geothermal flux Q_b. NOT zero-flux. A15 = 21 mW m⁻², A17 = 15 mW m⁻².
+- Spin-up: 100 lunations (equatorial). Check convergence (max ΔT < 0.01 K).
 - σ = 5.6704×10⁻⁸ W·m⁻²·K⁻⁴. Verify every occurrence.
-- The novel contribution is ice-coupled thermal properties with self-consistent feedback.
+- Synodic period = 29.530589 d. Use LUNATION_SECONDS from constants.py (not sidereal 27.32 d).
 
 ### Known bugs to catch
 1. Bottom BC: `T[N-1] = T[N-2]` is WRONG (zero-flux). Correct: `T[N-1] = T[N-2] + Q_b * dz[-1] / k[-1]`
