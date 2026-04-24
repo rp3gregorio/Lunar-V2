@@ -1,0 +1,243 @@
+\documentclass[11pt,a4paper]{book}
+\usepackage[a4paper,margin=2.6cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+\titleformat{\chapter}[display]{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\title{\textbf{Lunar-V2 Thermal Pipeline}\\[0.4em]\Large A Four-Phase Roadmap from Point Validation to TSUKIMI Retrieval}
+\author{R.\,P.\,Gregorio\\[0.3em]\small TSUKIMI Mission Thermal-Model Support}
+\date{\today}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\chapter*{Scope}
+\addcontentsline{toc}{chapter}{Scope}
+This document is the living design pipeline for the Lunar-V2 thermal
+modelling codebase. It describes, phase by phase, how the repository
+evolves from a single-point Apollo HFE validation into a retrieval-ready
+forward operator suitable for TSUKIMI mission science. Each chapter
+specifies the scope, the papers it rests on, the data sources, the
+numerics it adds or replaces, and the quantitative success criterion by
+which progress is measured. The pipeline is \emph{cumulative}: every
+later phase uses the solver and infrastructure locked in earlier
+phases.
+
+\tableofcontents
+
+\mainmatter
+
+\chapter{Pipeline Overview}
+\section{Motivation}
+The TSUKIMI mission requires a forward model mapping regolith
+physical state $(H,\rho,\text{rock fraction},\phi_\text{ice})$ to
+emerging thermal-infrared brightness temperatures at the instrument's
+observation geometry. The retrieval chain is only as accurate as the
+weakest link in that forward operator. Lunar-V2 therefore starts by
+benchmarking the unmodified Hayne et al.\ (2017) thermal model at the
+only in-situ lunar subsurface truth available --- the Apollo 15 and 17
+Heat Flow Experiments --- and then augments that model in three
+successive phases until it reaches the fidelity the mission needs.
+
+\section{Phases at a glance}
+\begin{longtable}{p{0.16\textwidth} p{0.32\textwidth} p{0.48\textwidth}}
+\toprule
+\textbf{Phase} & \textbf{Headline deliverable} & \textbf{Why it matters} \\
+\midrule
+\textbf{1} --- Point validation & Hayne 2017 vs Discrete Layer vs Apollo 15/17 HFE stabilised-window deep sensors ($z\!\ge\!80$~cm). Reproduction of Hayne 2017 Figure~4. & Establishes the absolute accuracy envelope of the forward operator at one point where ground truth exists. \\
+\textbf{2} --- Improved global Hayne & One merged global model combining (i) latitude-dependent H-parameter map, (ii) Bandfield 2011 rock-abundance mixing, (iii) Martinez \& Siegler 2021 cold-region conductivity, (iv) B\"urger 2024 microphysical scaling, (v) LOLA-DEM horizon + shadow mask. Validated against Diviner PCP global maps. & Extends the one-point model to the full Moon, in particular to PSRs where the Hayne $K(T,z)$ form breaks down and shadowing dominates. \\
+\textbf{3} --- RTM coupling, Jacobian, ice-stability & Two-stream regolith radiative-transfer coupling; finite-difference Jacobian of brightness-$T$ w.r.t.~retrieval state; ice-stability index map (Schorghofer 2008). & Turns the forward model into a TSUKIMI-ready retrieval operator. \\
+\textbf{4} --- Thesis integration + future work & LaTeX thesis chapters, published figure bundle, scoping of post-thesis extensions (small-scale roughness, time-dependent ice retreat, Mars adaptation, in-flight retrieval harness). & Completes the dissertation and delimits what is in vs.\ out of scope. \\
+\bottomrule
+\end{longtable}
+
+\section{Success definition}
+Lunar-V2 is considered \emph{pipeline complete} when, at the end of
+Phase 3, the Jacobian of the forward model has condition number
+$\le 10^{4}$ on the TSUKIMI retrieval state vector over a
+polar-stereographic grid, and the forward model's bolometric residual
+against Diviner PCP has RMS $\le 6$~K at one pole (beating the
+published Hayne 2017 $\sim 8$~K envelope).
+
+%----------------------------------------------------------------------
+\chapter{Phase 1 --- Point-Source Apollo Validation}
+\section{Scope}
+Phase 1 is \emph{strictly} one-point-at-a-time. It uses the Hayne 2017
+forward solver as shipped in \texttt{phayne/heat1d} (vendored under
+\texttt{third\_party/heat1d/}) and compares it, and the Apollo-
+calibrated Discrete Layer alternative, to the Apollo 15 and 17 HFE
+stabilised-window deep sensors.
+
+\section{Model}
+The solver is the 1-D Crank-Nicolson finite-volume integrator with
+geometric depth grid. Properties exactly match Hayne's GitHub:
+\begin{align}
+K(T,z) &= K_c(z)\bigl[1 + \chi(T/350)^3\bigr],
+&& K_c(z) = K_d - (K_d-K_s)\,e^{-z/H}, \\
+\rho(z) &= \rho_d - (\rho_d-\rho_s)\,e^{-z/H}, \\
+A(i) &= A_0 + a\left(i/45^\circ\right)^3 + b\left(i/90^\circ\right)^8,
+&& (A_0,a,b) = (0.12,0.06,0.25),
+\end{align}
+with $c_p(T)$ the Hayne 2017 Appendix~A fourth-order polynomial.
+Boundary conditions are radiative at the surface and geothermal flux
+($Q_b = 21$~mW\,m$^{-2}$ for Apollo 15, Langseth 1976) at the base.
+
+\section{Validation targets}
+\begin{itemize}
+\item Apollo 15 deep-sensor RMSE $\le 1$~K (Discrete Layer) and $\le 1.5$~K (Hayne 2017).
+\item Apollo 17 mean-$T$ at $z = 1$~m within $\pm 2$~K of observed.
+\item Hayne 2017 Figure~4 reproduced at the Apollo 15 site: $T(z)$ at
+      four local times, overlaid with HFE stabilised-window deep sensors.
+\item Summary statistics written to \texttt{output/tables/apollo\_stats.csv}.
+\end{itemize}
+
+\section{What is NOT in Phase 1}
+\begin{itemize}
+\item No Chang'E-4 or ChaSTE probe comparisons (raw time-series are login-gated and add no information beyond Apollo for a one-point benchmark).
+\item No global maps, no latitude-dependent H-parameter, no rock abundance, no cold-region conductivity correction.
+\item The DEM/horizon/shadowing infrastructure exists in the code base but is not active for the Apollo flat-site runs.
+\end{itemize}
+
+%----------------------------------------------------------------------
+\chapter{Phase 2 --- Improved Hayne 2017 Global Model}
+\section{Motivation}
+The Hayne 2017 GitHub code implements only the per-point solver. Its
+global maps (Figure~7, H-parameter latitude fit, rock-abundance
+mixing, bolometric emissivity) were analysis products that never made
+it into the committed codebase. Phase 2 re-builds those pieces and,
+additionally, incorporates improvements published after the 2017 paper.
+
+\section{Scope}
+Phase 2 produces \emph{one} merged forward model with five
+enhancements:
+\begin{enumerate}[label=(\roman*)]
+\item H-parameter latitude map (Hayne 2017 \S 5.2, Eq.~A.9) fitted via \texttt{pyshtools}.
+\item Rock-abundance anisothermal two-component temperature field (Bandfield et al.\ 2011).
+\item Martinez \& Siegler (2021) density-dependent conductivity in the cold regime where the Hayne $K(T,z)$ form breaks down below $\sim 80$~K.
+\item B\"urger et al.\ (2024, \emph{JGR Planets}) microphysical thermal model --- adds the latitudinal dependence of radiative contact-conductivity coupling.
+\item DEM + horizon + shadow-mask + sky-view-factor pipeline from LOLA 80~m/pixel polar DEM.
+\end{enumerate}
+
+\section{Validation}
+Compared against Diviner Polar Cumulative Products (Williams
+et al.\ 2019, 2020), which are auto-fetched from the NASA PDS Geosciences
+Node via \texttt{boot.ensure\_diviner\_pcp()}. The target is
+\textbf{bolometric-$T$ residual RMS $\le 6$~K at one pole} --- i.e.
+beating the published Hayne 2017 $\sim 8$~K envelope.
+
+\section{Success criterion}
+A side-by-side figure where, at every polar-stereographic pixel, the
+Phase-2 model's bolometric temperature matches Diviner to within the
+$\sim 6$~K envelope, and a table quantifying where each of the five
+enhancements contributes residual reduction.
+
+%----------------------------------------------------------------------
+\chapter{Phase 3 --- RTM Coupling, Jacobian, Ice-Stability}
+\section{Scope}
+With the improved global forward model locked, Phase 3 turns it into a
+retrieval operator.
+
+\paragraph{Radiative transfer.} Couple the Phase-2 surface-$T$ and
+$T(z)$ fields to a two-stream regolith RT model to produce emerging
+brightness-$T$ spectra in the Diviner channels and at the TSUKIMI
+thermal band.
+
+\paragraph{Jacobian.} Compute the finite-difference Jacobian of the
+emerging brightness-$T$ with respect to the retrieval state vector
+$(H, \text{rock frac}, \rho_s, \phi_\text{ice})$. Cross-check against
+an adjoint-state estimate for numerical stability.
+
+\paragraph{Ice stability.} Derive an H$_2$O/CO$_2$ ice-stability depth
+map (Schorghofer 2008 criterion) with uncertainty bars propagated from
+Phase-2 forward-model residuals.
+
+\section{Success criterion}
+Jacobian condition number $\le 10^{4}$ on the TSUKIMI retrieval state
+vector across the polar-stereographic grid. Ice-stability map agrees
+with Schorghofer 2008's published extents at the 90\% level.
+
+%----------------------------------------------------------------------
+\chapter{Phase 4 --- Thesis Integration and Future Work}
+\section{Thesis integration}
+All figures and tables produced in Phases~1--3 are regenerated by a
+single pair of notebooks (\texttt{12\_thesis\_figure\_bundle.ipynb}
+and \texttt{13\_paper\_tables.ipynb}) that read cached solver outputs
+and emit 300~DPI PDFs + LaTeX tables directly into the thesis source
+tree. \texttt{make thesis} produces the manuscript PDF.
+
+\section{Candidate future work (non-thesis)}
+\begin{enumerate}
+\item \textbf{Small-scale surface roughness} as an additional forward-model layer (Bandfield 2015, Warren 2019) --- shrinks residual brightness-$T$ bias at high-phase-angle retrievals.
+\item \textbf{Time-dependent ice retreat.} Couple the Phase-3 ice-stability map to a Diviner-constrained surface-age model and forward-model ice-loss rates.
+\item \textbf{Mars adaptation.} Port the improved solver to MGS-MOLA + Mars-Climate-Database for a cross-target validation.
+\item \textbf{TSUKIMI in-flight retrieval harness.} Operational wrapper turning the Jacobian into a real Levenberg-Marquardt retrieval with the radiometric-calibration observation-error covariance.
+\end{enumerate}
+
+\section{Deliverables}
+\begin{itemize}
+\item Finalised thesis PDF.
+\item Companion manuscript submission (PSJ / JGR / Icarus).
+\item Mission-deliverable retrieval operator + Jacobian.
+\item This pipeline document, updated to reflect what was actually built.
+\end{itemize}
+
+%----------------------------------------------------------------------
+\appendix
+\chapter{Repository layout}
+\begin{verbatim}
+Lunar-V2/
+├── lunar/                   Python package (solver, grid, properties, I/O)
+│   ├── _bootstrap.py        Auto-download and environment setup
+│   ├── constants.py         Every numerical constant, cited
+│   ├── solver.py            1-D Crank-Nicolson finite-volume integrator
+│   ├── properties.py        K(T,z), rho(z), c_p(T), albedo_angle(i)
+│   ├── validation.py        Apollo HFE + Diviner PCP loaders
+│   └── plotting/            Publication-quality style guide
+├── notebooks/
+│   ├── phase0_quickstart/   Library smoke test (00_quickstart)
+│   ├── phase1_validation/   Apollo 15/17 + Hayne Fig 4 reproduction
+│   ├── phase2_improved_hayne/  Global model upgrade (in progress)
+│   ├── phase3_rtm_ice/      RTM + Jacobian + ice stability (planned)
+│   └── phase4_thesis/       Thesis figure/table bundling (planned)
+├── third_party/
+│   └── heat1d/              Vendored Paul Hayne heat1d GitHub repo
+├── paper/
+│   ├── pipeline/            This document
+│   └── thesis/              Thesis source (Phase 4)
+├── archive/                 Retired scripts + legacy docs (committed)
+├── data/                    External datasets (git-ignored, auto-download)
+└── output/                  Figures, gifs, tables (git-ignored)
+\end{verbatim}
+
+\chapter{References of note}
+\begin{itemize}
+\item Hayne et al.\ (2017) Global Regolith Thermophysical Properties of the Moon from the Diviner Lunar Radiometer Experiment. \emph{JGR Planets}, 122, 2371--2400.
+\item Vasavada, Bandfield, Greenhagen et al.\ (2012) Lunar equatorial thermal environment from Diviner. \emph{JGR Planets}, 117, E00H18.
+\item Bandfield et al.\ (2011) Lunar surface rock abundance and regolith fines temperatures from Diviner. \emph{JGR Planets}, 116, E00H02.
+\item Martinez \& Siegler (2021) A global thermal conductivity model for lunar regolith at low temperatures. \emph{JGR Planets}, 126.
+\item B\"urger et al.\ (2024) A Microphysical Thermal Model for the Lunar Regolith. \emph{JGR Planets}.
+\item Schorghofer (2008) The lifetime of ice on main belt asteroids. \emph{Ap.\,J.}, 682, 697--705.
+\item Nagihara et al.\ (2018) Examination of the long-term subsurface warming observed at the Apollo 15 and 17 sites. \emph{JGR Planets}, 123.
+\item Williams et al.\ (2019, 2020) The global surface temperatures of the Moon as measured by the Diviner Lunar Radiometer Experiment. \emph{Icarus} (2019), \emph{JGR Planets} (2020).
+\end{itemize}
+
+\end{document}

@@ -17,41 +17,52 @@ This skill transforms Claude Code into a specialized assistant for planetary sub
 **Target journal:** Planetary Science Journal (PSJ)
 
 ### What this pipeline does
-1. Ingests LOLA DEMs → computes illumination with topographic shadow and secondary scattering
-2. Runs a 1D finite-difference thermal solver (Crank-Nicolson, Numba JIT) per pixel at 20 m resolution
-3. Outputs T(z, t) at ~55 geometric depth nodes (0–3 m) per pixel
-4. Feeds thermal profiles into TSUKIMI's terahertz RTM via Jacobian coupling
-5. Produces ice survivability maps as integrated downstream products
-6. Novel contribution: self-consistent ice-coupled thermal properties (feedback loop)
+
+**Four-phase build.** See `paper/pipeline/lunarv2_pipeline.tex` (the
+canonical roadmap PDF) for the full specification. In short:
+
+1. **Phase 1 — Point validation.** Benchmark the Hayne 2017 solver (as
+   shipped in `phayne/heat1d`, vendored under `third_party/heat1d/`)
+   plus the Discrete Layer alternative against Apollo 15/17 HFE
+   stabilised-window deep sensors. Reproduce Hayne 2017 Figure 4.
+2. **Phase 2 — Improved Hayne 2017 global model.** One merged model
+   adding the Hayne 2017 appendix-only products that never landed in
+   his GitHub (H-parameter latitude map, rock-abundance mixing,
+   bolometric emissivity) plus Martinez & Siegler (2021) cold-region
+   conductivity, Bürger (2024) microphysical scaling, and LOLA-DEM
+   horizon + shadow-mask + sky-view factor.
+3. **Phase 3 — RTM coupling, Jacobian, ice-stability.** Two-stream
+   regolith radiative transfer, finite-difference Jacobian of emerging
+   brightness-T w.r.t. retrieval state, and an ice-stability index map.
+4. **Phase 4 — Thesis integration.** Figure/table bundling + LaTeX
+   integration; scoping of post-thesis extensions (roughness,
+   time-dependent ice retreat, Mars port, in-flight retrieval harness).
+
+**Scope boundaries.** Chang'E-4 and ChaSTE in-situ probe validations are
+explicitly out of scope — removed from the codebase in Phase 1.
 
 ### Repository structure
 ```
-lunar-clean/
-├── .claude/
-│   └── skills/              # THIS SKILL LIVES HERE
-│       ├── SKILL.md          # This file (root orchestrator)
-│       ├── agents/
-│       │   ├── physics.md    # Thermal physics & solver agent
-│       │   ├── illumination.md  # Shadow & illumination agent
-│       │   ├── data.md       # Data processing & validation agent
-│       │   ├── plotting.md   # Publication figure agent
-│       │   └── writing.md    # Scientific writing agent
-│       ├── plotting/
-│       │   └── style_guide.md   # Figure style standards
-│       └── templates/
-│           └── figure_templates.py  # Reusable plotting code
-├── lunar/
-│   ├── __init__.py
-│   ├── solver.py
-│   ├── properties.py
-│   ├── illumination.py
-│   ├── pipeline.py
-│   ├── ice_stability.py
-│   ├── rtm_coupling.py
-│   └── constants.py
+Lunar-V2/
+├── .claude/skills/              # THIS SKILL LIVES HERE
+├── lunar/                       # Python package
+│   ├── _bootstrap.py            # Auto-install + auto-download
+│   ├── solver.py                # 1-D Crank-Nicolson integrator
+│   ├── properties.py            # K(T,z), ρ(z), c_p(T), albedo_angle(i)
+│   ├── illumination.py          # DEM + horizon + shadow (Phase 2)
+│   ├── constants.py             # Every number, cited
+│   └── validation.py            # Apollo HFE + Diviner PCP loaders
 ├── notebooks/
+│   ├── phase0_quickstart/       # Library smoke test
+│   ├── phase1_validation/       # Apollo + Hayne Fig 4 (THIS PHASE)
+│   ├── phase2_improved_hayne/   # Global model upgrade
+│   ├── phase3_rtm_ice/          # RTM + Jacobian + ice stability
+│   └── phase4_thesis/           # Thesis figure/table bundling
+├── third_party/heat1d/          # Vendored phayne/heat1d (Hayne 2017 reference)
+├── paper/pipeline/              # lunarv2_pipeline.tex — canonical roadmap
+├── archive/                     # Retired scripts + legacy docs (committed)
+├── data/                        # External datasets (gitignored, auto-download)
 ├── tests/
-├── paper/
 ├── pyproject.toml
 └── README.md
 ```
@@ -64,7 +75,7 @@ This skill uses **5 specialized agents**. Claude should automatically route to t
 |-------|------|-----------------|
 | **Physics** | `agents/physics.md` | solver, heat equation, conductivity, density, boundary condition, H-parameter, properties, temperature, thermal, regolith, ice coupling |
 | **Illumination** | `agents/illumination.md` | shadow, DEM, LOLA, horizon, ray-trace, view factor, illumination, PSR, scattered, albedo, solar, ephemeris |
-| **Data** | `agents/data.md` | Diviner, Apollo, validation, RMSE, download, PDS, PGDA, Chang'E, ChaSTE, LISTER, calibration, comparison |
+| **Data** | `agents/data.md` | Diviner, Apollo, validation, RMSE, download, PDS, PGDA, LISTER, calibration, comparison |
 | **Plotting** | `agents/plotting.md` | figure, plot, graph, map, colorbar, colormap, axis, label, publication, visualization |
 | **Writing** | `agents/writing.md` | paper, manuscript, LaTeX, abstract, section, draft, thesis, PSJ, Icarus, reference, citation |
 
@@ -84,13 +95,15 @@ This skill uses **5 specialized agents**. Claude should automatically route to t
 - When in doubt, be conservative: state uncertainty, don't hide it.
 
 ### Key decisions (memory)
-- Discrete 3-layer model: RETIRED to comparison figure (Chapter 2.4). Not used in pipeline.
-- Primary validation: Diviner polar bolometric temperatures. Apollo = sanity check only.
+- **Phase 1 reference solver = vendored `phayne/heat1d`** under `third_party/heat1d/`. The in-repo `lunar.*` model mirrors its formulas exactly (K(T,z) with χ(T/350)³, ρ(z) exponential, A(i) Eq A.1, Hayne cp polynomial).
+- **Phase 1 primary validation = Apollo 15/17 HFE deep sensors** (z ≥ 80 cm). Diviner becomes primary validation in Phase 2.
+- **Chang'E-4 and ChaSTE in-situ probe validations are out of scope.** Removed from the codebase.
+- Discrete 3-layer model: kept as an Apollo-calibrated alternative for comparison in Phase 1. Not used in Phase 2+ pipeline.
 - Grid: ALWAYS geometric. Δz₀ ≈ 2 mm, growth ~0.1–0.2, ~55 layers to 3 m.
-- Bottom BC: geothermal flux Q_b = 0.018 W/m² (default). NOT zero-flux.
+- Bottom BC: geothermal flux Q_b. Default 0.018 W/m² (equatorial). NOT zero-flux. Use Q_b = 0.021 W/m² for Apollo 15 (Langseth 1976), Q_b = 0.015 W/m² for Apollo 17 (Nagihara 2018 reprocessed).
 - Spin-up: ≥10 lunations. Check convergence (max ΔT < 0.01 K between last two cycles).
 - σ = 5.6704×10⁻⁸ W·m⁻²·K⁻⁴. Verify every occurrence.
-- The novel contribution is ice-coupled thermal properties with self-consistent feedback.
+- The novel contribution is (a) ice-coupled thermal properties with self-consistent feedback AND (b) the improved-Hayne global model (Phase 2).
 
 ### Known bugs to catch
 1. Bottom BC: `T[N-1] = T[N-2]` is WRONG (zero-flux). Correct: `T[N-1] = T[N-2] + Q_b * dz[-1] / k[-1]`

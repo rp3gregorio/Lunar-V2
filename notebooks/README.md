@@ -14,16 +14,17 @@ slice of the TSUKIMI pipeline, with its own README.
 | Folder | Status | Purpose |
 |---|---|---|
 | `phase0_quickstart/` | ✅ shipped | Library tour. Grid, properties, analytical wave — confirms `lunar` imports cleanly on a fresh clone. |
-| `phase1_validation/` | ✅ shipped | **Point-source validation.** Apollo 15/17 HFE, Chang'E-4, ChaSTE, equatorial Hayne reference, SPICE vs sinusoidal proxy. |
-| `phase2_illumination/` | 🚧 in progress | Topographic coupling. DEM + horizon tracing + shadow-corrected insolation, then slope-corrected re-runs of ChaSTE (69°S). |
-| `phase3_polar_maps/` | ⏳ planned | Diviner bolometric map validation over one pole + ice-stability depths. |
-| `phase4_manuscript/` | ⏳ planned | Thesis / paper figure bundles, LaTeX integration. |
+| `phase1_validation/` | ✅ shipped | **Point-source Apollo validation.** Apollo 15/17 HFE only. Hayne 2017 (as in `third_party/heat1d/`) vs Discrete Layer vs observation. |
+| `phase2_improved_hayne/` | 🚧 in progress | **Improved Hayne 2017 global model.** H-lat map + rock-abundance mix + Martinez-Siegler cold-region correction + Burger microphysics + DEM/horizon shadowing + Diviner PDS validation. |
+| `phase3_rtm_ice/` | ⏳ planned | RTM coupling, Jacobian, ice-stability index (supports TSUKIMI retrieval). |
+| `phase4_thesis/` | ⏳ planned | Thesis figure bundles + paper LaTeX integration. |
 
 ## Dependencies
 
 * **Core** (every notebook): `numpy`, `scipy`, `numba`, `matplotlib`.
 * **Phase 1**: `spiceypy` (notebooks 01 and 03).
-* **Phase 2**: `rasterio`, `spiceypy`, `Pillow` (GIFs).
+* **Phase 2**: `rasterio`, `spiceypy`, `Pillow`, `pyshtools` (for
+  H-parameter latitude fit).
 
 Everything is pip-installed by the bootstrap cell on first run.
 

@@ -42,8 +42,6 @@ COLORS = {
     # Observations
     'diviner':      '#1b7837',  # Dark green
     'apollo':       '#e7298a',  # Pink
-    'change4':      '#e6ab02',  # Gold
-    'chaste':       '#66a61e',  # Lime
     'lister':       '#e78ac3',  # Light pink
 
     # General

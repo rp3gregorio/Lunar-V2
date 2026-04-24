@@ -325,98 +325,6 @@ def ensure_apollo_hfe(
     return ok
 
 
-def ensure_change4(repo_root: pathlib.Path | None = None) -> bool:
-    """Ensure Chang'E-4 in-situ thermal reference values are available.
-
-    Chang'E-4 temperature-probe time-series lives on China's Lunar and
-    Planetary Data Release System (http://moon.bao.ac.cn) which requires
-    free user registration. There is no unauthenticated direct-download
-    URL, so this function does three things in order:
-
-    1. Verify the bundled reference table ``data/reference/change4_huang2022.csv``
-       exists (ships with the repo). This holds the derived scalar
-       quantities reported in Huang et al. 2022 (NSR 9, nwac175): probe
-       peak temperatures, inferred K_c(z), bulk density, landing
-       coordinates.
-    2. Try a small set of optional public mirrors that may host the
-       supplementary data. Currently empty — update with any Zenodo/
-       figshare DOI if Huang et al. deposit a public mirror.
-    3. If the reference table is present, return True and print a one-
-       line note telling the user where to obtain the full time-series.
-
-    Returns True iff the reference table is usable.
-    """
-    repo = repo_root or find_repo_root()
-    ref_dir = repo / "data" / "reference"
-    ref_file = ref_dir / "change4_huang2022.csv"
-    ts_dir = repo / "data" / "change4"
-    ts_dir.mkdir(parents=True, exist_ok=True)
-
-    print("Ensuring Chang'E-4 reference table ...")
-
-    # Any public mirror URLs go here. None known at time of writing — the
-    # authoritative archive is login-gated. Entries should point to
-    # unauthenticated direct-download .csv / .tab files only.
-    mirror_urls: list[tuple[str, str]] = []
-    for url, fname in mirror_urls:
-        _download(url, ts_dir / fname)
-
-    if not ref_file.is_file():
-        print(f"  ERROR: bundled reference table missing: {ref_file}")
-        print("  This file ships with the Lunar-V2 repo — re-clone or")
-        print("  restore data/reference/change4_huang2022.csv from git.")
-        return False
-
-    print(f"  ok     : {ref_file.name}")
-    print("  NOTE   : Full Chang'E-4 T(t) time-series lives on CLPDS")
-    print("           (http://moon.bao.ac.cn) — free registration required.")
-    print("           The bundled CSV has all scalar quantities needed")
-    print("           for Lunar-V2 model cross-checks (Huang et al. 2022).")
-    return True
-
-
-def ensure_chaste(repo_root: pathlib.Path | None = None) -> bool:
-    """Ensure Chandrayaan-3 ChaSTE in-situ thermal reference values are available.
-
-    The ChaSTE time-series lives on ISRO PRADAN
-    (https://pradan.issdc.gov.in/ch3/) which is login-gated. There is no
-    unauthenticated direct-download URL, so this function:
-
-    1. Verifies the bundled reference table
-       ``data/reference/chaste_murty2025.csv`` (Murty et al. 2025,
-       Sci Rep 15 91866-4; Seth et al. 2025, MNRAS 538 2330; Das et al.
-       2025, Commun Earth Environ 6 02114-6).
-    2. Attempts an optional public mirror list (currently empty).
-    3. Prints manual-download instructions for the full time-series.
-
-    Returns True iff the reference table is usable.
-    """
-    repo = repo_root or find_repo_root()
-    ref_dir = repo / "data" / "reference"
-    ref_file = ref_dir / "chaste_murty2025.csv"
-    ts_dir = repo / "data" / "chaste"
-    ts_dir.mkdir(parents=True, exist_ok=True)
-
-    print("Ensuring ChaSTE reference table ...")
-
-    mirror_urls: list[tuple[str, str]] = []
-    for url, fname in mirror_urls:
-        _download(url, ts_dir / fname)
-
-    if not ref_file.is_file():
-        print(f"  ERROR: bundled reference table missing: {ref_file}")
-        print("  This file ships with the Lunar-V2 repo — re-clone or")
-        print("  restore data/reference/chaste_murty2025.csv from git.")
-        return False
-
-    print(f"  ok     : {ref_file.name}")
-    print("  NOTE   : Full ChaSTE T(t,z) time-series lives on ISRO PRADAN")
-    print("           (https://pradan.issdc.gov.in/ch3/) — login required.")
-    print("           Place downloaded file at data/chaste/chaste_profile.csv")
-    print("           for automatic use once available.")
-    return True
-
-
 def ensure_lola_dem_80mpp(repo_root: pathlib.Path | None = None) -> bool:
     """Download the 80 m/pixel south polar LOLA DEM (~180 MB).
 
@@ -431,3 +339,59 @@ def ensure_lola_dem_80mpp(repo_root: pathlib.Path | None = None) -> bool:
     dest = repo / "data" / "dem" / "LDEM_80S_80MPP_ADJ.TIF"
     print("Ensuring LOLA 80 MPP DEM ...")
     return _download(url, dest, min_bytes=10_000_000)
+
+
+# Phase-2 Diviner Polar Cumulative Products fetch list.
+# Each entry is (local_time_bin, season_bin, resolution_ppd) → filename.
+# The full PCP bundle (~30 GB) covers 24 LT × 4 seasons × both poles × 2
+# resolutions. The default list below is a compact ~2 GB slice used for
+# Phase-2 polar-stereographic global maps at one pole.
+_DIVINER_PCP_BASE = (
+    "https://pds-geosciences.wustl.edu/lro/"
+    "urn-nasa-pds-lro_diviner_derived1/data_derived_pcp/diurnal/ltim/pols"
+)
+_DIVINER_PCP_DEFAULT: tuple[str, ...] = (
+    # Noon + midnight × all four seasons, south pole, 240 PPD.
+    "pcp_avg_tbol_pols_sum_ltim13_240.tab",
+    "pcp_avg_tbol_pols_sum_ltim01_240.tab",
+    "pcp_avg_tbol_pols_win_ltim13_240.tab",
+    "pcp_avg_tbol_pols_win_ltim01_240.tab",
+    "pcp_avg_tbol_pols_spr_ltim13_240.tab",
+    "pcp_avg_tbol_pols_spr_ltim01_240.tab",
+    "pcp_avg_tbol_pols_fal_ltim13_240.tab",
+    "pcp_avg_tbol_pols_fal_ltim01_240.tab",
+)
+
+
+def ensure_diviner_pcp(
+    repo_root: pathlib.Path | None = None,
+    files: Iterable[str] = _DIVINER_PCP_DEFAULT,
+    pole: str = "s",
+) -> bool:
+    """Download Diviner Polar Cumulative Product .tab files.
+
+    STAGED FOR PHASE 2 — not called by any Phase-1 notebook. The default
+    slice is ~2 GB (8 files × ~200 MB each), which is enough to validate
+    the global thermal-map pipeline at the south pole against Williams
+    et al. (2019, 2020) published bolometric brightness temperatures.
+
+    Pulls directly from NASA PDS (unauthenticated, public archive):
+    ``https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/``.
+
+    Parameters
+    ----------
+    files : Iterable[str]
+        Exact filenames from the PDS ``data_derived_pcp/diurnal/ltim/pols``
+        directory. Use :data:`_DIVINER_PCP_DEFAULT` for the standard slice.
+    pole : {'s', 'n'}
+        Kept as a knob; the default file list targets the south pole.
+    """
+    repo = repo_root or find_repo_root()
+    out_dir = repo / "data" / "diviner"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Ensuring Diviner PCP (n={len(tuple(files))} files) ...")
+    ok = True
+    for fname in files:
+        url = f"{_DIVINER_PCP_BASE}/{fname}"
+        ok &= _download(url, out_dir / fname, min_bytes=10_000_000)
+    return ok

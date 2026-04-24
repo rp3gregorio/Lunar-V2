@@ -13,7 +13,6 @@ data/
 ├── spice/     NAIF SPICE kernels for solar ephemeris
 ├── apollo/    Apollo 15/17 Heat Flow Experiment archives (PDS)
 ├── diviner/   Diviner Polar Cumulative Products (PDS)
-├── chaste/    Chandrayaan-3 ChaSTE (not yet downloaded — see below)
 └── lcross/    LCROSS ice plume data (not yet downloaded — see below)
 ```
 
@@ -146,15 +145,7 @@ curl -LO "$BASE/pcp_avg_tbol_pols_sum_ltim13_240.tab"
 curl -LO "$BASE/pcp_avg_tbol_pols_sum_ltim01_240.tab"
 ```
 
-## 5. ChaSTE (Chandrayaan-3) — `data/chaste/` (not yet downloaded)
-
-Vadawale et al. (2024, *Nature Communications Earth & Environment*)
-reported the first in-situ lunar subsurface thermophysical profile
-(~70 S). ISRO has not yet mirrored the raw data on a public archive
-equivalent to PDS. When the public release becomes available, place it
-here as `chaste/chaste_profile.csv`.
-
-## 6. LCROSS — `data/lcross/` (not yet downloaded)
+## 5. LCROSS — `data/lcross/` (not yet downloaded)
 
 LCROSS Cabeus impact volatile abundances (Colaprete et al. 2010) are
 available as PDS datasets and supplementary tables on the paper; we

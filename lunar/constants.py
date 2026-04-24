@@ -62,10 +62,21 @@ T_REFERENCE: float = 350.0
 # Boundary conditions
 # ---------------------------------------------------------------------------
 
-#: Default Bond albedo (may be tuned per pixel from Diviner).
+#: Default Bond albedo (may be tuned per pixel from Diviner). Matches
+#: ``Moon.albedo`` in Hayne's ``phayne/heat1d/python/heat1d/planets.py``.
 ALBEDO_DEFAULT: float = 0.12
 
-#: Default thermal emissivity.
+#: Angle-dependent albedo coefficients for the Moon — Hayne 2017 Eq. A.1
+#: (Keihm 1984, Vasavada et al. 2012). Matches ``Moon.albedoCoef = [0.06,
+#: 0.25]`` in ``phayne/heat1d/python/heat1d/planets.py``. The functional
+#: form is ``A(i) = A0 + a*(i / 45 deg)^3 + b*(i / 90 deg)^8`` where i is
+#: the solar zenith angle.
+MOON_ALBEDO_A0: float = 0.12
+MOON_ALBEDO_A_COEF: float = 0.06
+MOON_ALBEDO_B_COEF: float = 0.25
+
+#: Default thermal emissivity. Scalar bolometric emissivity is used in
+#: Phase 1; spectral ε(λ) is a Phase-2 upgrade (Hayne 2017 §4.4).
 EMISSIVITY_DEFAULT: float = 0.95
 
 #: Equatorial geothermal heat flux [W m^-2] — Apollo 15/17 HFE average,

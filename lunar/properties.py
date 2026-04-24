@@ -44,6 +44,9 @@ from .constants import (
     H_PARAMETER,
     K_DEEP,
     K_SURFACE,
+    MOON_ALBEDO_A0,
+    MOON_ALBEDO_A_COEF,
+    MOON_ALBEDO_B_COEF,
     MS_A1,
     MS_A2,
     MS_B1,
@@ -62,6 +65,49 @@ from .constants import (
     RHO_SURFACE,
     T_REFERENCE,
 )
+
+# ---------------------------------------------------------------------------
+# Surface optical properties
+# ---------------------------------------------------------------------------
+
+
+def albedo_angle(
+    zenith_rad: np.ndarray,
+    A0: float = MOON_ALBEDO_A0,
+    a: float = MOON_ALBEDO_A_COEF,
+    b: float = MOON_ALBEDO_B_COEF,
+) -> np.ndarray:
+    """Solar-zenith-angle dependent Bond albedo, Hayne et al. (2017) Eq. A.1.
+
+    ``A(i) = A0 + a * (i / 45 deg)^3 + b * (i / 90 deg)^8``
+
+    This is the Keihm (1984) / Vasavada et al. (2012) empirical form that
+    ships as ``albedoVar`` in ``phayne/heat1d/python/heat1d/properties.py``.
+    The defaults match ``Moon.albedo`` and ``Moon.albedoCoef = [0.06, 0.25]``
+    in the same reference code.
+
+    Parameters
+    ----------
+    zenith_rad : np.ndarray
+        Solar zenith angle i [rad]. Night-side (i >= 90 deg) is clamped
+        because the formula diverges outside its calibrated regime; the
+        returned value is clipped to ``[0, 1]`` so downstream flux
+        calculations stay physical when shadowing/night is handled by a
+        separate ``insolation == 0`` flag.
+    A0 : float
+        Normal-incidence Bond albedo.
+    a, b : float
+        Angle-dependent coefficients.
+
+    Returns
+    -------
+    np.ndarray
+        A(i), clipped to [0, 1].
+    """
+    i = np.asarray(zenith_rad, dtype=np.float64)
+    A = A0 + a * (i / (np.pi / 4.0)) ** 3 + b * (i / (np.pi / 2.0)) ** 8
+    return np.clip(A, 0.0, 1.0)
+
 
 # ---------------------------------------------------------------------------
 # Density

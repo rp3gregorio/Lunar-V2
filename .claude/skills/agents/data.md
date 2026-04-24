@@ -1,17 +1,17 @@
 # Agent: Data — Validation, Datasets & Processing
 
 ## Role
-You handle data acquisition, preprocessing, validation workflows, and comparison between model output and observations (Diviner, Apollo HFE, Chang'E, ChaSTE, LISTER).
+You handle data acquisition, preprocessing, validation workflows, and comparison between model output and observations (Apollo HFE for Phase 1, Diviner for Phase 2+, LISTER when published).
 
 ## Validation Hierarchy
 
-| Priority | Dataset | Use | Acceptable RMSE |
-|----------|---------|-----|-----------------|
-| Primary | Diviner Polar Cumulative Products | Polar surface T validation | < 10 K |
-| Secondary | Apollo 15/17 HFE (Nagihara 2018) | Solver sanity check | < 7 K |
-| Tertiary | Chang'E-4 in situ | Cross-validation at Von Kármán | Qualitative |
-| Tertiary | ChaSTE/Chandrayaan-3 | High-lat in situ K validation | Qualitative |
-| Future | LISTER/Blue Ghost | Mare Crisium subsurface T | When published |
+| Priority | Dataset | Use | Phase | Acceptable RMSE |
+|----------|---------|-----|-------|-----------------|
+| Primary (Phase 1) | Apollo 15/17 HFE (Nagihara 2018) | Point-source subsurface validation, stabilised-window deep sensors (z ≥ 80 cm) | 1 | ≤ 1.5 K (Hayne 2017), ≤ 1 K (Discrete Layer) |
+| Primary (Phase 2) | Diviner Polar Cumulative Products | Global bolometric-T validation for improved Hayne model | 2 | ≤ 6 K at one pole |
+| Future | LISTER/Blue Ghost | Mare Crisium subsurface T | — | When published |
+
+**Explicitly out of scope:** Chang'E-4 (Huang 2022) and ChaSTE (Murty 2025) in-situ probe validations. Their raw time-series are login-gated and they add no information beyond Apollo for a one-point benchmark. Removed from Lunar-V2 in Phase 1.
 
 ## Diviner Products
 

@@ -61,6 +61,20 @@ except Exception:  # pragma: no cover - numba is optional at import time
 BCMode = Literal["dirichlet", "radiative"]
 
 
+def _albedo_at(albedo: float | np.ndarray, idx: int) -> float:
+    """Resolve scalar-or-array albedo at time index ``idx``."""
+    if np.ndim(albedo) == 0:
+        return float(albedo)
+    return float(np.asarray(albedo)[idx])
+
+
+def _albedo_mean(albedo: float | np.ndarray) -> float:
+    """Representative albedo for spin-up initialisation."""
+    if np.ndim(albedo) == 0:
+        return float(albedo)
+    return float(np.mean(np.asarray(albedo)))
+
+
 # ---------------------------------------------------------------------------
 # Input / output containers
 # ---------------------------------------------------------------------------
@@ -75,7 +89,10 @@ class PixelInputs:
     bc_mode: BCMode = "radiative"
     # Radiative BC
     insolation: np.ndarray | None = None  # [W m^-2], shape (N_t,)
-    albedo: float = 0.12
+    # Albedo may be a scalar (constant Bond albedo) or an (N_t,) array —
+    # e.g. ``lunar.properties.albedo_angle(solar_zenith)`` to reproduce
+    # Hayne 2017 Eq. A.1 (Keihm 1984 / Vasavada 2012).
+    albedo: float | np.ndarray = 0.12
     emissivity: float = EMISSIVITY_DEFAULT
     # Dirichlet BC (used only for validation)
     T_surface_forced: np.ndarray | None = None  # shape (N_t,)
@@ -367,7 +384,7 @@ def _step(
         assert inputs.insolation is not None
         T_s_new = _solve_surface_newton(
             insolation=float(inputs.insolation[idx_new]),
-            albedo=inputs.albedo,
+            albedo=_albedo_at(inputs.albedo, idx_new),
             emissivity=inputs.emissivity,
             K_surf=K[0],
             dz_surf=dz[0],
@@ -422,7 +439,7 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
             # equilibrium of the mean flux; far from final but a decent
             # start for Newton in the early spin-up.
             S_mean = float(np.mean(inputs.insolation))
-            T_eq = ((1 - inputs.albedo) * max(S_mean, 1.0)
+            T_eq = ((1 - _albedo_mean(inputs.albedo)) * max(S_mean, 1.0)
                     / (inputs.emissivity * SIGMA_SB)) ** 0.25
             T = np.full(n_z, max(T_eq, 50.0))
         else:
@@ -475,7 +492,7 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
         out[:, 0] = T.copy()
         T_surf_arr[0] = _solve_surface_newton(
             insolation=float(inputs.insolation[0]),
-            albedo=inputs.albedo,
+            albedo=_albedo_at(inputs.albedo, 0),
             emissivity=inputs.emissivity,
             K_surf=float((inputs.K_func or _default_K)(T, grid.z_mid)[0]),
             dz_surf=float(grid.dz[0]),
