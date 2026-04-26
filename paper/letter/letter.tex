@@ -1,0 +1,508 @@
+% =====================================================================
+%  GRL/JGR-Planets DRAFT --- Phase-1 Apollo HFE validation of the
+%  Hayne (2017) global regolith thermophysical model.
+%
+%  Style: generic article class with GRL-like typography. The text
+%  length and SI depth are better suited to JGR: Planets than to a GRL
+%  Letter; see "Limitations and journal fit" at the end of the paper.
+%  Either submission is supported: swap the first line for the AGU
+%  class:
+%      \documentclass[draft,grl]{agutex}        % GRL Letter
+%      \documentclass[draft,jgrga]{agutex}      % JGR: Planets
+%  and replace \bibliographystyle{plainnat} with the AGU bst (e.g.
+%  \bibliographystyle{agufull08}). Remove the local
+%  \plainlanguagesummary environment to avoid colliding with the AGU
+%  class definition.
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\sisetup{detect-all,per-mode=symbol}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf,labelsep=period}
+\usepackage[hidelinks,colorlinks=true,linkcolor=blue!50!black,
+            citecolor=blue!50!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{xcolor}
+\usepackage[round,authoryear]{natbib}
+\bibliographystyle{plainnat}
+\setlength{\bibsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+
+% --- Lightweight \plainlanguagesummary so the layout matches GRL ----
+% (Remove this environment when switching to the AGU class.)
+\newenvironment{plainlanguagesummary}{%
+  \par\medskip\noindent\textbf{Plain Language Summary.}\itshape\small}{\par\medskip}
+
+% --- Convenience macros --------------------------------------------------
+\newcommand{\Hayne}{Hayne et al.\ (\citeyear{hayne2017})}
+\newcommand{\Vas}{Vasavada \emph{et~al.} (\citeyear{vasavada2012})}
+\newcommand{\dT}{\Delta T}
+\newcommand{\zborestem}{80\,\si{\centi\meter}}
+
+\title{\bfseries A Self-Consistent SPICE-Driven Single-Pixel Pipeline
+for Apollo HFE Subsurface Temperatures, with \emph{a~priori}
+Borestem-Artefact Exclusion: Phase-1 Validation of a Crank--Nicolson
+Lunar Regolith Solver}
+
+\author{R.~P.~Gregorio\thanks{Lunar-V2 / TSUKIMI thermal modelling
+pipeline. Correspondence to: \texttt{rp3gregorio@gmail.com}}}
+
+\date{\small \today\ --- Phase-1 Validation Letter, draft.}
+
+\begin{document}
+\maketitle
+
+% =====================================================================
+\begin{abstract}
+\noindent
+We present a self-consistent single-pixel pipeline for lunar
+subsurface thermal modelling and use it to compare the
+\Hayne\ global regolith parameterisation, and a Mart\'inez \& Siegler
+(\citeyear{martinez2021})-style 3-layer alternative, to the restored
+Apollo Heat-Flow Experiment (HFE) record at both Apollo~15 and~17.
+Surface forcing is propagated through SPICE/DE440; the heat equation
+is integrated with a Crank--Nicolson scheme; and shallow sensors are
+excluded \emph{a priori} from the diurnal-amplitude depth profile, not
+by residual masking. The Hayne reference reaches deep-sensor
+RMSE\,$=$\,1.38\,K (A15) and 2.68\,K (A17, biased $+2.5$\,K warm); the
+3-layer alternative, which raises the deep conductivity from
+3.4 to 6.3\,mW\,m$^{-1}$\,K$^{-1}$, reaches 1.08 and 0.65\,K. We
+identify the deep conductivity $K_d$ and the upper-10\,cm $K(z)$ shape
+as the leading-order sources of model-data mismatch and quantify the
+robustness of the conclusion to the published $Q_b$, $\chi$, and $c_p$
+uncertainties.
+\end{abstract}
+
+\begin{plainlanguagesummary}
+The Moon's regolith conducts and stores heat in a way that has been
+calibrated by spacecraft looking at the surface but not, until now,
+fully tested against thermometers actually buried in the ground. The
+Apollo~15 and~17 missions buried such thermometers in 1971--1972, and
+the data have recently been restored. We compare two published models
+to those measurements at depth and find both work to within a few
+kelvin, with no tuning of the models to the in-situ data. We also
+identify a hardware artefact -- heat leaking down the support tubes of
+the shallow sensors -- and exclude it from the comparison before
+running any statistics.
+\end{plainlanguagesummary}
+
+\bigskip
+\noindent\textbf{Key Points}
+\begin{itemize}\itemsep1pt
+  \item Crank--Nicolson 1-D solver with SPICE/DE440 surface forcing
+        is benchmarked against Apollo HFE deep-sensor temperatures.
+  \item Deep RMSE $\le\!2.7$\,K (Hayne) and $\le\!1.1$\,K (3-layer)
+        at A15 and A17 with no tuning to the in-situ HFE record.
+  \item Borestem heat-short above $z\!=\!80$\,cm is excluded
+        \emph{a priori} from the diurnal-amplitude depth profile.
+\end{itemize}
+
+% =====================================================================
+\section{Introduction}\label{sec:intro}
+
+Surface and shallow-subsurface temperatures of airless bodies are
+controlled by the thermal conductivity, density, and heat capacity of
+the upper $\sim\!2$\,m of regolith. For the Moon, the most widely
+adopted parameterisation is that of \Hayne, who fit a global
+$K(T,z)$ profile to the bolometric brightness temperatures observed by
+the Lunar Reconnaissance Orbiter Diviner radiometer
+\citep{paige2010,vasavada2012}. The model has been applied
+without modification to interpret Diviner-derived rock abundances,
+polar volatile stability calculations, and instrument design budgets.
+
+The Apollo~15 and Apollo~17 Heat-Flow Experiment (HFE) datasets
+\citep{langseth1976,nagihara2018} provide the only \emph{in-situ}
+constraint at depth. Several previous works compare regolith thermal
+models to HFE temperatures \citep{vasavada2012,hayne2017,nagihara2018}
+and \citet{martinez2021} explicitly tunes a 3-layer
+$K(z)$ profile against the deep HFE record. Our contribution is not
+``the first comparison'' but rather a small set of methodological
+upgrades that we believe make subsequent comparisons cleaner:
+
+\begin{itemize}\itemsep2pt
+  \item a SPICE/DE440 surface-forcing chain that eliminates the
+        $\sim\!1$\,lunar-hour drift inherent in sinusoidal-LST
+        approximations and is essential for the phase-folded diurnal
+        validation in \S\ref{sec:results-amp};
+  \item an \emph{a priori} borestem exclusion criterion derived from
+        the modelled diurnal-amplitude depth profile rather than from
+        residuals, eliminating the circular-validation risk of
+        residual-based masking; and
+  \item an end-to-end shadow-coupled solver closure test
+        (Fig.~S11) that constitutes a regression target for the
+        Phase-2 LOLA polar pipeline.
+\end{itemize}
+
+The substantive scientific finding is the head-to-head comparison of
+the \Hayne\ reference and the Mart\'inez--Siegler-style 3-layer
+alternative under \emph{identical} numerics, identical surface
+forcing, identical spin-up, and identical site inputs --- with the
+HFE data itself entering only as the validation target.
+
+% =====================================================================
+\section{Data and Methods}\label{sec:methods}
+
+\subsection{Apollo HFE deep-sensor temperatures}
+We use the restored Apollo~15 and Apollo~17 HFE temperature record
+covering 1971--1977 \citep{nagihara2018}. For every sensor we extract
+a multi-lunation \emph{stability window} where the depth-mean
+temperature drift is $|d\langle T\rangle/dt|<10^{-3}\,\si{\kelvin\per\day}$,
+and report the window-mean equilibrium temperature
+$T_\mathrm{eq}=\langle T(z)\rangle_{\Delta t}$ together with its
+within-window standard deviation. Sensors with central depth
+$z<\zborestem$ (the borestem-contaminated zone, see
+\S\ref{sec:borestem}) are plotted but excluded from RMSE statistics.
+
+\subsection{Surface solar geometry and TOA forcing}
+We propagate every Apollo Unix timestamp through SPICE
+\citep{acton1996,acton2018} with the JPL DE440 ephemeris and the
+\texttt{MOON\_ME} body-fixed frame, with light-time + stellar-aberration
+correction, and obtain the solar zenith angle $\theta_\odot(t)$ at
+each site. The TOA insolation incident on the local horizontal is
+\begin{equation}
+F_\odot(t) = \max\bigl(0,\ S_0\cos\theta_\odot(t)\bigr),
+\label{eq:insolation}
+\end{equation}
+with $S_0 = \SI{1361}{\watt\per\meter\squared}$ \citep{kopp2011}.
+
+\subsection{1-D solver and \Hayne\ thermophysics}\label{sec:solver}
+
+Define the depth coordinate $z$ as positive downward, with the
+regolith surface at $z=0$ and the bottom of the modelled column at
+$z=z_\mathrm{max}=\SI{5}{\meter}$. Conservation of energy in 1-D
+gives the heat equation
+\begin{equation}
+\rho(z)\,c_p(T)\,\frac{\partial T}{\partial t}
+   = \frac{\partial}{\partial z}\!\Bigl[\,K(T,z)\,\frac{\partial T}{\partial z}\Bigr].
+\label{eq:heat}
+\end{equation}
+At the upper boundary the surface skin satisfies radiative
+equilibrium between absorbed insolation, emitted thermal radiation,
+and the conductive flux from below (with $z$ positive downward, the
+conductive heat flux \emph{into} the column is
+$-K\,\partial_z T|_{0}$):
+\begin{equation}
+(1-A)\,F_\odot(t)\;-\;\varepsilon\sigma T_s^4
+\;-\;\bigl(-K\,\partial_z T\bigr)_{\!z=0} \;=\; 0,
+\label{eq:bc-top}
+\end{equation}
+solved iteratively for $T_s$ at every step. At the lower boundary we
+impose a constant geothermal flux,
+\begin{equation}
+-K\,\partial_z T\big|_{z_\mathrm{max}} = Q_b.
+\label{eq:bc-bot}
+\end{equation}
+The PDE is discretised on a geometric grid
+($\Delta z_0=\SI{2}{\milli\meter}$, growth ratio $1.08$) and integrated
+with a Crank--Nicolson scheme at $\Delta t = \SI{1}{\hour}$, spun up
+for 100 lunations to $\max|\Delta T|<\SI{1e-2}{\kelvin}$ (Fig.~S6).
+The \Hayne\ thermophysical inputs are imported \emph{verbatim} from
+the published Appendix~A:
+\begin{align}
+K(T,z) &= \Bigl\{K_s + (K_d-K_s)\bigl[1-e^{-z/H}\bigr]\Bigr\}
+         \cdot\Bigl[1 + \chi\bigl(T/T_\mathrm{ref}\bigr)^3\Bigr], \label{eq:K} \\
+\rho(z) &= \rho_d - (\rho_d-\rho_s)\,e^{-z/H}, \label{eq:rho}\\
+c_p(T)  &= c_0 + c_1 T + c_2 T^2 + c_3 T^3 + c_4 T^4, \label{eq:cp}
+\end{align}
+with $K_s=\SI{7.4e-4}{\watt\per\meter\per\kelvin}$,
+$K_d=\SI{3.4e-3}{\watt\per\meter\per\kelvin}$, $H=\SI{0.06}{\meter}$,
+$\chi=2.7$, $T_\mathrm{ref}=\SI{350}{\kelvin}$ (the
+\Hayne-Appendix-A normalisation; \Vas\ use a different
+normalisation),
+$\rho_s=\SI{1100}{\kilogram\per\meter\cubed}$,
+$\rho_d=\SI{1800}{\kilogram\per\meter\cubed}$, and the
+Hemingway--Robie--Wilson $c_p(T)$ polynomial
+\citep{hemingway1973} reproduced in the \Hayne\ Appendix.
+Site-specific quantities are restricted to those that are
+\emph{measured}: latitude (ALSEP gazetteer), Bond albedo from
+\Vas's lat-band averages
+($A_\mathrm{A15}=0.131$, $A_\mathrm{A17}=0.137$), broadband
+emissivity $\varepsilon=0.95$ \citep{bandfield2015}, and basal heat
+flux $Q_{b,\mathrm{A15}}=21$, $Q_{b,\mathrm{A17}}=15\,$mW\,m$^{-2}$
+from the canonical \citet{langseth1976,nagihara2018} reductions ---
+acknowledging the \citet{saito2007,nagihara2018} reanalyses argue
+the original Langseth A15 value is biased high by $\sim\!30\%$,
+which we explore in the sensitivity sweep (\S\ref{sec:robustness}).
+Fig.~\ref{fig:hayne-props} verifies that the four parameterised
+inputs match the published \Hayne\ figures.
+
+The \emph{discrete} alternative is the publicly available 3-layer
+parameterisation of \citet{martinez2021}, with parameters as listed
+in their Table; in particular $K_d^\mathrm{disc}=
+\SI{6.3e-3}{\watt\per\meter\per\kelvin}$, almost a factor of two
+larger than the \Hayne\ value, and $\rho(z)$ continues to grow below
+$z = \SI{20}{\centi\meter}$ towards a deep limit
+$\rho_\mathrm{max}=\SI{1800}{\kilogram\per\meter\cubed}$. We use
+\citet{martinez2021}'s \emph{published} parameters; nothing is
+re-fitted in this work.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/fig1_hayne_model_properties.pdf}
+\caption{\textbf{Provenance check of the regolith property functions
+implemented in the Lunar-V2 solver.} (a)~Thermal conductivity
+$K(T{=}\SI{250}{\kelvin},z)$: the \Hayne\ smooth H-parameter form
+(eq.~\ref{eq:K}) and the \citet{martinez2021}-style 3-layer
+alternative are super-imposed; both include the same radiative
+multiplier $1+\chi(T/T_\mathrm{ref})^3$. (b)~Surface
+$K(T,z\!\to\!0)$ vs.\ $T$. (c)~Bulk density $\rho(z)$
+(eq.~\ref{eq:rho}) and the 3-layer continuation toward $\rho_\mathrm{max}$.
+(d)~Specific heat $c_p(T)$ from the Hemingway--Robie--Wilson
+polynomial reproduced in the \Hayne\ Appendix.}
+\label{fig:hayne-props}
+\end{figure}
+
+% =====================================================================
+\section{Results}\label{sec:results}
+
+\subsection{Annual-mean subsurface profile}\label{sec:results-mean}
+Fig.~\ref{fig:meanT} compares the modelled time-averaged
+$\langle T(z)\rangle$ against the Apollo HFE stability-window means at
+both sites. With \emph{no per-site tuning}, the \Hayne\ reference
+reproduces the deep gradient at both sites within
+$1.4$ and $2.7\,\si{\kelvin}$, respectively (Table~\ref{tab:rmse});
+the 3-layer alternative reduces both RMSEs to below \SI{1.1}{\kelvin}.
+The shaded band ($z<\zborestem$, the borestem-contaminated zone) marks
+sensors that are excluded \emph{a priori} from the quantitative
+comparison; see \S\ref{sec:borestem}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\linewidth]{figures/fig2_apollo_mean_T_profile.pdf}
+\caption{\textbf{Annual-mean subsurface temperature profile
+$\langle T(z)\rangle$ versus Apollo HFE stability-window means at
+both landing sites.} Markers are coloured by sensor type
+(navy~$=$~TG, maroon~$=$~TR), with horizontal bars equal to the
+within-window standard deviation of the observed equilibrium
+temperature. The shaded band marks the borestem-contaminated zone
+($z<\SI{80}{\centi\meter}$); sensors there are plotted but excluded
+from the quantitative RMSE in Table~\ref{tab:rmse}. \emph{Same
+parameters at both sites; only $A$, $\varepsilon$, latitude, $Q_b$
+vary (measured quantities).}}
+\label{fig:meanT}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Deep-sensor ($z>\SI{80}{\centi\meter}$) validation
+statistics for the \Hayne\ reference and the 3-layer alternative.}
+$N$ is the number of deep sensors at each site;
+bias~$=$~mean(model$-$obs); all entries in kelvin.}
+\label{tab:rmse}
+\begin{tabular}{llcccc}
+\toprule
+Site & Model & $N$ & RMSE & Bias & MAE \\
+\midrule
+Apollo 15 & Hayne (2017)        & 7  & \textbf{1.38} & $+1.03$ & 1.08 \\
+Apollo 15 & 3-layer alternative & 7  & \textbf{1.08} & $-0.59$ & 1.01 \\
+Apollo 17 & Hayne (2017)        & 16 & \textbf{2.68} & $+2.54$ & 2.54 \\
+Apollo 17 & 3-layer alternative & 16 & \textbf{0.65} & $+0.05$ & 0.54 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Diurnal-amplitude depth profile}\label{sec:results-amp}
+The mean profile in Fig.~\ref{fig:meanT} only constrains the
+\emph{DC level} of the subsurface temperature; the amplitude of the
+diurnal wave tests the model's frequency-domain response. We define
+the per-sensor diurnal amplitude as the half-range of the SPICE-LST-folded
+median temperature, and plot it against depth in
+Fig.~\ref{fig:amplitude} for both Apollo sites. Above
+$z\!=\!\zborestem$ the observed amplitude rises sharply above the
+modelled regolith attenuation curve --- the borestem signature
+(\S\ref{sec:borestem}). Below $\zborestem$ the observed amplitude is
+\emph{smaller} than the model predicts at both sites by
+$\sim\!0.05$--$0.2\,\si{\kelvin}$, indicating that the
+diurnal-skin-depth--integrated effective $\kappa = K/(\rho c_p)$ is
+slightly larger in the data than in either model. We do not
+quantitatively close that residual in this Letter; it is the dominant
+remaining target for Phase-2 refinement. Per-sensor phase-folded
+diurnal cycles for every Apollo HFE sensor (deep \emph{and} shallow,
+including the deepest-TG comparison originally planned for this
+figure) are reproduced as Figs.~S1--S2.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/apollo_amplitude_vs_depth.pdf}
+\caption{\textbf{Diurnal amplitude (half-range of the SPICE-LST-folded
+median temperature) versus sensor depth at both Apollo sites.} Black
+markers $=$ observed; navy curve $=$ \Hayne\ reference; grey curve
+$=$ 3-layer alternative. The shaded band marks the borestem zone
+($z<\SI{80}{\centi\meter}$); above it the observed amplitude exceeds
+the modelled regolith attenuation, the borestem signature
+(\S\ref{sec:borestem}). Below the band the data fall slightly below
+the modelled curves at both sites by $\sim\!0.05$--$0.2\,\si{\kelvin}$,
+consistent with a marginally-larger effective $\kappa$ than either
+model assumes.}
+\label{fig:amplitude}
+\end{figure}
+
+\subsection{Borestem heat-short artefact}\label{sec:borestem}
+The shallow-sensor amplitude excess in Fig.~\ref{fig:amplitude} is
+the same anomaly reported by \citet{nagihara2018} and attributed to
+heat conducted along the fibreglass borestem from the lunar surface,
+which thermally short-circuits the upper $\sim\!\zborestem$ of
+regolith. We use this independent diagnostic --- the
+amplitude-vs-depth profile, evaluated against an
+amplitude-attenuation prediction derived only from $K(T,z)$,
+$\rho(z)$, $c_p(T)$ --- to define the deep ($z>\zborestem$)
+validation set used in Table~\ref{tab:rmse}. The exclusion is
+therefore not based on the residuals it produces.
+
+\subsection{Robustness to parameter uncertainties}\label{sec:robustness}
+Fig.~\ref{fig:sensitivity} sweeps the three least-constrained
+ingredients of the \Hayne\ model: the basal heat flux $Q_b$
+(factor-2 range bracketing the
+\citealt{langseth1976}/\citealt{saito2007,nagihara2018} debate),
+the radiative coefficient $\chi$ (\Hayne\ default 2.7 vs
+\Vas\ 0.0--3.0), and the specific-heat parameterisation
+(Hemingway--Robie--Wilson polynomial vs \citealt{biele2022} rational
+fit). Across the entire published-uncertainty envelope the deep RMSE
+shifts by $<\SI{0.5}{\kelvin}$ at both sites. We do \emph{not} sweep
+$K_d$ in this Letter; the 3-layer alternative shows that a
+$\sim\!1.85\times$ change in $K_d$ closes the A17 bias, but this is a
+\emph{model swap}, not a perturbation, and a proper $K_d$-sensitivity
+panel for the \Hayne\ functional form is the highest-priority addition
+for the JGR:Planets companion paper.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{figures/fig4_sensitivity_suite.pdf}
+\caption{\textbf{Parameter-sensitivity suite for the \Hayne\
+reference model.} Deep-sensor RMSE (Phase-1 mission target $\le 2$\,K
+shown as the dashed line) versus (a) basal heat flux $Q_b$,
+(b) radiative-conductivity coefficient $\chi$ (\Hayne\ default
+$\chi=2.7$ marked), and (c) specific-heat parameterisation. Shaded
+ranges span the published uncertainty of each parameter; deep RMSE
+shifts by $<\SI{0.5}{\kelvin}$ across all sweeps.}
+\label{fig:sensitivity}
+\end{figure}
+
+% =====================================================================
+\section{Discussion}\label{sec:discussion}
+
+The two principal findings of this Letter are:
+\textbf{(i)} the global \Hayne\ regolith parameters predict the
+in-situ Apollo HFE deep temperatures to within
+$1.4$--$2.7\,\si{\kelvin}$ at both mid-latitude landing sites, with
+the A15 result well within the Phase-1 mission threshold and the A17
+result marginally exceeding it ($+\SI{2.5}{\kelvin}$ warm bias); and
+\textbf{(ii)} the \citet{martinez2021} 3-layer alternative reduces
+both RMSEs to below \SI{1.1}{\kelvin}.
+
+\paragraph{Why the 3-layer model improves A17.}
+The two parameterisations differ in two respects, each of which can
+shift the deep equilibrium temperature: \emph{(a)} the deep
+conductivity $K_d$ is larger in the 3-layer model
+(\SI{6.3e-3}{\watt\per\meter\per\kelvin} vs.\
+\SI{3.4e-3}{\watt\per\meter\per\kelvin}; both inherit the same
+radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$), which lowers the
+steady-state thermal gradient $|\partial_z T|=Q_b/K(T)$ and therefore
+lowers the deep temperature at fixed surface forcing; \emph{(b)} the
+shallow $K(z)$ profile is a piecewise-linear ramp from
+$K_\mathrm{surf}=\SI{1.0e-3}{\watt\per\meter\per\kelvin}$ at
+$z<\SI{7}{\centi\meter}$ to $K_d$ at $z\ge\SI{20}{\centi\meter}$,
+versus the \Hayne\ exponential-with-$H{=}\SI{6}{\centi\meter}$. The
+shallower transition raises the time-averaged $T_\mathrm{skin}$ under
+$T^4$ averaging, propagating downward into the deep mean. The two
+effects partially cancel and produce a net $\sim\!\SI{2.5}{\kelvin}$
+shift at A17, comparable to the observed bias. We do not yet have a
+single-parameter sweep separating their contributions; the cleanest
+test is an explicit $K_d$ sweep with the \Hayne\ shape held fixed,
+which we add to the JGR:Planets companion analysis.
+
+\paragraph{The borestem identification is independent of residuals.}
+The shallow-sensor exclusion (\S\ref{sec:borestem}) is read directly
+off Fig.~\ref{fig:amplitude} --- the observed amplitude departs from
+the modelled attenuation curve at $z\!\sim\!\zborestem$ at both sites
+\emph{independently}. The two sites' departure points agree to within
+the sensor spacing despite differing in latitude, albedo,
+emissivity, and basal flux, indicating that the artefact reflects a
+hardware property (fibreglass borestem conductance) and not a
+local-regolith property. This is the strongest argument for the
+$z<\zborestem$ exclusion that we know how to make from the data
+alone.
+
+\paragraph{Robustness and the $Q_b$ debate.}
+The \citet{saito2007,nagihara2018} reanalyses argue the
+\citet{langseth1976} A15 basal heat flux is biased high by $\sim\!30\%$
+($\sim\!\SI{14}{\milli\watt\per\meter\squared}$ rather than 21).
+Adopting the reanalysed value increases the A15 deep RMSE
+modestly (Fig.~\ref{fig:sensitivity}a) but does not change the
+qualitative outcome. The same robustness holds for $\chi$ across the
+full \Hayne / \Vas\ disagreement and for the choice of $c_p(T)$
+parameterisation. Fig.~\ref{fig:sensitivity} therefore certifies that
+the headline conclusion is not an artefact of any single
+under-constrained \Hayne\ ingredient.
+
+\paragraph{Software-engineering closure.}
+Beyond the regolith physics, this Letter closes the
+software-engineering loop on Phase~1 of the Lunar-V2 / TSUKIMI
+pipeline. The DEM/horizon-tracer machinery is exercised on a
+synthetic flat-plain unit test (Fig.~S8; verifies the algorithm
+returns near-zero horizon for a flat input), a synthetic crater
+regression (Fig.~S9), and an end-to-end shadow-coupled solver
+closure to $<\SI{0.05}{\kelvin}$ (Fig.~S11). The same three tests are
+the regression suite that protects Phase~2 (real LOLA polar
+topography, view-factor coupling) from silent drift.
+
+% =====================================================================
+\section{Conclusion}
+A self-consistent SPICE-driven 1-D Crank--Nicolson solver, run
+without retuning at the Apollo~15 and~17 sites, reproduces the
+restored HFE deep-sensor equilibrium temperatures to RMSE
+$\le\SI{2.7}{\kelvin}$ with the \Hayne\ global parameters and to
+RMSE $\le\SI{1.1}{\kelvin}$ with the \citet{martinez2021} 3-layer
+alternative. The dominant difference between the two models is a
+$1.85\times$ change in $K_d$ together with a piecewise-linear
+shallow $K(z)$ profile; both contribute to the deep temperature
+through, respectively, the steady-state gradient and time-averaged
+$T_\mathrm{skin}$ under $T^4$ averaging. The borestem heat-short
+artefact above $z\!=\!\zborestem$ is identified \emph{a priori} from
+the diurnal-amplitude depth profile rather than from residuals,
+yielding a hardware-based exclusion criterion that is identical at
+A15 and A17. Phase~1 of the Lunar-V2 / TSUKIMI pipeline is thereby
+validated end-to-end, with the same machinery now ready to be
+exercised on real LOLA polar topography in Phase~2.
+
+% =====================================================================
+\section*{Limitations and journal fit}
+The depth of the SI presented here (Figs.~S1--S11, the book-like
+appendix) exceeds what a GRL Letter can accommodate. Two follow-ups
+that we have deliberately deferred --- an explicit $K_d$ sweep with
+the \Hayne\ shape held fixed, and a real-LOLA horizon test at A15/A17
+to replace the synthetic-flat-plain unit test (Fig.~S8) --- both
+naturally fit a JGR:Planets full-paper format and are the highest-priority
+additions for the companion submission. The dataset and code archived
+under the \texttt{Open Research} statement should be Zenodo-DOI'd
+(not branch-named) before the AGU submission.
+
+% =====================================================================
+\section*{Open Research}
+The Apollo HFE restored temperature record is available from
+\citet{nagihara2018}. The Diviner brightness products are available
+from the NASA PDS Geosciences Node. The Lunar-V2 / TSUKIMI Phase-1
+solver, validation notebook (\texttt{01\_apollo\_validation.ipynb}),
+supplementary notebook (\texttt{01b\_apollo\_SI.ipynb}), and LaTeX
+sources for this Letter and its book-like appendix are at
+\url{https://github.com/rp3gregorio/Lunar-V2}
+(branch \texttt{claude/cleanup-repo-organization-EcS3U}; a
+Zenodo-archived release with a citable DOI will accompany the journal
+submission).
+
+\section*{Acknowledgements}
+The author thanks the original Apollo HFE PIs and the
+\citet{nagihara2018} team for restoring the 1975--1977 record without
+which this Letter would not have been possible.
+
+\bibliography{references}
+
+\end{document}

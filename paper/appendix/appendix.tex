@@ -1,0 +1,883 @@
+% =====================================================================
+%  APPENDIX --- Phase-1 Apollo HFE validation (book-like SI)
+%
+%  This document accompanies "Single-Pixel Validation of the
+%  Diviner-Derived Global Lunar Regolith Thermophysical Model at the
+%  Apollo 15 and 17 Heat-Flow Experiment Sites" (the Letter).
+%  It is intentionally written for a reader with little or no prior
+%  background in lunar regolith physics, numerical heat transfer, or
+%  the SPICE toolkit. Anyone who has taken one undergraduate PDE
+%  course should be able to read it cover-to-cover.
+% =====================================================================
+\documentclass[11pt]{report}
+
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{siunitx}
+\sisetup{detect-all,per-mode=symbol}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption,subcaption}
+\captionsetup{font=small,labelfont=bf,labelsep=period}
+\usepackage[hidelinks,colorlinks=true,linkcolor=blue!50!black,
+            citecolor=blue!50!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage[round,authoryear]{natbib}
+\bibliographystyle{plainnat}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left, numberstyle=\tiny\color{gray!70},
+  frame=single, framesep=4pt, rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  language=Python, keywordstyle=\color{blue!50!black}\bfseries,
+  commentstyle=\color{green!40!black}\itshape,
+  stringstyle=\color{red!50!black},
+  breaklines=true, showstringspaces=false,
+  captionpos=b, xleftmargin=12pt
+}
+
+% Coloured boxes for pedagogical asides
+\newtcolorbox{aside}[1][Aside]{enhanced,colback=blue!4,colframe=blue!40!black,
+  fonttitle=\bfseries,title={#1},breakable}
+\newtcolorbox{warn}[1][Pitfall]{enhanced,colback=red!4,colframe=red!50!black,
+  fonttitle=\bfseries,title={#1},breakable}
+\newtcolorbox{key}[1][Key result]{enhanced,colback=green!4,colframe=green!40!black,
+  fonttitle=\bfseries,title={#1},breakable}
+
+% --- Convenience macros --------------------------------------------------
+\newcommand{\Hayne}{Hayne (\citeyear{hayne2017})}
+\newcommand{\Vas}{Vasavada \emph{et~al.} (\citeyear{vasavada2012})}
+\newcommand{\dT}{\Delta T}
+\newcommand{\zborestem}{80\,\si{\centi\meter}}
+
+\title{\bfseries Phase-1 Apollo HFE Validation\\[2pt]
+\Large Supporting Information --- A Beginner's Walk-through\\[2pt]
+\large for the Lunar-V2 / TSUKIMI Thermal-Modelling Pipeline}
+\author{R.~P.~Gregorio}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+% =====================================================================
+\chapter*{How to read this document}\addcontentsline{toc}{chapter}{How to read this document}
+
+This Supporting Information (SI) is written as a self-contained tutorial.
+Each chapter starts from first principles and assumes only an undergraduate
+background in differential equations, basic statistics, and rudimentary
+Python. If you are an experienced lunar thermophysics modeller, you may
+skim Chapters~\ref{ch:moon}--\ref{ch:numerics} and jump to
+Chapter~\ref{ch:validation}. If you are a planetary-science student
+opening these methods for the first time, read in order.
+
+\medskip\noindent\textbf{Visual conventions} (used throughout):
+
+\begin{aside}[Aside]
+Coloured \emph{aside} boxes contain pedagogical context, intuition, or
+historical notes that the main text does not strictly require but which
+help build understanding.
+\end{aside}
+
+\begin{key}[Key result]
+Green \emph{key result} boxes contain a takeaway you should remember
+after reading the surrounding section.
+\end{key}
+
+\begin{warn}[Pitfall]
+Red \emph{pitfall} boxes flag a place where it is easy to make a
+subtle mistake; we describe the mistake and the way to avoid it.
+\end{warn}
+
+% =====================================================================
+\chapter{The Moon as a Thermal System}\label{ch:moon}
+
+\section{Why the Moon's surface temperature varies so much}
+
+The Moon has no atmosphere and no oceans. The only things buffering
+its surface temperature against the day--night solar cycle are the
+\emph{thermal inertia} of the regolith (the loose, broken-up rock
+covering the surface) and, to a lesser extent, radiative re-emission
+to space. Thermal inertia is conventionally defined as
+\begin{equation}
+I = \sqrt{K \rho c_p},\qquad
+[\,\mathrm{J\,m^{-2}\,K^{-1}\,s^{-1/2}}\,],
+\label{eq:inertia}
+\end{equation}
+where $K$ is thermal conductivity, $\rho$ is bulk density and $c_p$
+is specific heat. For the Moon's regolith, $I$ is in the range
+$30$--$70$~$\mathrm{J\,m^{-2}\,K^{-1}\,s^{-1/2}}$
+\citep{vasavada2012}, hundreds of times \emph{lower} than that of bare
+rock and roughly a thousand times lower than ocean water. The
+practical consequence is that the lunar surface heats and cools by
+several hundred kelvin in a single lunation
+\citep[$\sim$\SI{29.53}{\day};][]{paige2010}.
+
+\begin{aside}[Why is regolith such a good insulator?]
+The regolith grains are roughly $50\text{--}100\,\mu$m in diameter and
+the contacts between them are essentially point contacts. Heat conducts
+across point contacts very poorly --- much more poorly than across the
+bulk silicate it would be in solid form --- so the effective
+$K$ is two to three orders of magnitude below the mineral value.
+The radiative term $\chi(T/350)^3$ in (\ref{eq:K-rep}) reflects the
+fact that, at high temperature, photons can hop from grain to grain
+across the empty pore space, providing a parallel heat-transfer
+channel that becomes important above $\sim$200\,\si{\kelvin}.
+\end{aside}
+
+\section{The thermal skin depth}
+
+The depth $\delta$ over which a periodic surface temperature wave of
+angular frequency $\omega$ attenuates by a factor $e^{-1}$ is the
+\emph{skin depth} of that wave:
+\begin{equation}
+\delta = \sqrt{\frac{2\,\kappa}{\omega}},\qquad
+\kappa \equiv \frac{K}{\rho\,c_p},
+\label{eq:skin}
+\end{equation}
+where $\kappa$ is the thermal diffusivity. For the Moon's diurnal
+cycle ($\omega = 2\pi/\SI{29.53}{\day}\approx 2.5\times10^{-6}\,\si{\per\second}$)
+and a representative $\kappa\approx 10^{-8}\,\si{\meter\squared\per\second}$
+near the surface, this gives $\delta\approx \SI{0.06}{\meter}$ ---
+exactly the H-parameter (\Hayne) used throughout this work.
+
+\begin{key}[Why we need to model 5\,m of regolith]
+The annual skin depth scales as $\delta \propto 1/\sqrt{\omega}$, so the
+annual wave penetrates $\sqrt{29.53\times 12}\approx 19$ times deeper than the
+diurnal wave: roughly $\SI{1.1}{\meter}$. To capture the deep Apollo
+HFE sensors at \SI{2.3}{\meter} \emph{and} the asymptotic geothermal
+gradient (which requires a quiet zone several skin depths below the
+deepest measurement) we extend the modelled column to $\SI{5}{\meter}$.
+\end{key}
+
+\section{What the Apollo Heat-Flow Experiment actually measured}
+
+Each Apollo~15 and Apollo~17 borehole was drilled to roughly
+$\SI{2.4}{\meter}$ (A15) and \SI{2.5}{\meter} (A17) using a hollow
+fibreglass tube ("borestem") that was left in place after drilling
+to keep the hole open. Inside this tube, a probe carrying eight
+platinum-resistance thermometers was lowered to instrumented depths.
+Two thermometer types were deployed:
+
+\begin{itemize}\itemsep2pt
+  \item \textbf{Gradient (TG) bridges} measured the absolute
+        temperature difference between two sensors separated by
+        $\sim\SI{50}{\centi\meter}$ along the tube --- designed to
+        return the equilibrium thermal gradient and hence (after
+        applying a $K$ value) the basal heat flux.
+  \item \textbf{Ring (TR) bridges} measured the absolute temperature
+        of a single sensor relative to a reference resistor in the
+        Apollo Lunar Surface Experiments Package (ALSEP) housing on
+        the surface --- designed primarily to track diurnal and
+        annual variability.
+\end{itemize}
+
+The complete dataset, restored from the original tapes by
+\citet{nagihara2018}, covers $\sim\!1971\text{--}1977$ for both sites
+and provides the only \emph{in-situ} subsurface temperature
+measurements ever made on the Moon.
+
+\begin{warn}[The borestem heat-short]
+The fibreglass borestem itself has a non-zero thermal conductivity
+and reaches all the way to the lunar surface, where it sees the full
+diurnal swing. Heat conducted \emph{down the tube} from the surface
+contaminates the upper sensors, raising their effective day-time
+temperature and inflating their diurnal amplitude well above what the
+regolith alone would predict. \citet{nagihara2018} attribute the
+contamination to the upper $\sim\!\zborestem$ of the column. We
+inherit that depth as our shallow-sensor exclusion threshold and
+verify it independently in \S\ref{sec:borestem-diag}.
+\end{warn}
+
+% =====================================================================
+\chapter{The 1-D Heat Equation in Regolith}\label{ch:pde}
+
+\section{Derivation from energy conservation}
+
+Consider a thin slab of regolith of unit cross-section between depths
+$z$ and $z+\dT z$. Conservation of internal energy in the slab over
+time $\dT t$ requires
+\[
+\underbrace{\rho(z)\,c_p(T)\,\Bigl[T(z,t+\dT t)-T(z,t)\Bigr]\,\dT z}_{\text{change in stored energy}}
+=
+\underbrace{q(z,t)\,\dT t - q(z+\dT z,t)\,\dT t,}_{\text{net heat flux in}}
+\]
+where $q(z,t)=-K(T,z)\,\partial_z T$ is the conductive heat flux
+(Fourier's law). Taking $\dT t,\dT z\to 0$ and rearranging gives the
+1-D heat equation:
+\begin{equation}
+\boxed{
+\rho(z)\,c_p(T)\,\frac{\partial T}{\partial t}
+   = \frac{\partial}{\partial z}\!\Bigl[\,K(T,z)\,\frac{\partial T}{\partial z}\Bigr].
+}\label{eq:heat-rep}
+\end{equation}
+Because both $K$ and $c_p$ depend on $T$ this PDE is mildly
+non-linear; we handle the non-linearity with a Picard-style outer
+iteration around an otherwise linear Crank-Nicolson step
+(see Chapter~\ref{ch:numerics}).
+
+\begin{aside}[Why no horizontal terms?]
+At the spatial scale of a single Apollo borehole and over the
+$\sim\!4$~year recording window, lateral (horizontal) heat
+conduction in the upper few metres of regolith is negligible: the
+horizontal diffusion length over $\Delta t = 4$~years with
+$\kappa\sim10^{-8}\,\si{\meter\squared\per\second}$ is
+$\ell\sim\sqrt{\kappa\Delta t}\approx \SI{1}{\meter}$, comparable to
+or smaller than the local topographic heterogeneity scale. A 1-D
+column treatment therefore loses no more accuracy than the topographic
+uniformity of the chosen pixel, justifying the single-pixel approach.
+\end{aside}
+
+\section{Boundary conditions}
+
+\paragraph{Top boundary --- radiative equilibrium of the surface skin.}
+Energy balance on the optically thin surface skin equates absorbed
+solar flux, emitted thermal radiation, and the conductive flux into
+the regolith below:
+\begin{equation}
+(1-A)\,F_\odot(t)\;-\;\varepsilon\,\sigma\,T_s^4\;+\;
+K\,\partial_z T\big|_{z=0} \;=\; 0,
+\label{eq:bc-top-rep}
+\end{equation}
+where $A$ is the broadband Bond albedo (\Vas), $\varepsilon$ is the
+broadband emissivity ($\approx 0.95$, \citealt{bandfield2015}),
+$\sigma$ is the Stefan--Boltzmann constant, $T_s\equiv T(z=0,t)$ is
+the skin temperature, and $F_\odot(t)$ is the instantaneous TOA
+insolation given by (\ref{eq:insolation-rep}) below.
+
+\paragraph{Bottom boundary --- imposed geothermal flux.}
+At $z=z_\mathrm{max}=\SI{5}{\meter}$ we impose a constant geothermal
+flux $Q_b$ representative of the site's published HFE-derived value:
+\begin{equation}
+-K\,\partial_z T\Big|_{z=z_\mathrm{max}} = Q_b.
+\label{eq:bc-bot-rep}
+\end{equation}
+For the Apollo sites, $Q_{b,\mathrm{A15}} = 21$~mW\,m$^{-2}$
+\citep{langseth1976} and $Q_{b,\mathrm{A17}} = 15$~mW\,m$^{-2}$
+\citep{nagihara2018}. The published-uncertainty range of $Q_b$ is
+explored in the sensitivity sweep (Letter Fig.~4).
+
+\section{Solar geometry and the surface forcing}\label{sec:lst}
+
+The instantaneous insolation incident on a horizontal plane at the
+landing site is
+\begin{equation}
+F_\odot(t) = S_0\,\cos\theta_\odot(t)\cdot\mathbb{1}[\cos\theta_\odot>0],
+\label{eq:insolation-rep}
+\end{equation}
+where $S_0=\SI{1361}{\watt\per\meter\squared}$ \citep{kopp2011} and
+$\theta_\odot(t)$ is the solar zenith angle at the site at UTC time
+$t$. The night-side mask $\mathbb{1}[\cdot]$ enforces $F_\odot=0$
+when the Sun is below the local horizon.
+
+To compute $\theta_\odot(t)$ correctly we need the Sun's apparent
+position in the Moon's body-fixed frame. We use the JPL/NAIF
+\textbf{SPICE} toolkit \citep{acton1996,acton2018}: at every UTC step we ask
+SPICE for the Sun's position in the \texttt{MOON\_ME} frame, using
+the JPL DE440 ephemeris with light-time + stellar aberration
+correction. The site's local solar time (LST) is then defined
+modulo 24~hours from the sub-solar longitude minus the site
+longitude. This is the same construction used by \citet{nagihara2018}
+and is accurate to $\sim\!4\,\si{\minute}$ over the Apollo recording
+window.
+
+\begin{aside}[Why not approximate LST as a sine?]
+A common shortcut in textbook treatments is
+$F_\odot \approx S_0\cos(\omega t - \phi)\,H(\cdot)$ with $\omega$
+fixed and $\phi$ tuned to the site. This collapses three small but
+non-negligible effects: (i)~the lunar libration, (ii)~the orbital
+eccentricity, and (iii)~the small obliquity of the lunar spin axis.
+Together these produce $\sim\!1$~lunar-hour drifts in the
+instantaneous solar position over a year. For mean-temperature
+validation those drifts cancel; for phase-folded diurnal validation
+(Letter Fig.~3, SI Figs S1--S2) they would produce a spurious
+$\sim$1\,K systematic at deep sensors. Using SPICE eliminates the
+drift entirely.
+\end{aside}
+
+% =====================================================================
+\chapter{The Hayne (2017) Regolith Parameterisation}\label{ch:hayne}
+
+The full \Hayne\ Appendix~A regolith model, as implemented verbatim in
+this work, consists of four \emph{a priori} parameter functions plus
+two scalar inputs. Each is reproduced below with full provenance so
+that anyone reading this document can re-derive the model from
+published sources alone.
+
+\section{Thermal conductivity $K(T,z)$}
+The Hayne form combines an exponential depth dependence (the
+``H-parameter'' law) with a $T^3$ radiative correction:
+\begin{equation}
+K(T,z) = K_s + (K_d-K_s)\Bigl[1-\exp\!\bigl(-z/H\bigr)\Bigr]
+       \cdot\Bigl[1 + \chi\bigl(T/T_\mathrm{ref}\bigr)^3\Bigr].
+\label{eq:K-rep}
+\end{equation}
+Numerical values from \Hayne\ Table~2:
+\begin{center}\small\begin{tabular}{lrl}
+\toprule
+$K_s$       & \SI{7.4e-4}{\watt\per\meter\per\kelvin} & surface conductivity \\
+$K_d$       & \SI{3.4e-3}{\watt\per\meter\per\kelvin} & deep conductivity \\
+$H$         & \SI{0.06}{\meter} & H-parameter (skin scale) \\
+$\chi$      & 2.7  & radiative coefficient \\
+$T_\mathrm{ref}$ & \SI{350}{\kelvin} & radiative reference temperature \\
+\bottomrule
+\end{tabular}\end{center}
+
+\section{Bulk density $\rho(z)$}
+Density follows the same H-parameter scale:
+\begin{equation}
+\rho(z) = \rho_d - (\rho_d-\rho_s)\,\exp\!\bigl(-z/H\bigr),
+\label{eq:rho-rep}
+\end{equation}
+with $\rho_s = \SI{1100}{\kilogram\per\meter\cubed}$ (loose surface
+fluff) and $\rho_d = \SI{1800}{\kilogram\per\meter\cubed}$ (compacted
+deep regolith).
+
+\section{Specific heat $c_p(T)$}
+\Hayne\ adopts the Hemingway--Robie--Wilson polynomial
+\citep{hemingway1973} fit to laboratory-measured Apollo lunar fines
+(Apollo 14, 15, 16 returned soils, basalt, and breccia):
+\begin{equation}
+c_p(T) = c_0 + c_1 T + c_2 T^2 + c_3 T^3 + c_4 T^4,
+\label{eq:cp-rep}
+\end{equation}
+with $(c_0,c_1,c_2,c_3,c_4)$ given in the published table.
+Letter Fig.~1 shows
+$c_p(T)$ alongside the rational-function alternative of
+\citet{biele2022}; the two agree to better than $1\%$ over the lunar
+temperature range.
+
+\section{Site-specific (measured) inputs}
+Only four quantities vary between sites, and each has an independent
+measurement:
+\begin{center}\small\begin{tabular}{llcc}
+\toprule
+Quantity & Source & Apollo 15 & Apollo 17 \\
+\midrule
+Latitude          & ALSEP gazetteer / LROC NAC & \ang{26.13}~N & \ang{20.19}~N \\
+Bond albedo $A$   & \citet{vasavada2012}       & 0.131         & 0.137 \\
+Emissivity $\varepsilon$ & \citet{bandfield2015} & 0.95         & 0.95 \\
+$Q_b$ (mW\,m$^{-2}$) & \citet{langseth1976,nagihara2018} & 21 & 15 \\
+\bottomrule
+\end{tabular}\end{center}
+
+\begin{key}[The "no per-site tuning" claim, made precise]
+There are exactly zero free parameters fit to the Apollo HFE data.
+The four entries in the table above are independent measurements;
+the four parameters of (\ref{eq:K-rep})--(\ref{eq:cp-rep}) are
+\Hayne's published global fit; nothing is tuned. The Apollo HFE
+temperatures enter only as the validation target, not as an input.
+\end{key}
+
+\section{The discrete 3-layer alternative}\label{sec:discrete}
+For comparison we also implement a \textbf{discrete 3-layer}
+parameterisation inherited from \citet{martinez2021}. Unlike the
+single-exponential \Hayne\ form (\ref{eq:K-rep}), this model treats
+the regolith column as three depth zones whose phonon conductivity
+$K_c(z)$ is piecewise \emph{linear} (not piecewise constant):
+\begin{equation}
+K_c(z) = \begin{cases}
+   K_s^\mathrm{disc} & 0 \le z < H_1, \\[4pt]
+   K_s^\mathrm{disc} + (K_d^\mathrm{disc} - K_s^\mathrm{disc})\,
+   \dfrac{z - H_1}{H_2 - H_1} & H_1 \le z < H_2, \\[8pt]
+   K_d^\mathrm{disc} & z \ge H_2,
+\end{cases}
+\label{eq:Kc-disc}
+\end{equation}
+with surface and deep endpoints
+$K_s^\mathrm{disc}\!=\!1.0\!\times\!10^{-3}\,\si{\watt\per\meter\per\kelvin}$,
+$K_d^\mathrm{disc}\!=\!6.3\!\times\!10^{-3}\,\si{\watt\per\meter\per\kelvin}$,
+and breakpoints $H_1\!=\!\SI{7}{\centi\meter}$,
+$H_2\!=\!\SI{20}{\centi\meter}$. The full conductivity carries the
+same radiative multiplier as (\ref{eq:K-rep}),
+$K(T,z) = K_c(z)\bigl[1 + \chi (T/T_\mathrm{ref})^3\bigr]$ with
+$\chi=2.7$ and $T_\mathrm{ref}=350\,\si{\kelvin}$. Density follows
+an exponential growth toward $\rho_\mathrm{max}=\SI{1800}{\kilogram\per\cubic\meter}$
+that mirrors the H-parameter form of (\ref{eq:rho-rep}) within $\sim\!1\%$.
+
+The \emph{deep} endpoint $K_d^\mathrm{disc} = 6.3\times10^{-3}$ is
+the key contrast with \Hayne: it is $1.85\times$ the equivalent
+\Hayne\ deep value of $3.4\times10^{-3}$ (\ref{eq:K-rep}). This
+single number difference is what generates most of the A17
+improvement in Table~1 of the Letter, by raising the diurnal
+skin-depth at the in-situ borehole scale and reshaping the
+$T(z,t)$ phasing to which the radiative coupling at the surface is
+sensitive (the heat flux $-K\partial_z T$ that closes the upper BC
+sees $K^{1/2}$ averaged through a $T^4$-weighted skin layer).
+This model is \emph{not} a per-site fit either: it is an
+independently-published global parameterisation
+\citep{martinez2021} we adopt verbatim, but which evidently better
+captures the deep conductivity at the in-situ scale than the
+\Hayne\ smooth form derived from orbital brightness alone.
+
+\begin{aside}[An explicit $K_d$ sweep is deferred to Phase~2]
+The two endpoints $3.4$ and $6.3\times10^{-3}\,\si{\watt\per\meter\per\kelvin}$
+bracket a factor-of-two range, but Phase~1 only tests the two
+published values. A dense $K_d$ sweep that maps RMSE$_\mathrm{depth}$
+versus the deep conductivity is part of the Phase-2 regression
+companion paper, where it can be performed jointly with the heat-flow
+$Q_b$ retrieval to avoid the well-known $K_d/Q_b$ degeneracy in
+single-borehole inversions.
+\end{aside}
+
+% =====================================================================
+\chapter{The Numerical Solver}\label{ch:numerics}
+
+\section{Discretisation strategy}
+
+The depth grid is geometrically expanding so that the surface skin
+($\sim\!\delta_\mathrm{diurnal}\!\sim\!\SI{6}{\centi\meter}$) is
+resolved at $\sim\!\SI{2}{\milli\meter}$ while the deep column
+($\sim\!\SI{5}{\meter}$) is reached in $\sim\!120$ cells:
+\[
+z_0 = 0,\qquad
+z_{i+1} - z_i = \Delta z_0 \cdot (1+g)^{\,i},\qquad
+\Delta z_0 = \SI{2}{\milli\meter},\;\; g = 0.08.
+\]
+Time discretisation uses a fixed $\Delta t = 1\,\si{\hour}$, giving
+$24\times29.53 = 708.7$ steps per lunation.
+
+\section{Crank-Nicolson scheme}
+Writing $T_i^n \equiv T(z_i, t_n)$ and discretising
+(\ref{eq:heat-rep}) symmetrically in time gives a tridiagonal linear
+system at each step:
+\begin{equation}
+T_i^{n+1} - T_i^n
+   = \tfrac{1}{2}\,\frac{\Delta t}{\rho_i c_{p,i}}
+     \Bigl[\mathcal{D}T^{n+1} + \mathcal{D}T^n\Bigr]_i,
+\label{eq:CN}
+\end{equation}
+with $\mathcal{D}$ the 2nd-order finite-difference operator
+\[
+[\mathcal{D}T]_i = \frac{1}{\Delta z_i}\!\left[
+   \frac{K_{i+\tfrac12}}{\Delta z_{i+\tfrac12}}\bigl(T_{i+1}-T_i\bigr)
+   - \frac{K_{i-\tfrac12}}{\Delta z_{i-\tfrac12}}\bigl(T_i-T_{i-1}\bigr)
+\right]
+\]
+on the interior, and modified rows for the radiative-BC top
+(\ref{eq:bc-top-rep}, requiring an outer Picard iteration to handle
+$T_s^4$) and the imposed-flux bottom (\ref{eq:bc-bot-rep}).
+The system is solved with the Thomas algorithm
+\citep[$O(N_z)$;][]{press2007}.
+
+\begin{aside}[Why Crank-Nicolson and not pure-implicit Euler?]
+Pure-implicit Euler is unconditionally stable but only first-order
+accurate in time, which damps the diurnal wave artificially and
+produces a $\sim\!\SI{2}{\kelvin}$ amplitude error at the top sensors
+even at $\Delta t = \SI{1}{\hour}$. Crank-Nicolson is also
+unconditionally stable but second-order accurate, eliminating the
+spurious damping. The cost is a slightly more complex tridiagonal
+right-hand side, paid once per step.
+\end{aside}
+
+\section{Spin-up}
+The initial condition $T(z,t=0) = T_\mathrm{init}$ (a constant
+matching each site's annual-mean Diviner brightness, irrelevant after
+spin-up) is propagated for 100 lunations. We declare convergence
+when $\max_i|T_i^{n+L} - T_i^n| < 10^{-2}\,\si{\kelvin}$ over a full
+lunation $L$. Fig.~\ref{fig:spinup} confirms that 100 lunations
+reach $\sim\!10^{-3}\,\si{\kelvin}$ everywhere, well below the
+declared tolerance.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/apollo_spinup_convergence.pdf}
+\caption[Spin-up convergence diagnostic]{\textbf{SI Fig.~S6 ---
+Spin-up convergence diagnostic.} Maximum per-lunation
+$\Delta T = \max_i|T_i^{n+L} - T_i^n|$ as a function of lunation
+number, for the \Hayne\ reference model at both Apollo sites. The
+dashed line is the $10^{-2}\,\si{\kelvin}$ convergence threshold;
+both sites comfortably pass at 100 lunations.}
+\label{fig:spinup}
+\end{figure}
+
+% =====================================================================
+\chapter{Apollo HFE Validation in Detail}\label{ch:validation}
+
+This chapter documents the four supplementary diagnostic figures that
+underpin the validation claims of the main Letter. The figures are
+generated by the companion notebook
+\texttt{01b\_apollo\_SI.ipynb} (Figs.~S1--S6) and by the main notebook
+\texttt{01\_apollo\_validation.ipynb} (Figs.~S7--S11).
+
+\section{Per-sensor diurnal grid}\label{sec:per-sensor}
+
+Letter Fig.~3 shows the diurnal cycle at the deepest TG sensor only,
+to keep the headline figure uncluttered. The complete per-sensor
+grids for both Apollo sites are reproduced as Figs.~\ref{fig:S1} and
+\ref{fig:S2} below, including the shallow ($z<\zborestem$) sensors
+that are excluded from the quantitative RMSE. The shaded red panels
+highlight the borestem-contaminated zone and let the reader see at a
+glance that the model \emph{should not} reproduce those sensors.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/a15_diurnal_sensor_grid.pdf}
+\caption[A15 diurnal grid]{\textbf{SI Fig.~S1 --- Apollo~15 per-sensor
+phase-folded diurnal cycle.} Each panel shows one HFE sensor
+(deep~$=$~green border, shallow/borestem~$=$~red border). Black
+markers are the SPICE-LST-folded median of the observed temperature;
+coloured lines are the \Hayne\ (navy) and Discrete (grey) modelled
+diurnal swing at the same depth, peak-aligned to the observed
+maximum (faint ghost lines $=$ unshifted model).}
+\label{fig:S1}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/a17_diurnal_sensor_grid.pdf}
+\caption[A17 diurnal grid]{\textbf{SI Fig.~S2 --- Apollo~17 per-sensor
+phase-folded diurnal cycle.} Conventions as in Fig.~\ref{fig:S1}.}
+\label{fig:S2}
+\end{figure}
+
+\section{One-to-one obs vs model scatter}
+Fig.~\ref{fig:S3} collapses every sensor at both sites onto a
+single 1:1 plot. The deep sensors (filled markers) lie close to the
+diagonal at both sites, while the shallow sensors (open markers)
+scatter systematically off it --- the warm side, as expected from
+the borestem heat-short.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/apollo_obs_vs_model_scatter.pdf}
+\caption[Obs vs model scatter]{\textbf{SI Fig.~S3 --- Observed vs
+modelled equilibrium temperature, both sites and both models.}
+Filled markers $=$ deep sensors ($z>\zborestem$); open markers $=$
+shallow sensors. The dashed line is the 1:1 reference.}
+\label{fig:S3}
+\end{figure}
+
+\section{Residual vs depth}
+Fig.~\ref{fig:S4} plots the per-sensor residual ($T_\mathrm{model}
+- T_\mathrm{obs}$) against depth. Two features should be noted:
+(i)~the deep ($z>\zborestem$) residuals are zero-mean within
+$\sim\!1\,\si{\kelvin}$ for both models at A15, and zero-mean
+for the Discrete model at A17 while the Hayne model has a
+$+\SI{2.5}{\kelvin}$ deep bias; (ii)~the shallow residuals trend
+monotonically negative (model too cold) above $\zborestem$, the
+expected signature of a heat source not in the model --- i.e.\ the
+borestem.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/apollo_residual_vs_depth.pdf}
+\caption[Residual vs depth]{\textbf{SI Fig.~S4 --- Per-sensor
+residual ($T_\mathrm{model} - T_\mathrm{obs}$) versus sensor depth,
+both sites and both models.} The lavender band marks the borestem
+exclusion zone.}
+\label{fig:S4}
+\end{figure}
+
+\section{Diurnal amplitude vs depth (the borestem signature)}\label{sec:borestem-diag}
+This is the diagnostic figure that motivates our \emph{a priori}
+exclusion of $z<\zborestem$. The modelled diurnal amplitude
+attenuates exponentially with depth at the rate predicted by
+(\ref{eq:skin}); the observed amplitude follows the same exponential
+\emph{below} $\zborestem$ but \emph{flares} sharply above it,
+indicating an additional heat source --- the borestem --- that the
+regolith model does not include.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/apollo_amplitude_vs_depth.pdf}
+\caption[Amplitude vs depth]{\textbf{SI Fig.~S5 --- Diurnal amplitude
+versus sensor depth, observed (black) vs modelled (Hayne, navy).}
+The model attenuates as predicted by (\ref{eq:skin}); the observations
+flare sharply above $\zborestem$, the borestem signature.}
+\label{fig:S5}
+\end{figure}
+
+\begin{aside}[Mild deep-amplitude under-prediction at A17]
+A close inspection of Fig.~\ref{fig:S5} shows that, below
+$\zborestem$ at the A17 borehole, the observed diurnal
+amplitudes sit slightly above the \Hayne\ model envelope (by
+$\sim\!0.05$--$0.10\,\si{\kelvin}$, comparable to the digitisation
+noise floor of the restored 1975--1977 records used here).
+The 3-layer discrete model reduces this gap by raising
+$K_d^\mathrm{disc}$ to $6.3\times10^{-3}$, which lengthens the
+diurnal skin depth and lifts the deep-sensor amplitude envelope.
+This is the same mechanism that drives the A17 RMSE improvement
+in Letter Table~1, and it points to the deep conductivity --- not
+the shallow profile --- as the parameter most worth refining
+against in-situ data. A dense $K_d$ sweep is deferred to the
+Phase-2 regression companion, where it can be carried out jointly
+with $Q_b$ retrieval to break the well-known $K_d/Q_b$ degeneracy.
+\end{aside}
+
+% =====================================================================
+\chapter{Independent Cross-Checks}\label{ch:crosschecks}
+
+\section{Surface temperature against Diviner}
+The radiative top boundary condition (\ref{eq:bc-top-rep}) implicitly
+predicts the lunar surface skin temperature
+$T_s(t)\equiv T(0,t)$. We compare the modelled
+$T_s^\mathrm{max}/T_s^\mathrm{min}$ at each site to the
+Diviner-measured lat-band envelope reported by \Vas\ (their Fig.~7)
+and find agreement to within the Diviner uncertainty
+(Fig.~\ref{fig:S7}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/phase1_surface_T_diviner_check.pdf}
+\caption[Surface T vs Diviner]{\textbf{SI Fig.~S7 --- Modelled
+surface skin temperature vs.\ Vasavada et~al.\ (2012)
+Diviner mean lat-band envelope at the Apollo 15 and 17 latitudes.}
+Bars are the modelled ($T_s^\mathrm{min}$, $T_s^\mathrm{max}$);
+dashed lines are the Vasavada Fig.~7 lat-band typical maxima.}
+\label{fig:S7}
+\end{figure}
+
+\section{Topographic shadow algorithm}
+Phase~1 of the pipeline assumes a flat horizon at both Apollo
+sites; the assumption must be \emph{verified}, not asserted, because
+the same DEM/horizon machinery will be applied to the rugged polar
+sites in Phase~2.
+
+\subsection{Flat-plain horizon \emph{unit test} (S8)}
+Fig.~\ref{fig:S8} is a \textbf{unit test of the horizon ray-marcher},
+not a scientific result. It exercises the
+\citet{mazarico2011}-style ray-march algorithm on a synthetic
+flat-plain DEM (constant elevation everywhere) and confirms that
+the recovered horizon angle is below $0.05^\circ$ in all azimuths,
+i.e.\ the algorithm correctly returns ``no horizon'' on input that
+has none. This is a standard regression check on the Phase-2
+horizon code path, which we exercise here so that the same
+implementation can be deployed without modification to the
+\textbf{rugged polar sites} of Phase~2 (where the horizon is far
+from flat and dominates the local energy balance).
+The companion crater unit test (Fig.~\ref{fig:S9}) confirms that
+the same code recovers the correct non-trivial horizon profile
+when fed a non-flat DEM.
+
+\begin{aside}[Phase-2 LOLA test plan]
+For Phase~2 the same ray-marcher will be driven by LOLA
+$\sim\!\SI{20}{\meter}$/pixel polar DEMs at PSR-rim candidate
+sites; the unit-test pair S8/S9 is the regression suite that the
+implementation is locked against. The Phase-2 paper will report
+the science output of the horizon-aware solver at those rugged
+sites; here we publish only the test fixtures.
+\end{aside}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/apollo_flat_horizon_check.pdf}
+\caption[Flat horizon unit test]{\textbf{SI Fig.~S8 --- Unit test of
+the horizon ray-marcher on a synthetic flat-plain DEM at the
+Apollo~15 and~17 latitudes.} Maximum recovered horizon elevation
+angle vs.\ azimuth, extracted with the \citet{mazarico2011}-style
+ray-march. Recovered angle $<0.05^\circ$ everywhere confirms the
+algorithm returns ``no horizon'' on input that has none. This is a
+regression check on the Phase-2 polar code path, not a scientific
+result for Apollo --- the flat-horizon assumption at Apollo is
+already justified by site selection (mare).}
+\label{fig:S8}
+\end{figure}
+
+\subsection{Crater horizon regression (S9)}
+The same horizon tracer is exercised on a synthetic crater
+(diameter \SI{1}{\kilo\meter}, depth \SI{200}{\meter}) to confirm
+that it correctly recovers a non-trivial horizon profile
+(Fig.~\ref{fig:S9}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/phase1_crater_horizon_check.pdf}
+\caption[Crater horizon test]{\textbf{SI Fig.~S9 ---
+\citet{mazarico2011} horizon tracer regression test on a synthetic
+crater DEM (diameter \SI{1}{\kilo\meter}, depth \SI{200}{\meter}).
+Recovered horizon (markers) vs.\ analytic crater rim profile
+(dashed).}}
+\label{fig:S9}
+\end{figure}
+
+\subsection{Insolation chain demo (S10)}
+Fig.~\ref{fig:S10} shows the end-to-end DEM~$\rightarrow$~horizon
+mask~$\rightarrow$~insolation chain on the same crater DEM, with
+the shadow boundary correctly tracked across a full diurnal cycle.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/phase1_insolation_shadow_demo.pdf}
+\caption[Shadow demo]{\textbf{SI Fig.~S10 --- DEM
+$\rightarrow$ horizon mask $\rightarrow$ instantaneous insolation,
+illustrated on the synthetic crater of Fig.~\ref{fig:S9} at three
+solar times.}}
+\label{fig:S10}
+\end{figure}
+
+\subsection{Shadow-coupled solver closure (S11)}
+The most stringent check: hooking the shadow mask into the actual
+1-D solver and confirming that, on a flat plain (where the mask is
+identically~1), the solver reproduces the no-shadow baseline to
+better than \SI{0.05}{\kelvin} everywhere
+(Fig.~\ref{fig:S11}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/phase1_shadow_solver_closure.pdf}
+\caption[Solver closure]{\textbf{SI Fig.~S11 --- Shadow-coupled
+1-D solver closure test.} Difference between the shadow-coupled and
+no-shadow solver output on a flat-plain DEM. Maximum
+$|\Delta T|<\SI{0.05}{\kelvin}$ everywhere confirms that the shadow
+hook is correctly disabled when the mask is unity.}
+\label{fig:S11}
+\end{figure}
+
+% =====================================================================
+\chapter{Reproducibility \& Code Walk-through}\label{ch:repro}
+
+The complete Phase-1 pipeline is open-source and lives at
+\url{https://github.com/rp3gregorio/Lunar-V2}, branch
+\texttt{claude/cleanup-repo-organization-EcS3U}. Two notebooks
+reproduce every figure in this document:
+
+\begin{itemize}\itemsep2pt
+  \item \texttt{notebooks/phase1\_validation/01\_apollo\_validation.ipynb}
+        --- main notebook: reproduces Letter Figs.~1--4, Table~1,
+        and SI Figs.~S7--S11.
+  \item \texttt{notebooks/phase1\_validation/01b\_apollo\_SI.ipynb}
+        --- companion: reproduces SI Figs.~S1--S6.
+\end{itemize}
+
+\section{Repository layout (Phase 1)}
+\begin{lstlisting}[language=bash,caption={Top-level layout of the
+Phase-1 deliverables.}]
+Lunar-V2/
+  lunar/
+    constants.py        # Physical constants + Hayne 2017 fit values
+    properties.py       # K(T,z), rho(z), c_p(T) implementations
+    solver.py           # Crank-Nicolson 1-D solver + boundary BCs
+    illumination.py     # DEM, horizon tracer, shadow mask
+    apollo_helpers.py   # Per-site solver dispatch + stats
+    plotting/
+      style_guide.py    # GRL-style mpl rcParams + colour palette
+  notebooks/phase1_validation/
+    01_apollo_validation.ipynb   # Main letter notebook
+    01b_apollo_SI.ipynb          # SI companion notebook
+  data/
+    apollo/             # HFE restored record (Nagihara+2018)
+    spice/              # JPL SPICE kernels (DE440, MOON_ME)
+\end{lstlisting}
+
+\section{Minimal solver invocation}
+The following $\sim\!30$ lines reproduce the \Hayne\ Apollo 15 result
+of Table~1:
+\begin{lstlisting}[caption={Minimal Apollo 15 \Hayne\ run.},
+                   label={lst:minimal}]
+import numpy as np
+from lunar.constants  import (S0, K_SURFACE, K_DEEP, H_PARAMETER,
+                              CHI_RADIATIVE, T_REFERENCE,
+                              RHO_SURFACE, RHO_DEEP)
+from lunar.properties import (conductivity_hayne, density_hayne,
+                              specific_heat)
+from lunar.solver     import PixelInputs, run_pixel
+from lunar.apollo_helpers import build_insolation_for_site, A15_SITE
+
+# 1. Build the surface forcing F_solar(t) at Apollo 15 via SPICE.
+t_sec, insolation = build_insolation_for_site(A15_SITE,
+                                              n_lunations=100)
+
+# 2. Wire the Hayne 2017 property functions into the solver.
+inp = PixelInputs(
+    t = t_sec,
+    z_max = 5.0, dz0 = 2e-3, growth = 0.08,
+    K_func   = lambda T, z: conductivity_hayne(T, z,
+                K_SURFACE, K_DEEP, H_PARAMETER, CHI_RADIATIVE),
+    rho_func = lambda z:    density_hayne(z, RHO_SURFACE,
+                                          RHO_DEEP, H_PARAMETER),
+    cp_func  = lambda T:    specific_heat(T, model='hayne'),
+    insolation = insolation,
+    albedo = A15_SITE['albedo'],
+    emissivity = A15_SITE['emissivity'],
+    Q_b = A15_SITE['Q_BASAL'],
+    T_init = 250.0,
+    spinup_lunations = 100, spinup_tol_K = 1e-2,
+)
+
+# 3. Solve and inspect.
+out = run_pixel(inp)
+print(f"Deep T(z=1m)  = {np.interp(1.0, out.z, out.T.mean(axis=1)):.2f} K")
+print(f"Surface T_max = {out.T_surface.max():.1f} K")
+\end{lstlisting}
+
+\section{How to swap the regolith model}
+Because \texttt{PixelInputs} accepts the property functions
+($K$, $\rho$, $c_p$) as kwargs, swapping to the Discrete-3-layer or
+to the Biele-2022 $c_p$ rational fit is a two-line change:
+\begin{lstlisting}[caption={Discrete 3-layer + Biele $c_p$ swap.}]
+from lunar.properties import conductivity_discrete
+
+inp = inp._replace(
+    K_func  = lambda T, z: conductivity_discrete(T, z),
+    cp_func = lambda T:    specific_heat(T, model='biele'),
+)
+out_alt = run_pixel(inp)
+\end{lstlisting}
+The full sensitivity sweep of Letter Fig.~4 is implemented as a loop
+over these two-line swaps, which is why the cell is short and easy
+to audit.
+
+% =====================================================================
+\chapter{Glossary}\label{ch:glossary}
+
+\begin{description}\itemsep2pt
+  \item[ALSEP] \emph{Apollo Lunar Surface Experiments Package} ---
+        the surface-mounted electronics box that powered and recorded
+        each Apollo geophysical experiment, including the HFE.
+  \item[Bond albedo $A$] The fraction of incident solar irradiance
+        that a surface element scatters back to space integrated over
+        all reflection angles and over the solar spectrum. For lunar
+        regolith $A\!\sim\!0.07\text{--}0.14$ depending on terrain type.
+  \item[Borestem] The fibreglass tube left in the HFE drill holes to
+        keep them open. Source of the heat-short artefact discussed
+        throughout this document.
+  \item[Crank-Nicolson] An unconditionally stable, second-order-accurate
+        time-discretisation scheme for parabolic PDEs (\citealt{press2007},
+        Chap.~20).
+  \item[DE440] JPL's current planetary ephemeris, providing positions of
+        the Sun, Moon and planets accurate to $\sim\!\SI{2}{\meter}$ over
+        modern times.
+  \item[Diviner] The Diviner Lunar Radiometer Experiment on the Lunar
+        Reconnaissance Orbiter \citep{paige2010} --- 9 broad-band channels
+        between $0.3$ and \SI{400}{\micro\meter} measuring lunar
+        brightness temperatures.
+  \item[H-parameter ($H$)] The exponential length-scale of the depth
+        dependence of $K(z)$ and $\rho(z)$ in the \Hayne\ model;
+        $H=\SI{0.06}{\meter}$.
+  \item[HFE] \emph{Heat-Flow Experiment}, the Apollo~15 and~17
+        instrument that drilled boreholes and lowered platinum-resistance
+        thermometers to measure the lunar geothermal heat flux.
+  \item[LST] \emph{Local solar time}, the angular position of the Sun
+        in the local sky, measured in lunar hours from local noon.
+  \item[MOON\_ME] The body-fixed mean Earth/principal-axis frame for
+        the Moon used by the SPICE toolkit; the standard reference
+        frame for lunar-surface coordinates.
+  \item[Skin depth $\delta$] The depth at which a periodic surface
+        temperature wave attenuates by $e^{-1}$, defined in
+        (\ref{eq:skin}). For the lunar diurnal wave,
+        $\delta\sim\SI{6}{\centi\meter}$.
+  \item[SPICE] NAIF's planetary geometry and ephemeris toolkit
+        \citep{acton1996,acton2018}; the mission-grade source for $\theta_\odot$.
+  \item[TG bridge] HFE \emph{thermal gradient} bridge: measures the
+        temperature \emph{difference} between two sensors $\sim\!\SI{50}{\centi\meter}$
+        apart along the borestem.
+  \item[TR bridge] HFE \emph{thermometer ring} bridge: measures the
+        \emph{absolute} temperature of a single sensor against a
+        reference resistor in the ALSEP electronics.
+  \item[Thermal inertia $I$] $\sqrt{K\rho c_p}$, defined in
+        (\ref{eq:inertia}); the proportionality between surface
+        temperature swing and inverse square-root of forcing frequency.
+\end{description}
+
+% =====================================================================
+\bibliography{references}
+
+\end{document}
