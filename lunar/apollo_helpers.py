@@ -611,7 +611,10 @@ def run_site_solvers(site, grid, t_s, hayne_params, *,
     from lunar.solver import PixelInputs, solve_pixel
 
     z_mid = grid.z_mid
-    cos_lat = np.cos(np.deg2rad(site['LAT']))
+    _lat  = site.get('lat', site.get('LAT'))
+    _alb  = site.get('albedo', site.get('ALBEDO'))
+    _eps  = site.get('emissivity', site.get('EMISSIVITY'))
+    cos_lat = np.cos(np.deg2rad(_lat))
     S0 = s0_nominal * sun_scale
     phase = 2.0 * np.pi * t_s / t_lunar
     insolation = S0 * cos_lat * np.maximum(0.0, np.cos(phase))
@@ -627,8 +630,8 @@ def run_site_solvers(site, grid, t_s, hayne_params, *,
 
     inputs_h = PixelInputs(
         grid=grid, t=t_s, bc_mode='radiative',
-        insolation=insolation, albedo=site['ALBEDO'],
-        emissivity=site['EMISSIVITY'], Q_b=site['Q_BASAL'], T_init=T_init_h,
+        insolation=insolation, albedo=_alb,
+        emissivity=_eps, Q_b=site['Q_BASAL'], T_init=T_init_h,
         n_lunations_spinup=n_lunations, spinup_tol_K=spinup_tol,
     )
     out_h = solve_pixel(inputs_h)
@@ -640,8 +643,8 @@ def run_site_solvers(site, grid, t_s, hayne_params, *,
 
     inputs_d = PixelInputs(
         grid=grid, t=t_s, bc_mode='radiative',
-        insolation=insolation, albedo=site['ALBEDO'],
-        emissivity=site['EMISSIVITY'], Q_b=site['Q_BASAL'], T_init=T_init_d,
+        insolation=insolation, albedo=_alb,
+        emissivity=_eps, Q_b=site['Q_BASAL'], T_init=T_init_d,
         n_lunations_spinup=n_lunations, spinup_tol_K=spinup_tol,
         K_func=K_func_disc, rho_func=rho_func_disc, cp_func=cp_func,
     )
