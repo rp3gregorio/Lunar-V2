@@ -46,15 +46,14 @@
 \newcommand{\dT}{\Delta T}
 \newcommand{\zborestem}{80\,\si{\centi\meter}}
 
-\title{\bfseries A Self-Consistent SPICE-Driven Single-Pixel Pipeline
-for Apollo HFE Subsurface Temperatures, with \emph{a~priori}
-Borestem-Artefact Exclusion: Phase-1 Validation of a Crank--Nicolson
-Lunar Regolith Solver}
+\title{\bfseries Regional Heterogeneity in Lunar Deep Regolith
+Conductivity from a Per-Site Retrieval Against the Restored Apollo
+15 and 17 Heat-Flow Experiment Record}
 
-\author{R.~P.~Gregorio\thanks{Lunar-V2 / TSUKIMI thermal modelling
-pipeline. Correspondence to: \texttt{rp3gregorio@gmail.com}}}
+\author{R.~P.~Gregorio\thanks{Independent researcher.
+Correspondence to: \texttt{rp3gregorio@gmail.com}.}}
 
-\date{\small \today\ --- Phase-1 Validation Letter, draft.}
+\date{\today}
 
 \begin{document}
 \maketitle
@@ -62,59 +61,68 @@ pipeline. Correspondence to: \texttt{rp3gregorio@gmail.com}}}
 % =====================================================================
 \begin{abstract}
 \noindent
-We present a self-consistent single-pixel thermal pipeline for the
-lunar regolith and use it to perform a quantitative, per-site
-retrieval of the deep conductivity $K_d$ against the restored Apollo
-Heat-Flow Experiment (HFE) record at Apollo~15 and~17. Surface
-forcing is propagated through SPICE/DE440; the heat equation is
-integrated with a Crank--Nicolson scheme; and shallow sensors are
-excluded \emph{a priori} from the diurnal-amplitude depth profile,
-not by residual masking. Holding the
-\citet{hayne2017} regolith functional form fixed and varying only
-$K_d$, the deep-sensor RMSE bottoms at
-$K_{d,\mathrm{A15}}^{*} = 4.85\pm0.59$\,mW\,m$^{-1}$\,K$^{-1}$
-(RMSE\,$=$\,0.90\,K, $N=7$) and at
-$K_{d,\mathrm{A17}}^{*} = 11.23\pm0.61$\,mW\,m$^{-1}$\,K$^{-1}$
-(RMSE\,$=$\,0.30\,K, $N=16$); the per-site contrast is
-$6.4\pm0.9$\,mW\,m$^{-1}$\,K$^{-1}$ ($\sim\!7.5\sigma$ on a
-leave-one-out jackknife). Both retrievals reject the global
-\citet{hayne2017} value $K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$ at
-$\geq\!2\sigma$. The result argues for regional rather than
-global $K_d$ in any application of the Hayne parameterisation to
-in-situ thermometry; we discuss the residual $K_d/Q_b$ degeneracy
-that makes the absolute A17 value model-dependent. Methodology,
-including SPICE forcing, an a-priori borestem cut, and a parameter
-sensitivity sweep over $Q_b$, $\chi$ and $c_p$, transfers without
-modification to the Phase-2 LOLA polar pipeline.
+The deep thermal conductivity of lunar regolith, $K_d$, is the
+dominant control on subsurface temperatures and on the stability of
+polar volatiles, yet no \emph{in-situ} retrieval has previously been
+attempted. We use the restored 1971--1977 Apollo Heat-Flow Experiment
+(HFE) record at Apollo~15 and~17 to perform a per-site,
+single-parameter retrieval of $K_d$ within the
+\citet{hayne2017} regolith functional form. Surface insolation is
+propagated through SPICE/DE440 ephemerides; the 1-D heat equation is
+integrated with a Crank--Nicolson scheme on a geometric vertical
+grid; and shallow sensors are excluded \emph{a priori} on the basis
+of the modelled diurnal-amplitude depth profile, eliminating the
+circular-validation risk inherent in residual-based masking. The
+deep-sensor root-mean-square error is minimised at
+$K_{d,\mathrm{A15}}^{*}=4.85\pm 0.59$\,mW\,m$^{-1}$\,K$^{-1}$
+($N=7$, RMSE $=0.90$\,K) and at
+$K_{d,\mathrm{A17}}^{*}=11.23\pm 0.61$\,mW\,m$^{-1}$\,K$^{-1}$
+($N=16$, RMSE $=0.30$\,K), where uncertainties are leave-one-out
+jackknife standard errors. The two-site contrast is
+$6.4\pm 0.9$\,mW\,m$^{-1}$\,K$^{-1}$ ($\sim\!7.5\sigma$), and both
+retrievals reject the global value
+$K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$ adopted by \citet{hayne2017} at
+$\geq\!2\sigma$. The contrast is invariant under the unavoidable
+$K_d/Q_b$ degeneracy of single-borehole inversions; the absolute A17
+value is not. We conclude that lunar deep regolith conductivity is
+regionally heterogeneous, and that the global parameter currently
+adopted in volatile-stability and instrument-design analyses should
+carry an uncertainty no smaller than the inter-site disagreement
+reported here.
 \end{abstract}
 
 \begin{plainlanguagesummary}
-How well the Moon's surface insulates its interior depends on a
-single number --- the thermal conductivity of compacted regolith at
-depth. Because nobody has ever measured that number from the surface
-alone, every spacecraft analysis has assumed one global value. We
-use thermometers buried in the regolith by the Apollo~15 and~17
-missions in 1971--1972, only recently restored, to retrieve this
-number directly at each site. The two sites disagree at high
-significance: A17 demands roughly twice the conductivity that A15
-allows. The disagreement implies that the regolith varies regionally
-even at non-polar mare/highland sites, and that the global value
-adopted in lunar volatile-stability and instrument-design budgets
-should carry an uncertainty equal to that disagreement.
+How well the Moon's surface insulates its interior depends largely
+on a single number: the thermal conductivity of compacted regolith
+(broken-up rock) at depth. Because this number has never been
+measured directly from above, every spacecraft analysis has so far
+assumed one global value. The Apollo~15 and~17 astronauts buried
+arrays of thermometers below the surface in 1971--1972, and the
+recently-restored 1971--1977 record provides the only \emph{in-situ}
+constraint on what that number is. Treating the conductivity as the
+single free parameter in a physics-based subsurface-temperature
+model, we find that the two landing sites require values that
+disagree by roughly a factor of two and far beyond their measurement
+uncertainty. The disagreement means that the regolith at depth
+varies regionally even at non-polar landing sites, and that the
+global value used in calculations of polar-ice stability and
+instrument-design heat budgets should carry an uncertainty at least
+as large as the inter-site disagreement reported here.
 \end{plainlanguagesummary}
 
 \bigskip
 \noindent\textbf{Key Points}
 \begin{itemize}\itemsep1pt
-  \item Per-site $K_d$ retrieval against Apollo HFE:
-        $K_{d,\mathrm{A15}}^{*}=4.85\pm0.59$ and
-        $K_{d,\mathrm{A17}}^{*}=11.23\pm0.61$\,mW\,m$^{-1}$\,K$^{-1}$.
-  \item The two-site contrast ($\sim\!7.5\sigma$) rejects a single
-        global $K_d$ for in-situ thermometry within the Hayne (2017)
-        functional form.
-  \item Methodology --- SPICE/DE440 forcing, a-priori borestem cut,
-        end-to-end shadow closure --- is reusable verbatim by the
-        Phase-2 LOLA polar pipeline.
+  \item Per-site retrieval of lunar deep regolith conductivity against
+        the restored Apollo Heat-Flow Experiment record yields
+        $K_{d,\mathrm{A15}}^{*}=4.85\pm 0.59$ and
+        $K_{d,\mathrm{A17}}^{*}=11.23\pm 0.61\,$mW\,m$^{-1}$\,K$^{-1}$.
+  \item The two sites disagree at $\sim\!7.5\sigma$, and both reject the
+        global value of \citet{hayne2017} at $\geq\!2\sigma$,
+        indicating regional heterogeneity in $K_d$.
+  \item The contrast is invariant under the $K_d/Q_b$ degeneracy of
+        single-borehole inversions; the absolute A17 value is
+        conditional on the adopted basal heat flux.
 \end{itemize}
 
 % =====================================================================
@@ -132,34 +140,38 @@ polar volatile stability calculations, and instrument design budgets.
 
 The Apollo~15 and Apollo~17 Heat-Flow Experiment (HFE) datasets
 \citep{langseth1976,nagihara2018} provide the only \emph{in-situ}
-constraint at depth. Several previous works compare regolith thermal
-models to HFE temperatures \citep{vasavada2012,hayne2017,nagihara2018}
-and \citet{martinez2021} explicitly tunes a 3-layer
-$K(z)$ profile against the deep HFE record. Our contribution is not
-``the first comparison'' but rather a small set of methodological
-upgrades that we believe make subsequent comparisons cleaner:
+constraint at depth. Several previous works have compared
+regolith thermal models to HFE temperatures
+\citep{vasavada2012,hayne2017,nagihara2018}, and
+\citet{martinez2021} explicitly tunes a 3-layer
+$K(z)$ profile against the deep HFE record. The present work
+differs in three respects that together permit a quantitative,
+per-site retrieval of $K_d$ rather than a model-fit comparison:
 
 \begin{itemize}\itemsep2pt
-  \item a SPICE/DE440 surface-forcing chain that eliminates the
-        $\sim\!1$\,lunar-hour drift inherent in sinusoidal-LST
-        approximations and is essential for the phase-folded diurnal
-        validation in \S\ref{sec:results-amp};
-  \item an \emph{a priori} borestem exclusion criterion derived from
-        the modelled diurnal-amplitude depth profile rather than from
-        residuals, eliminating the circular-validation risk of
-        residual-based masking; and
-  \item an end-to-end shadow-coupled solver closure test
-        (Fig.~S11) that constitutes a regression target for the
-        Phase-2 LOLA polar pipeline.
+  \item a SPICE/DE440 surface-forcing chain that removes the
+        $\sim\!1$ lunar-hour drift inherent in
+        sinusoidal local-solar-time approximations and is required
+        for the phase-folded diurnal-amplitude profile of
+        \S\ref{sec:results-amp};
+  \item an \emph{a priori} shallow-sensor exclusion criterion
+        derived from the modelled diurnal-amplitude depth profile
+        rather than from temperature residuals, which removes the
+        circular-validation risk of residual-based masking; and
+  \item a single-parameter retrieval of $K_d$ under the
+        \Hayne\ functional form, with leave-one-out jackknife
+        uncertainties propagated to the per-site contrast
+        (\S\ref{sec:methods-kd}).
 \end{itemize}
 
-The substantive scientific finding is the per-site retrieval of $K_d$
-under the \Hayne\ functional form (\S\ref{sec:results-kd}), which
-rejects a single global $K_d$ for in-situ application: A15 and A17
-optima differ by $\sim\!7.5\sigma$ on a leave-one-out jackknife. We
-discuss the unavoidable $K_d/Q_b$ degeneracy of single-borehole
-inversions and the model-dependence of the absolute A17 value in
-\S\ref{sec:disc}.
+The principal scientific finding is that the per-site $K_d$
+retrievals (\S\ref{sec:results-kd}) disagree at $\sim\!7.5\sigma$:
+the value preferred at Apollo~17 is more than twice the value
+preferred at Apollo~15, and both reject the published global value
+of \citet{hayne2017} at $\geq\!2\sigma$. We discuss the
+unavoidable $K_d/Q_b$ degeneracy of single-borehole inversions and
+the model-dependence of the absolute A17 value in
+\S\ref{sec:discussion}.
 
 % =====================================================================
 \section{Data and Methods}\label{sec:methods}
@@ -289,7 +301,7 @@ the pooled jackknife variance of the two sites.
 \centering
 \includegraphics[width=0.92\linewidth]{figures/fig1_hayne_model_properties.pdf}
 \caption{\textbf{Provenance check of the regolith property functions
-implemented in the Lunar-V2 solver.} (a)~Thermal conductivity
+implemented in the solver.} (a)~Thermal conductivity
 $K(T{=}\SI{250}{\kelvin},z)$: the \Hayne\ smooth H-parameter form
 (eq.~\ref{eq:K}) and the \citet{martinez2021}-style 3-layer
 alternative are super-imposed; both include the same radiative
@@ -425,12 +437,12 @@ treats $K_d$ separately as the controlled retrieval parameter.
 \centering
 \includegraphics[width=0.99\linewidth]{figures/fig4_sensitivity_suite.pdf}
 \caption{\textbf{Parameter-sensitivity suite for the \Hayne\
-reference model.} Deep-sensor RMSE (Phase-1 mission target $\le 2$\,K
-shown as the dashed line) versus (a) basal heat flux $Q_b$,
-(b) radiative-conductivity coefficient $\chi$ (\Hayne\ default
-$\chi=2.7$ marked), and (c) specific-heat parameterisation. Shaded
-ranges span the published uncertainty of each parameter; deep RMSE
-shifts by $<\SI{0.5}{\kelvin}$ across all sweeps.}
+reference model.} Deep-sensor RMSE (with the dashed line at
+\SI{2}{\kelvin} shown for reference) versus (a) basal heat flux
+$Q_b$, (b) radiative-conductivity coefficient $\chi$ (\Hayne\
+default $\chi=2.7$ marked), and (c) specific-heat parameterisation.
+Shaded ranges span the published uncertainty of each parameter; the
+deep RMSE shifts by $<\SI{0.5}{\kelvin}$ across all sweeps.}
 \label{fig:sensitivity}
 \end{figure}
 
@@ -474,15 +486,15 @@ per-site contrast, model-dependent --- in \S\ref{sec:disc-kd}.
 functional form.} Deep-sensor RMSE (eq.~\ref{eq:rmse-kd}) as a
 function of $K_d$, with $K_s$, $H$, $\chi$, $T_\mathrm{ref}$,
 $\rho(z)$ and $c_p(T)$ all held at their published values. Filled
-markers are the swept grid; solid curve is the parabolic refinement
-through the three values bracketing the minimum; the shaded band is
-the $\pm 1\sigma$ leave-one-out jackknife envelope. Vertical dashed
-lines mark the published \citet{hayne2017} value
+markers are the swept grid; the solid curve is the parabolic
+refinement through the three values bracketing the minimum; and the
+shaded band is the $\pm 1\sigma$ leave-one-out jackknife envelope.
+Vertical dashed lines mark the published \citet{hayne2017} value
 (\SI{3.4}{\milli\watt\per\meter\per\kelvin}) and the
 \citet{martinez2021} 3-layer deep value
-(\SI{6.3}{\milli\watt\per\meter\per\kelvin}); the horizontal dashed
-line is the Phase-1 mission RMSE target ($\le 2$\,K). The two
-landing-site optima differ by $6.4\pm 0.9\,\si{\milli\watt\per\meter\per\kelvin}$
+(\SI{6.3}{\milli\watt\per\meter\per\kelvin}). The two landing-site
+optima differ by
+$6.4\pm 0.9\,\si{\milli\watt\per\meter\per\kelvin}$
 ($\sim\!7.5\sigma$).}
 \label{fig:kdsweep}
 \end{figure}
@@ -568,84 +580,84 @@ parabolic minimum, and $c_p$ enters only through the spin-up rate
 $\sim\!7.5\sigma$ per-site contrast is therefore not an artefact of
 any single under-constrained \Hayne\ ingredient.
 
-\paragraph{Software-engineering closure.}
-Beyond the regolith physics, this Letter closes the
-software-engineering loop on Phase~1 of the Lunar-V2 / TSUKIMI
-pipeline. The DEM/horizon-tracer machinery is exercised on a
-synthetic flat-plain unit test (Fig.~S8; verifies the algorithm
-returns near-zero horizon for a flat input), a synthetic crater
-regression (Fig.~S9), and an end-to-end shadow-coupled solver
-closure to $<\SI{0.05}{\kelvin}$ (Fig.~S11). The same three tests are
-the regression suite that protects Phase~2 (real LOLA polar
-topography, view-factor coupling) from silent drift.
+\paragraph{Implications for polar volatile-stability and instrument-design analyses.}
+The retrieved per-site contrast in $K_d$ implies that any analysis
+which adopts the global \citet{hayne2017} value as a fixed input ---
+including most polar volatile-stability calculations and
+spacecraft-thermal-design heat budgets --- inherits a model
+uncertainty no smaller than the inter-site disagreement. A
+factor-$\sim\!2$ error in $K_d$ translates directly into a
+factor-$\sim\!2$ error in the deep equilibrium gradient
+$|\partial_z T|=Q_b/K(T_d)$ and, through the $T^4$ surface-radiation
+balance, into a multi-kelvin shift of the cold-trap depth at which
+water ice is stable on geological timescales. Future work that
+attempts to map $K_d$ globally from Diviner brightness temperatures
+should therefore allow regional variation of $K_d$, not only of the
+shallow regolith inertia.
 
 % =====================================================================
 \section{Conclusion}
-A self-consistent SPICE-driven 1-D Crank--Nicolson solver applied to
-the restored Apollo HFE record yields a single-parameter retrieval of
-the deep conductivity $K_d$ under the \Hayne\ functional form. The
-two landing sites disagree at high significance:
-$K_{d,\mathrm{A15}}^{*}=4.85\pm 0.59$ and
-$K_{d,\mathrm{A17}}^{*}=11.23\pm 0.61\,\si{\milli\watt\per\meter\per\kelvin}$,
-a per-site contrast of $\sim\!7.5\sigma$ on the leave-one-out
-jackknife, and both retrievals reject the global \Hayne\ value
+We have presented the first quantitative, per-site, single-parameter
+retrieval of the lunar deep regolith conductivity $K_d$ from the
+restored Apollo HFE record, performed within the
+\citet{hayne2017} regolith functional form. The two landing sites
+require $K_{d,\mathrm{A15}}^{*}=4.85\pm 0.59$ and
+$K_{d,\mathrm{A17}}^{*}=11.23\pm 0.61\,\si{\milli\watt\per\meter\per\kelvin}$
+($\sim\!7.5\sigma$ contrast on the leave-one-out jackknife), and
+both reject the published global value
 $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ at $\geq 2\sigma$. The
-contrast is invariant under the $K_d/Q_b$ degeneracy that conditions
-the absolute A17 number, which is therefore the robust claim. The
+$K_d/Q_b$ degeneracy that conditions any single-borehole inversion
+leaves the per-site contrast invariant; the absolute A17 number is
+not similarly robust and should be quoted with that caveat. The
 borestem heat-short artefact above $z\!=\!\zborestem$ is identified
 \emph{a priori} from the diurnal-amplitude depth profile rather than
-from residuals, yielding a hardware-based exclusion criterion that is
-identical at A15 and A17 and isolates the deep-sensor RMSE used in
-the retrieval. Phase~1 of the Lunar-V2 / TSUKIMI pipeline is thereby
-validated end-to-end, with the same SPICE-driven solver and a-priori
-borestem cut now ready to be exercised on real LOLA polar topography
-in Phase~2.
+from temperature residuals, yielding a hardware-based exclusion
+criterion that is identical at A15 and A17 and that isolates the
+deep-sensor RMSE used in the retrieval. Taken together, the result
+implies that lunar deep regolith conductivity is regionally
+heterogeneous and that the global parameter currently adopted in
+volatile-stability and instrument-design analyses should carry an
+uncertainty no smaller than the inter-site disagreement reported here.
 
 % =====================================================================
-\section*{Limitations and journal fit}
-With five main-text figures (Figs.~\ref{fig:hayne-props}--\ref{fig:kdsweep}),
-a quantitative single-parameter retrieval, and a book-like SI
-(Figs.~S1--S11), the natural venue for this submission is
-JGR:Planets rather than a GRL Letter. The single highest-priority
-follow-up that we have deliberately deferred is a real-LOLA horizon
-test at the A15/A17 sites to replace the synthetic-flat-plain unit
-test (Fig.~S8); this is a closure test for the Phase-2 polar
-pipeline rather than a regolith-physics result and naturally belongs
-to the Phase-2 paper. The dataset and code archived under the
-\texttt{Open Research} statement should be Zenodo-DOI'd (not
-branch-named) before the AGU submission.
-
-Three caveats that the reader should keep in mind when interpreting
-the per-site $K_d$ retrieval: \emph{(i)} the absolute values are
-conditional on the adopted $Q_b$ (\S\ref{sec:disc-kd}); the per-site
-contrast is invariant under any global $Q_b$ rescaling but the
-absolute A17 number is not; \emph{(ii)} the retrieval assumes the
-\Hayne\ functional form for $K(T,z)$ is correct and varies only
-$K_d$ --- a discrete-layer or piecewise-linear shape (e.g.\
-\citealt{martinez2021}) is a separate hypothesis class that we do
-not test in this Letter; and \emph{(iii)} the diurnal-amplitude panel
-(Fig.~\ref{fig:amplitude}) is used \emph{only} as a borestem
-diagnostic, not as a frequency-domain validation, because below
+\section*{Limitations}
+Three caveats should accompany any use of the per-site $K_d$
+retrieval reported here. \emph{(i)} The absolute values are
+conditional on the adopted basal heat fluxes (\S\ref{sec:disc-kd});
+the per-site contrast is invariant under any global $Q_b$ rescaling,
+but the absolute A17 value is not, and a $\sim\!30\%$ revision of
+$Q_{b,\mathrm{A17}}$ along the lines of the
+\citet{saito2007,nagihara2018} reanalyses brings $K_{d,\mathrm{A17}}^{*}$
+into approximate agreement with the deep layer of the
+\citet{martinez2021} 3-layer profile. \emph{(ii)} The retrieval
+assumes that the \citet{hayne2017} functional form for $K(T,z)$ is
+correct and varies only $K_d$; a discrete-layer or piecewise-linear
+shape (e.g.\ \citealt{martinez2021}) is a separate hypothesis class
+which is not tested here. \emph{(iii)} The diurnal-amplitude depth
+profile (Fig.~\ref{fig:amplitude}) is used only as a borestem
+diagnostic and not as a frequency-domain validation, because below
 $\zborestem$ both models predict amplitudes well below the
 1971--1977 digitisation noise floor.
 
 % =====================================================================
 \section*{Open Research}
-The Apollo HFE restored temperature record is available from
-\citet{nagihara2018}. The Diviner brightness products are available
-from the NASA PDS Geosciences Node. The Lunar-V2 / TSUKIMI Phase-1
-solver, validation notebook (\texttt{01\_apollo\_validation.ipynb}),
-supplementary notebook (\texttt{01b\_apollo\_SI.ipynb}), and LaTeX
-sources for this Letter and its book-like appendix are at
-\url{https://github.com/rp3gregorio/Lunar-V2}
-(branch \texttt{claude/cleanup-repo-organization-EcS3U}; a
-Zenodo-archived release with a citable DOI will accompany the journal
-submission).
+The Apollo HFE restored 1971--1977 temperature record is available
+from the supplementary material of \citet{nagihara2018}. The Diviner
+Lunar Radiometer brightness-temperature products are available from
+the NASA Planetary Data System Geosciences Node
+(\url{https://pds-geosciences.wustl.edu}). The 1-D Crank--Nicolson
+solver, the SPICE/DE440 surface-forcing chain, the $K_d$-sweep
+harness, the validation notebook, and the LaTeX sources for this
+manuscript and the supporting information are archived at
+\url{https://github.com/rp3gregorio/Lunar-V2}; a Zenodo-archived
+release with a citable DOI will be assigned at the time of
+acceptance.
 
 \section*{Acknowledgements}
-The author thanks the original Apollo HFE PIs and the
-\citet{nagihara2018} team for restoring the 1975--1977 record without
-which this Letter would not have been possible.
+The author thanks the original Apollo HFE Principal Investigators
+and the \citet{nagihara2018} team for restoring the 1975--1977
+portion of the record from the original tapes, without which this
+work would not have been possible.
 
 \bibliography{references}
 

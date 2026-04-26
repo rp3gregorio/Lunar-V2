@@ -56,9 +56,11 @@
 \newcommand{\dT}{\Delta T}
 \newcommand{\zborestem}{80\,\si{\centi\meter}}
 
-\title{\bfseries Phase-1 Apollo HFE Validation\\[2pt]
-\Large Supporting Information --- A Beginner's Walk-through\\[2pt]
-\large for the Lunar-V2 / TSUKIMI Thermal-Modelling Pipeline}
+\title{\bfseries Supporting Information for\\
+``Regional Heterogeneity in Lunar Deep Regolith Conductivity\\
+from a Per-Site Retrieval Against the Restored Apollo 15 and 17\\
+Heat-Flow Experiment Record''\\[6pt]
+\large A Self-Contained Walk-Through of the Methodology}
 \author{R.~P.~Gregorio}
 \date{\today}
 
@@ -75,8 +77,10 @@ Each chapter starts from first principles and assumes only an undergraduate
 background in differential equations, basic statistics, and rudimentary
 Python. If you are an experienced lunar thermophysics modeller, you may
 skim Chapters~\ref{ch:moon}--\ref{ch:numerics} and jump to
-Chapter~\ref{ch:validation}. If you are a planetary-science student
-opening these methods for the first time, read in order.
+Chapter~\ref{ch:validation}. If you are a planetary-science student or
+non-specialist reader opening these methods for the first time, please
+start with Chapter~\ref{ch:plain} (a non-technical narrative of the
+entire study) before reading the rest in order.
 
 \medskip\noindent\textbf{Visual conventions} (used throughout):
 
@@ -95,6 +99,190 @@ after reading the surrounding section.
 Red \emph{pitfall} boxes flag a place where it is easy to make a
 subtle mistake; we describe the mistake and the way to avoid it.
 \end{warn}
+
+% =====================================================================
+\chapter{What this study did, in plain English}\label{ch:plain}
+
+This chapter is for the reader who wants to understand what was
+done, why it matters, and how each piece fits together --- without
+having to follow any equations. Every technical concept introduced
+here is unpacked in a later chapter, and a forward-pointer
+(``\textsection{}~XX.X'') tells you where to look. If something here
+is unclear, the right move is to read this chapter once for the
+narrative and then dip into the later chapters as the equations
+become relevant.
+
+% ---------------------------------------------------------------------
+\section{The setting}
+
+The Moon has no atmosphere and no oceans, so its surface heats and
+cools by hundreds of kelvin every $\sim$29.5-Earth-day lunar day.
+The thin, broken-up layer of rock at the surface --- the
+\emph{regolith} --- is what insulates the deeper interior from those
+extreme swings. How effectively it insulates is determined mostly
+by a single material property, the \emph{thermal conductivity} (the
+ability to carry heat through the material). Most spacecraft analyses
+of the Moon, including calculations of how stable buried water-ice is
+near the poles and how hot a future lander's payload will get, treat
+this conductivity as a single fixed number that applies everywhere on
+the Moon. That assumption has never been tested directly, because
+nobody has ever measured the conductivity of the deep regolith
+\emph{in place} --- only inferred it from how the surface looks in
+infrared images from orbit.
+
+% ---------------------------------------------------------------------
+\section{The data we used}
+
+In 1971 and 1972, the Apollo~15 and Apollo~17 astronauts buried two
+arrays of thermometers $\sim$2.4--2.5 metres deep into the lunar
+surface. These thermometers ran almost continuously until 1977 and
+recorded the only \emph{in-situ} measurements of subsurface
+temperature ever made on the Moon. The original data tapes were lost
+for decades. \citet{nagihara2018} restored the full
+1971--1977 record, and that restored record is the dataset we use
+here. The detailed instrument description is in \S\ref{ch:moon}.
+
+% ---------------------------------------------------------------------
+\section{The model we built}
+
+We built a one-dimensional, time-dependent computer model of the
+heat flow through a vertical column of regolith. At each instant
+the model takes the sunlight falling on the surface (computed from
+exact spacecraft-grade ephemerides; \S\ref{ch:hayne}) and asks: given
+the regolith's thermal properties, what temperature does each depth
+settle to over many lunar days? Solving that question requires a
+numerical scheme called Crank--Nicolson (\S\ref{ch:numerics}); think
+of it as a careful bookkeeping algorithm that updates every depth in
+the column by a small time step, conserves energy at each step, and
+is stable enough to keep running for hundreds of simulated lunar days
+without drifting.
+
+The thermal properties --- conductivity, density, and heat capacity
+--- come from a published global model by \citet{hayne2017} that was
+fit to infrared brightness measurements taken from orbit. We use
+their model exactly as published, except that we treat one number
+(the deep conductivity, called $K_d$) as adjustable rather than
+fixed.
+
+% ---------------------------------------------------------------------
+\section{The single experiment}
+
+The experiment is a one-parameter fit. We sweep the deep
+conductivity $K_d$ across a range of plausible values, run the full
+heat-flow model for each value, and ask: which $K_d$ makes the
+model's predicted deep temperatures best match the Apollo
+thermometer readings? We do this independently for each landing
+site. The full procedure is in \S\ref{ch:validation}.
+
+There is one subtlety. The shallow thermometers (above
+$\sim$80~cm depth) are known to be contaminated: they are mounted
+inside fibreglass tubes that conduct heat down from the
+\emph{surface}, where the temperature swings are huge, and so they
+read warmer than the regolith would predict on its own. We exclude
+those shallow readings from our fit. Crucially, we identify which
+sensors to exclude using a \emph{model prediction} --- specifically,
+the predicted day--night swing as a function of depth --- rather than
+by looking at where our model fits the data poorly. This avoids the
+trap of throwing away exactly the data points the model fails on.
+
+% ---------------------------------------------------------------------
+\section{What we found}
+
+When we run the experiment, the two Apollo sites give very different
+answers:
+
+\begin{itemize}\itemsep2pt
+  \item Apollo~15 prefers $K_d \approx 4.85$~mW/(m\,K).
+  \item Apollo~17 prefers $K_d \approx 11.23$~mW/(m\,K).
+\end{itemize}
+
+The published global value is 3.4~mW/(m\,K). Both sites
+\emph{disagree} with the published value, and the two sites disagree
+\emph{with each other} by more than a factor of two. The disagreement
+is much larger than the uncertainty on either measurement
+(quantitatively, $\sim$7.5 standard deviations on a leave-one-out
+jackknife; \S\ref{ch:validation}).
+
+% ---------------------------------------------------------------------
+\section{Why that matters}
+
+Two things follow from this result.
+
+\textbf{First}, the thermal conductivity of the deep lunar regolith
+is regionally heterogeneous --- it is genuinely different at
+different places on the Moon, even at non-polar latitudes where the
+regolith is comparatively well-studied. Whether this reflects
+differences in mineralogy, in compaction with depth, in particle-size
+distribution, or in some other property that varies regionally, is a
+question for follow-up work. But the assumption that one global value
+of $K_d$ describes the whole Moon is not consistent with the in-situ
+data.
+
+\textbf{Second}, anyone using the published global value to compute
+the cold-trap depth where polar water-ice is stable, or to set the
+heat budget for a lander instrument, is implicitly accepting an
+uncertainty at least as large as the inter-site disagreement we
+report. That uncertainty is large enough to matter for several
+mission-design questions, and it should be reflected in the error
+bars of any analysis that propagates $K_d$ through a temperature
+calculation.
+
+% ---------------------------------------------------------------------
+\section{What this study cannot tell you}
+
+There is one important caveat. The two unknowns at the bottom of any
+buried-thermometer column are the deep conductivity $K_d$ and the
+heat coming up from the deep interior, $Q_b$. At long times the
+two unknowns enter the equilibrium temperature gradient
+\emph{only as their ratio} $Q_b/K_d$, so any single buried column
+cannot tell them apart on its own. We adopt the canonical published
+$Q_b$ values for each site (\citealt{langseth1976,nagihara2018}), and
+the absolute $K_d$ we report inherits whatever uncertainty those
+values carry --- about $\pm$30\% at A15.
+
+The good news is that the \emph{difference} between A15 and A17 is
+not affected by this caveat: any global rescaling of $Q_b$ rescales
+both sites equally, leaving the contrast fixed. So the central
+finding (regional heterogeneity) is robust to the $Q_b$ uncertainty;
+the absolute A17 number is not. We discuss this in detail in
+\S\ref{ch:validation}.
+
+% ---------------------------------------------------------------------
+\section{Where to read next}
+
+The rest of this document fills in each piece of the narrative
+above:
+
+\begin{itemize}\itemsep2pt
+  \item Chapter~\ref{ch:moon} --- the lunar thermal environment
+        and how the Apollo HFE instrument actually worked.
+  \item Chapter~\ref{ch:pde} --- the heat equation, derived from
+        first principles.
+  \item Chapter~\ref{ch:hayne} --- the \citet{hayne2017} regolith
+        property functions, and the SPICE/DE440 surface-forcing
+        chain that drives the model.
+  \item Chapter~\ref{ch:numerics} --- the Crank--Nicolson numerical
+        solver and its convergence diagnostics.
+  \item Chapter~\ref{ch:validation} --- the per-site $K_d$
+        retrieval, including the leave-one-out jackknife
+        uncertainty, the borestem-exclusion diagnostic, and the
+        $K_d/Q_b$ degeneracy.
+  \item Chapter~\ref{ch:crosschecks} --- independent cross-checks
+        of the solver.
+  \item Chapter~\ref{ch:repro} --- a reproducibility guide that
+        walks through the source code file by file.
+  \item Chapter~\ref{ch:glossary} --- a glossary of terms and
+        symbols.
+\end{itemize}
+
+\begin{key}[Take-away]
+The study uses Apollo-era buried thermometers to measure the
+\emph{insulation strength} of the deep lunar regolith independently
+at two landing sites; the two sites disagree by more than a factor of
+two; therefore the regolith is regionally heterogeneous, and the
+single global value used in current spacecraft analyses understates
+the true uncertainty.
+\end{key}
 
 % =====================================================================
 \chapter{The Moon as a Thermal System}\label{ch:moon}
