@@ -273,6 +273,31 @@ re-fitted in this work. We note for the record that
 HFE deep gradient, so its agreement with A17 in
 Table~\ref{tab:rmse} should be read as a fit residual rather than
 an independent validation.
+Fig.~\ref{fig:schematic} contrasts the two model architectures: the
+\Hayne\ profile transitions continuously from $K_s$ at the surface to
+$K_d$ at depth via an exponential with e-folding scale $H=6$\,cm,
+while the \citet{martinez2021} 3-layer profile uses a piecewise-linear
+ramp that reaches $K_d$ sharply at 20\,cm.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{figures/fig2_model_schematic.pdf}
+\caption{\textbf{Conceptual comparison of the two regolith conductivity
+model architectures.} (a)~Physical layer structure: the \Hayne\
+profile (blue) transitions continuously from a surface value
+$K_s=0.74$\,mW\,m$^{-1}$\,K$^{-1}$ to a deep value
+$K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$ via an exponential with
+$H=\SI{6}{\centi\meter}$; the \citet{martinez2021} 3-layer profile
+(red) has a uniform surface layer ($K_s=1.0$\,mW\,m$^{-1}$\,K$^{-1}$,
+$0$--$7$\,cm), a linear ramp zone ($7$--$20$\,cm), and a uniform deep
+layer ($K_d=6.3$\,mW\,m$^{-1}$\,K$^{-1}$, below $20$\,cm). (b)~The
+corresponding $K(z)$ profiles evaluated at $T=250$\,K including the
+radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$; the shaded region
+is where the \citet{martinez2021} conductivity exceeds the \Hayne\
+value. The factor-of-$\sim\!2$ difference in $K_d$ is the dominant
+control on the deep-gradient discrepancy in Table~\ref{tab:rmse}.}
+\label{fig:schematic}
+\end{figure}
 
 \subsection{Per-site $K_d$ retrieval (Hayne shape held fixed)}\label{sec:methods-kd}
 To convert the model-comparison in Table~\ref{tab:rmse} into a
