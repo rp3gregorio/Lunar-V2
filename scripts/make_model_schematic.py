@@ -40,15 +40,15 @@ C_MS_S, C_MS_M, C_MS_D = "#F2C2A6", "#D7825A", "#9E2A1F"
 C_TXT = "#222222"
 
 # ══════════════════════════════════════════════════════════════════════════════
-fig = plt.figure(figsize=(11.0, 9.0))
+fig = plt.figure(figsize=(11.5, 7.6))
 gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 1.0],
-                      left=0.10, right=0.78, bottom=0.07, top=0.95, hspace=0.32)
+                      left=0.10, right=0.78, bottom=0.10, top=0.93, hspace=0.16)
 ax0 = fig.add_subplot(gs[0])   # panel A: concept
 ax1 = fig.add_subplot(gs[1])   # panel B: K(z)
 
 # ── PANEL A — concept diagram (depth on Y, two columns side-by-side) ──────────
-ax0.set_xlim(0, 10)
-ax0.set_ylim(34, -7)
+ax0.set_xlim(0.5, 9.5)
+ax0.set_ylim(33, -5)
 ax0.axis("off")
 ax0.set_title("(a)  Conceptual model architecture",
               fontsize=14, fontweight="bold", loc="left", pad=12)

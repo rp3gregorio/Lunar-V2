@@ -154,26 +154,48 @@ The Apollo~15 and Apollo~17 Heat-Flow Experiment (HFE) datasets
 constraint at depth. Several previous works have compared
 regolith thermal models to HFE temperatures
 \citep{vasavada2012,hayne2017,nagihara2018}, and
-\citet{martinez2021} explicitly tunes a 3-layer
-$K(z)$ profile against the deep HFE record. The present work
-differs in three respects that together permit a quantitative,
-per-site retrieval of $K_d$ rather than a model-fit comparison:
+\citet{martinez2021} explicitly tunes a 3-layer $K(z)$ profile
+against the deep HFE record.
 
-\begin{itemize}\itemsep2pt
-  \item a SPICE/DE440 surface-forcing chain that removes the
-        $\sim\!1$ lunar-hour drift inherent in
-        sinusoidal local-solar-time approximations and is required
-        for the phase-folded diurnal-amplitude profile of
-        \S\ref{sec:results-amp};
-  \item an \emph{a priori} shallow-sensor exclusion criterion
-        derived from the modelled diurnal-amplitude depth profile
-        rather than from temperature residuals, which removes the
-        circular-validation risk of residual-based masking; and
-  \item a single-parameter retrieval of $K_d$ under the
-        \Hayne\ functional form, with non-parametric bootstrap
-        confidence intervals propagated to the per-site contrast
-        (\S\ref{sec:methods-kd}).
-\end{itemize}
+\paragraph*{Novel contributions of this work.}
+The present study differs from prior comparisons in three respects
+that together convert a model-fit exercise into a quantitative
+per-site \emph{measurement} of $K_d$:
+\begin{enumerate}\itemsep3pt
+  \item[(i)] \textbf{First per-site, single-parameter retrieval of
+        $K_d$ within a published global functional form.} Earlier
+        work either evaluated published parameterisations as
+        yes/no fits (\citealt{vasavada2012,hayne2017,nagihara2018})
+        or jointly tuned 3--5 parameters of an alternative shape
+        (\citealt{martinez2021}). The present retrieval holds the
+        entire \citet{hayne2017} functional form fixed and varies
+        only the deep conductivity $K_d$, allowing a clean
+        comparison across sites.
+  \item[(ii)] \textbf{Rigorous statistical uncertainty by
+        non-parametric bootstrap.} 95\% confidence intervals on
+        $K_d^{*}$ at each site and on the inter-site contrast are
+        derived from $N_\mathrm{boot}=2000$ resamples of the
+        deep-sensor set. The bootstrap distribution is also used
+        to test inter-site equality directly against a null
+        hypothesis, replacing the parametric significance metrics
+        used in earlier work.
+  \item[(iii)] \textbf{An \emph{a priori}, model-physics-based
+        borestem exclusion.} The shallow-sensor cut at
+        $\zborestem$ is determined from the modelled
+        diurnal-amplitude depth profile rather than from
+        temperature residuals at the candidate $K_d$. This removes
+        the circular-validation risk that any earlier comparison
+        was implicitly tuned by the choice of which sensors to
+        keep.
+\end{enumerate}
+A SPICE/DE440 surface-forcing chain removes the $\sim\!1$
+lunar-hour drift inherent in sinusoidal local-solar-time
+approximations and is required for the phase-folded
+diurnal-amplitude profile (\S\ref{sec:results-amp}). A two-parameter
+joint fit varying both $K_d$ and the e-folding depth $H$
+(\S\ref{sec:robustness}) confirms that $K_d$ is the dominant
+identified lever and that the retrieval is not a degenerate
+trade-off with the regolith shape parameter.
 
 The principal scientific finding is that the per-site $K_d$
 retrievals (\S\ref{sec:results-kd}) disagree by approximately a
