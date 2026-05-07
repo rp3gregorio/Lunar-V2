@@ -155,8 +155,15 @@ MS_KAM_H: float = 3.35837e-8
 MS_KAM_I: float = -1.40021e-11
 
 # Martinez & Siegler (2021) density-scaling coefficients for the contact
-# and radiative parts of K(T, rho).
+# and radiative parts of K(T, rho). Values from the LPSC 2022 abstract
+# (#2754) Eq. 3, which is the published form.
+#
+# Note on B1: the LPSC abstract gives 2.0022e-13. The companion code
+# release `1DFunctions/updateRK.m` has 2.022e-13 (a missing zero — the
+# accompanying derivk.m uses 0.944*2.121e-13 = 2.002e-13, consistent with
+# the published value). We use the published value here. See
+# docs/martinez_replication_plan.md section 2.2.
 MS_A1: float = 5.0821e-6
 MS_A2: float = -0.0051
-MS_B1: float = 2.022e-13
+MS_B1: float = 2.0022e-13
 MS_B2: float = -1.953e-10
