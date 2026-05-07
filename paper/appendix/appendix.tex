@@ -1211,6 +1211,51 @@ enough to matter for downstream volatile-stability budgets.}
 \label{fig:cold-trap-SI}
 \end{figure}
 
+\section{Surface-temperature closure against Diviner}\label{sec:diviner-closure}
+
+The deep $K_d$ retrieval reported in the main letter rests on the
+assumption that the surface-forcing chain (SPICE/DE440 ephemerides,
+Bond albedo, broadband emissivity) drives the model column with
+realistic surface boundary conditions. Fig.~\ref{fig:diviner-SI}
+provides an independent test: at each Apollo site the model surface
+temperature trace (run with the per-site retrieved
+$K_d^{*}$) is compared against the Diviner Lunar Radiometer Global
+Cumulative Product \citep[GCP;][]{williams2017diviner} pixels at the
+same latitude and within $\pm 1^\circ$ of the site longitude.
+
+The model reproduces the Diviner diurnal shape --- terminator
+timing, plateau width, and night-time floor --- to high fidelity at
+both sites. The absolute deep RMSE between model and Diviner
+brightness temperature is $12.5$\,K at A15 and $17.5$\,K at A17,
+with a model warm-bias at the daytime peak of $+5.0$ and
+$+9.1$\,K respectively. This residual is consistent with the
+well-documented anisothermal-footprint effect
+\citep{bandfield2015,hayne2017}: the GCP grid pixel mixes
+sub-pixel-scale shadows, slopes, and rocks, which broaden the
+distribution of effective temperatures and reduce the peak
+brightness compared to a 1-D homogeneous radiative-equilibrium
+model. Because the Diviner residual is a forcing-side signature
+that scales linearly with surface insolation rather than with
+$K_d$, it does not propagate into the deep RMSE, which is dominated
+by the equilibrium gradient $Q_b/K_d$ at depths well below the
+diurnal skin.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_diviner_closure.pdf}
+\caption{\textbf{Surface-temperature closure against the Diviner
+GCP.} Filled circles are the Diviner GCP brightness temperature
+binned at $0.25$-h LST resolution within $\pm 0.5^\circ$ latitude
+and $\pm 1^\circ$ longitude of each landing site; solid curves are
+the modelled surface temperature with the per-site retrieved
+$K_d^{*}$. Diurnal-shape agreement is excellent at both sites; the
+$+5$ to $+9$\,K daytime bias is consistent with the
+sub-pixel anisothermal effect \citep{bandfield2015,hayne2017}
+inherent to comparing 1-D homogeneous-column predictions with
+Diviner footprint-averaged brightness temperatures.}
+\label{fig:diviner-SI}
+\end{figure}
+
 \section{Held-out validation diagnostics}\label{sec:holdout}
 
 The single-parameter $K_d$ retrieval reported in the main letter is

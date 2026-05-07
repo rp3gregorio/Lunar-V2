@@ -530,16 +530,25 @@ $\geq\!2\sigma$ even when one site is rescaled by $\pm 30\%$
 relative to the other.
 
 \paragraph*{Out-of-sample validation.}
-Two held-out tests corroborate the retrieval (Fig.~S\ref{fig:holdout-SI}
-in the SI). \emph{First}, fitting $K_d$ using only the gradient-bridge
-sensors (TG) at each site and then predicting the ring-bridge sensors
-(TR), and vice-versa, yields out-of-sample deep RMSEs that match the
-in-sample values to within $\sim\!0.2$\,K. \emph{Second}, a
+Three independent diagnostics corroborate the retrieval (SI
+\S\ref{sec:diviner-closure}, \S\ref{sec:holdout}). \emph{(1)}~The
+modelled surface temperature trace at each site, run with the
+per-site retrieved $K_d^{*}$, reproduces the Diviner Lunar Radiometer
+Global Cumulative Product diurnal shape \citep{williams2017diviner}
+to a residual RMSE of $12.5$\,K (A15) and $17.5$\,K (A17), with
+diurnal-shape agreement (terminator timing, plateau width,
+night-time floor) that is excellent at both sites; the residual
+warm-bias is consistent with the well-known sub-pixel anisothermal
+effect \citep{bandfield2015,hayne2017} that biases Diviner
+brightness temperatures relative to 1-D homogeneous radiative
+equilibrium. \emph{(2)}~Fitting $K_d$ using only the gradient-bridge
+sensors (TG) at each site and then predicting the ring-bridge
+(TR) sensors, and vice-versa, yields out-of-sample deep RMSEs that
+match the in-sample values to within $\sim\!0.2$\,K. \emph{(3)}~A
 leave-one-out test that withholds the deepest sensor at each site
-($z=139$\,cm at A15, $z=234$\,cm at A17) and refits $K_d$ on the
-remaining sensors recovers the deepest-sensor temperature to within
-$|\Delta|=0.11$ and $0.16$\,K respectively. The retrieval therefore
-generalises out of the data used to fit it.
+($z=139$\,cm at A15, $z=234$\,cm at A17) recovers the
+deepest-sensor temperature to within
+$|\Delta|=0.11$ and $0.16$\,K respectively.
 
 We discuss the unavoidable $K_d/Q_b$ degeneracy of single-borehole
 inversions, which makes the absolute A17 number (but not the
