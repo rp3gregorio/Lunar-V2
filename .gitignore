@@ -54,6 +54,18 @@ data/*
 !data/README.md
 !data/reference/
 !data/reference/*.csv
+# Diviner data — large .tab grids stay out, but track the directory's
+# README and the small PDS label/format files (self-documenting schema).
+!data/diviner/
+data/diviner/*
+!data/diviner/README.md
+!data/diviner/*/
+data/diviner/*/*
+!data/diviner/*/*.lbl
+!data/diviner/*/*.LBL
+!data/diviner/*/*.fmt
+!data/diviner/*/*.FMT
+!data/diviner/*/*.xml
 outputs/*
 !outputs/.gitkeep
 
