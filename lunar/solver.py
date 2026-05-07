@@ -89,6 +89,11 @@ class PixelInputs:
     # Spin-up control (radiative mode only)
     n_lunations_spinup: int = 10
     spinup_tol_K: float = 0.01
+    #: When set, the convergence check uses only cells with
+    #: ``z_mid <= spinup_depth_m`` (default: all cells). Set to one
+    #: diurnal skin depth (~0.1 m) for fast surface-T convergence
+    #: when deep cells matter little for the diagnostic of interest.
+    spinup_depth_m: float | None = None
 
 
 @dataclass
@@ -495,7 +500,16 @@ def solve_pixel(inputs: PixelInputs) -> PixelOutputs:
             )
             out[:, k] = T
             T_surf_arr[k] = T_s_k
-        delta = float(np.max(np.abs(T - T_cycle_start)))
+        delta = float(
+            np.max(
+                np.abs(
+                    T[grid.z_mid <= inputs.spinup_depth_m]
+                    - T_cycle_start[grid.z_mid <= inputs.spinup_depth_m]
+                )
+                if inputs.spinup_depth_m is not None
+                else np.abs(T - T_cycle_start)
+            )
+        )
         if delta < inputs.spinup_tol_K and cycle >= 2:
             converged = True
             break

@@ -11,8 +11,13 @@ The replication uses:
 - M&S K(T, rho) via lunar.properties.conductivity_martinez
 - Hayne density(z) and specific-heat(T) (Phase 1 defaults)
 - Q_b = 0.018 W/m^2 (Martinez global mean; lunar.constants.Q_B_EQUATORIAL)
-- A = 0.12 highlands (scalar; Feng (2020) angle-dep is a future refinement)
-- 30-lunation spin-up to dT < 1e-5 K
+- Vasavada (2012) angle-dependent Bond albedo
+  A(i) = A0 + 0.06 i^3 + 0.25 i^8, A0=0.12 highlands, baked into the
+  insolation array (PixelInputs.albedo=0) so the angular dependence
+  matches the radiative BC without solver changes
+- 80-lunation spin-up with the top-only convergence criterion:
+  surface-cell delta T < 0.01 K (deep cells equilibrate over centuries,
+  irrelevant for diurnal validation; see solver.py spinup_depth_m)
 
 Output: ``output/figures/phase2_fig2_diurnal_45N.{pdf,png}``
 """
@@ -45,12 +50,24 @@ from lunar.solver import PixelInputs, solve_pixel
 # Lunar synodic period [s]: 29.530589 days x 86400 s/day.
 T_LUNAR = 29.530589 * 86400.0  # 2551443.84 s
 LATITUDE_DEG = 45.0
-ALBEDO = 0.12          # highlands scalar; cf. Feng 2020 angle-dep
-N_LUNATIONS = 1        # report one lunation of output
-DT = 300.0             # 5-minute timesteps
-SPINUP_LUNATIONS = 30
-SPINUP_TOL_K = 1e-5
-T_INIT_GUESS = 220.0   # near steady-state mean for 45 deg N
+A0_HIGHLANDS = 0.12           # Hayne 2017 small-i Bond albedo (highlands)
+N_LUNATIONS = 1               # report one lunation of output
+DT = 300.0                    # 5-minute timesteps
+SPINUP_LUNATIONS = 80
+SPINUP_TOL_K = 0.01           # surface-cell convergence target
+SPINUP_DEPTH_M = 0.10         # diurnal skin depth at lunar K, rho-cp
+T_INIT_GUESS = 220.0          # near steady-state mean for 45 deg N
+
+
+def vasavada_albedo(cos_i: np.ndarray, A0: float = A0_HIGHLANDS) -> np.ndarray:
+    """Vasavada (2012) angle-dependent Bond albedo, clamped at 0.5.
+
+    A(i) = A0 + 0.06 i^3 + 0.25 i^8, with the incidence angle i in
+    radians. Diverges past i ~ 80 deg; clamping at 0.5 is the standard
+    upper bound used in lunar thermal modelling.
+    """
+    i = np.arccos(np.clip(cos_i, 0.0, 1.0))
+    return np.minimum(0.5, A0 + 0.06 * i ** 3 + 0.25 * i ** 8)
 
 
 def _build_inputs(K_func, label: str, t_array, insolation):
@@ -63,8 +80,8 @@ def _build_inputs(K_func, label: str, t_array, insolation):
         grid=grid,
         t=t_array,
         bc_mode="radiative",
-        insolation=insolation,
-        albedo=ALBEDO,
+        insolation=insolation,        # already (1-A_Vasavada) * S0 * cos i
+        albedo=0.0,                   # angle-dep A is baked into insolation
         emissivity=EMISSIVITY_DEFAULT,
         Q_b=Q_B_EQUATORIAL,
         K_func=K_func,
@@ -73,6 +90,7 @@ def _build_inputs(K_func, label: str, t_array, insolation):
         T_init=T_init,
         n_lunations_spinup=SPINUP_LUNATIONS,
         spinup_tol_K=SPINUP_TOL_K,
+        spinup_depth_m=SPINUP_DEPTH_M,
     ), label
 
 
@@ -88,13 +106,23 @@ def _run(inputs: PixelInputs, label: str):
 
 
 def main() -> int:
-    # Time array & insolation (one lunation, t=0 == solar noon)
+    # Time array, insolation, and angle-dep albedo absorption.
+    # t=0 == solar noon; cos_zenith = cos(lat) * cos(2 pi t / T_lunar).
     n_t = int(N_LUNATIONS * T_LUNAR / DT) + 1
     t = np.linspace(0.0, N_LUNATIONS * T_LUNAR, n_t)
     phase = 2.0 * np.pi * t / T_LUNAR
     cos_lat = np.cos(np.deg2rad(LATITUDE_DEG))
-    insolation = SOLAR_CONSTANT * cos_lat * np.maximum(0.0, np.cos(phase))
-    print(f"Grid points: {n_t}, max insolation: {insolation.max():.0f} W/m^2")
+    cos_zenith = np.maximum(0.0, cos_lat * np.cos(phase))
+    A_of_t = vasavada_albedo(cos_zenith, A0=A0_HIGHLANDS)
+    # Bake (1-A) into the absorbed-insolation array so the solver's
+    # scalar-albedo BC (with albedo=0) reproduces the angle-dep result.
+    insolation = (1.0 - A_of_t) * SOLAR_CONSTANT * cos_zenith
+    print(
+        f"Grid points: {n_t}, "
+        f"peak cos_zenith = {cos_zenith.max():.3f} "
+        f"(=> noon A = {A_of_t[cos_zenith.argmax()]:.3f}), "
+        f"peak absorbed = {insolation.max():.0f} W/m^2"
+    )
 
     # Solver runs — Hayne (chi-T^3) and M&S (density-temperature) K models
     print("Running Phase 1 solver:")
