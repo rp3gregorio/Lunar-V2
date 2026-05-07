@@ -18,48 +18,70 @@ from matplotlib.lines import Line2D
 from matplotlib.colors import LinearSegmentedColormap
 
 # ─── Style — publication-grade, restrained warm palette ──────────────────────
+# Larger, consistent sizes (all figures match) and legends always outside data.
+FS_BASE   = 11.5
+FS_TITLE  = 13.0
+FS_LABEL  = 12.0
+FS_TICK   = 10.5
+FS_LEGEND = 10.5
+
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times", "Times New Roman", "DejaVu Serif"],
-    "font.size": 9.5,
-    "axes.titlesize": 10.5,
+    "font.size": FS_BASE,
+    "axes.titlesize": FS_TITLE,
     "axes.titleweight": "bold",
-    "axes.labelsize": 10.0,
-    "axes.linewidth": 0.8,
+    "axes.labelsize": FS_LABEL,
+    "axes.linewidth": 0.9,
     "axes.spines.top": False,
     "axes.spines.right": False,
     "axes.edgecolor": "#2A2520",
     "axes.labelcolor": "#2A2520",
     "axes.titlecolor": "#2A2520",
-    "axes.titlepad": 8.0,
+    "axes.titlepad": 10.0,
     "axes.titlelocation": "left",
-    "xtick.labelsize": 8.5,
-    "ytick.labelsize": 8.5,
+    "xtick.labelsize": FS_TICK,
+    "ytick.labelsize": FS_TICK,
     "xtick.color": "#2A2520",
     "ytick.color": "#2A2520",
-    "xtick.major.size": 3.0,
-    "ytick.major.size": 3.0,
-    "xtick.major.width": 0.7,
-    "ytick.major.width": 0.7,
-    "xtick.minor.size": 1.5,
-    "ytick.minor.size": 1.5,
-    "legend.fontsize": 8.5,
+    "xtick.major.size": 3.5,
+    "ytick.major.size": 3.5,
+    "xtick.major.width": 0.8,
+    "ytick.major.width": 0.8,
+    "xtick.minor.size": 2.0,
+    "ytick.minor.size": 2.0,
+    "legend.fontsize": FS_LEGEND,
+    "legend.title_fontsize": FS_LEGEND,
     "legend.frameon": True,
     "legend.fancybox": False,
     "legend.framealpha": 0.97,
     "legend.edgecolor": "#D4CFC4",
-    "legend.borderpad": 0.5,
-    "legend.handletextpad": 0.6,
+    "legend.borderpad": 0.6,
+    "legend.handletextpad": 0.7,
     "figure.facecolor": "white",
     "savefig.facecolor": "white",
     "figure.dpi": 150,
     "savefig.dpi": 300,
     "savefig.bbox": "tight",
-    "savefig.pad_inches": 0.10,
+    "savefig.pad_inches": 0.15,
     "grid.color": "#E8E5E0",
-    "grid.linewidth": 0.5,
-    "lines.linewidth": 1.8,
+    "grid.linewidth": 0.6,
+    "lines.linewidth": 2.0,
 })
+
+# Helper to place a legend OUTSIDE the data area (right of the axes).
+def legend_outside(ax, *, loc="right", **kwargs):
+    """loc: 'right' → outside right; 'bottom' → below x-axis."""
+    if loc == "right":
+        defaults = dict(bbox_to_anchor=(1.02, 1.0), loc="upper left",
+                        borderaxespad=0.0, frameon=True)
+    elif loc == "bottom":
+        defaults = dict(bbox_to_anchor=(0.5, -0.18), loc="upper center",
+                        borderaxespad=0.0, frameon=True, ncols=2)
+    else:
+        defaults = dict(loc=loc)
+    defaults.update(kwargs)
+    return ax.legend(**defaults)
 
 # Anthropic-aligned palette (publication-friendly)
 C_CORAL    = "#B85B3A"   # primary warm accent (~Anthropic coral)
@@ -111,9 +133,10 @@ def fmt_axis(ax, *, xlabel="", ylabel="", title=""):
 # FIGURE 1 — Bootstrap distributions (letter)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_bootstrap(d, out_path):
-    fig = plt.figure(figsize=(9.0, 4.6))
-    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.30,
-                          left=0.085, right=0.97, top=0.86, bottom=0.13)
+    fig = plt.figure(figsize=(12.0, 5.2))
+    # leave generous right margin for outside legend
+    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.36,
+                          left=0.07, right=0.78, top=0.88, bottom=0.16)
     ax0 = fig.add_subplot(gs[0])
     ax1 = fig.add_subplot(gs[1])
 
@@ -132,27 +155,21 @@ def fig_bootstrap(d, out_path):
 
     ax0.bar(centers, h15, width=width*0.95, color=C_A15, alpha=0.55,
             edgecolor=C_A15, lw=0.4,
-            label=f"A15  median {a15_med:.2f}  [{a15_lo:.2f}, {a15_hi:.2f}]")
+            label=f"Apollo 15\n{a15_med:.2f}  [{a15_lo:.2f}, {a15_hi:.2f}]")
     ax0.bar(centers, h17, width=width*0.95, color=C_A17, alpha=0.55,
             edgecolor=C_A17, lw=0.4,
-            label=f"A17  median {a17_med:.2f}  [{a17_lo:.2f}, {a17_hi:.2f}]")
+            label=f"Apollo 17\n{a17_med:.2f}  [{a17_lo:.2f}, {a17_hi:.2f}]")
 
-    # Hayne reference line — push label to the LEFT side and below the histogram peak
-    ax0.axvline(3.4, color=C_CHAR, ls="--", lw=1.0, alpha=0.55)
+    ax0.axvline(3.4, color=C_CHAR, ls="--", lw=1.1, alpha=0.6,
+                label="Hayne 2017  $K_d = 3.4$")
     ymax = max(h15.max(), h17.max())
-    ax0.text(3.4 - 0.25, ymax * 0.45, "Hayne (2017)\n$K_d = 3.4$",
-             fontsize=8, color=C_DIM, va="center", ha="right",
-             linespacing=1.25, style="italic")
 
     fmt_axis(ax0,
              xlabel=r"$K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel="bootstrap count",
              title="(a)  Per-site bootstrap distributions")
     ax0.set_xlim(2, 19)
-    ax0.set_ylim(0, ymax * 1.20)
-    ax0.legend(loc="upper right", borderpad=0.5,
-               title="95% CI from 2000 resamples", title_fontsize=8.5,
-               handlelength=1.6)
+    ax0.set_ylim(0, ymax * 1.15)
     ax0.xaxis.set_minor_locator(mtick.AutoMinorLocator())
 
     # ── (b) inter-site contrast distribution ────────────────────────────────
@@ -165,28 +182,23 @@ def fig_bootstrap(d, out_path):
     width2 = bins2[1] - bins2[0]
 
     ax1.bar(centers2, hC, width=width2*0.95,
-            color=C_A17, alpha=0.55, edgecolor=C_A17, lw=0.4)
-    ax1.axvspan(clo, chi_, color=C_A17, alpha=0.10, zorder=0)
-    ax1.axvline(0, color=C_CHAR, ls="--", lw=1.0, alpha=0.7)
-    ax1.axvline(cmed, color=C_A17, ls="-", lw=1.4)
+            color=C_A17, alpha=0.55, edgecolor=C_A17, lw=0.4,
+            label="$\\Delta K_d^{*}$")
+    ax1.axvspan(clo, chi_, color=C_A17, alpha=0.10, zorder=0,
+                label=f"95% CI [{clo:.2f}, {chi_:.2f}]")
+    ax1.axvline(0, color=C_CHAR, ls="--", lw=1.1, alpha=0.7,
+                label="null (zero contrast)")
+    ax1.axvline(cmed, color=C_A17, ls="-", lw=1.6,
+                label=f"median {cmed:.2f}")
 
-    # annotation box (top-right)
-    p_str = "$p < 10^{-3}$" if d["contrast_bootstrap"]["p_value"] < 1e-3 \
-            else f"$p \\approx {d['contrast_bootstrap']['p_value']:.3g}$"
-    ax1.text(0.97, 0.95,
-             f"median  $\\Delta K_d^{{*}} = {cmed:.2f}$\n"
-             f"95% CI $[{clo:.2f},\\ {chi_:.2f}]$\n"
-             f"{p_str}",
+    p_str = "p < 10$^{-3}$" if d["contrast_bootstrap"]["p_value"] < 1e-3 \
+            else f"p ≈ {d['contrast_bootstrap']['p_value']:.3g}"
+    # plain p-value tag in top-right corner of the data area
+    ax1.text(0.97, 0.95, p_str,
              transform=ax1.transAxes, ha="right", va="top",
-             fontsize=8.5, color=C_CHAR,
-             bbox=dict(boxstyle="round,pad=0.45", facecolor="white",
-                       edgecolor=C_GRID, lw=0.6),
-             linespacing=1.6)
-
-    # null line label (well separated from box)
-    ax1.text(0.4, ax1.get_ylim()[1]*0.50, "null  (zero\ncontrast)",
-             fontsize=7.5, color=C_DIM, ha="left", va="center",
-             linespacing=1.25, style="italic")
+             fontsize=FS_LABEL, fontweight="bold", color=C_CHAR,
+             bbox=dict(boxstyle="round,pad=0.4", facecolor="white",
+                       edgecolor=C_GRID, lw=0.6))
 
     fmt_axis(ax1,
              xlabel=r"$\Delta K_d^{*}$ (A17 − A15)  (mW m$^{-1}$ K$^{-1}$)",
@@ -194,6 +206,16 @@ def fig_bootstrap(d, out_path):
              title="(b)  Inter-site contrast distribution")
     ax1.set_xlim(-2, 16)
     ax1.xaxis.set_minor_locator(mtick.AutoMinorLocator())
+
+    # ── single legend OUTSIDE on the right, covering both panels ────────────
+    h0, l0 = ax0.get_legend_handles_labels()
+    h1, l1 = ax1.get_legend_handles_labels()
+    fig.legend(h0 + h1, l0 + l1,
+               loc="center left", bbox_to_anchor=(0.80, 0.5),
+               frameon=True, edgecolor=C_GRID, framealpha=0.97,
+               handlelength=1.8, borderpad=0.7,
+               title="95% bootstrap CIs   (2000 resamples)",
+               title_fontsize=FS_LABEL)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -204,12 +226,16 @@ def fig_bootstrap(d, out_path):
 # FIGURE 2 — Robustness suite (letter): Q_b sensitivity + joint K_d × H
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_robustness(d, out_path):
-    fig = plt.figure(figsize=(11.0, 4.6))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.05, 1.0, 1.0], wspace=0.34,
-                          left=0.06, right=0.965, top=0.86, bottom=0.16)
-    axA = fig.add_subplot(gs[0])  # Q_b heatmap
-    axB = fig.add_subplot(gs[1])  # joint K_d×H A15
-    axC = fig.add_subplot(gs[2])  # joint K_d×H A17
+    """Stacked layout: (a) full-width Q_b heatmap on top, (b)(c) joint
+    K_d × H side-by-side below.  Shared legend BELOW the figure."""
+    fig = plt.figure(figsize=(12.0, 9.5))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0],
+                          width_ratios=[1.0, 1.0],
+                          hspace=0.42, wspace=0.30,
+                          left=0.075, right=0.93, top=0.94, bottom=0.10)
+    axA = fig.add_subplot(gs[0, :])      # full-width Q_b heatmap
+    axB = fig.add_subplot(gs[1, 0])
+    axC = fig.add_subplot(gs[1, 1])
 
     # ── (a) Q_b sensitivity heatmap ─────────────────────────────────────────
     qbs = d["qb_sensitivity"]
@@ -221,40 +247,38 @@ def fig_robustness(d, out_path):
                     extent=[alphas[0], alphas[-1], alphas[0], alphas[-1]],
                     cmap=ANTH_DIVERGE, vmin=-3, vmax=12,
                     interpolation="nearest")
-    cbar = fig.colorbar(im, ax=axA, pad=0.025, fraction=0.05, aspect=25)
+    cbar = fig.colorbar(im, ax=axA, pad=0.02, fraction=0.04, aspect=18)
     cbar.ax.set_ylabel(r"$\Delta K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
-                       fontsize=9, color=C_CHAR)
-    cbar.ax.tick_params(labelsize=8, colors=C_CHAR)
+                       fontsize=FS_LABEL, color=C_CHAR)
+    cbar.ax.tick_params(labelsize=FS_TICK, colors=C_CHAR)
     cbar.outline.set_edgecolor(C_GRID)
 
-    # significance contours
     cs = axA.contour(alphas, alphas, sig.T, levels=[2, 4, 7],
-                     colors=C_CHAR, linewidths=0.9, linestyles="--",
+                     colors=C_CHAR, linewidths=1.0, linestyles="--",
                      alpha=0.75)
     axA.clabel(cs, fmt=lambda x: f"{int(x)}σ",
-               fontsize=8, inline=True, inline_spacing=3)
+               fontsize=FS_TICK, inline=True, inline_spacing=4)
 
-    # global rescaling diagonal
-    axA.plot(alphas, alphas, color="white", lw=2.4, alpha=0.85,
+    axA.plot(alphas, alphas, color="white", lw=2.6, alpha=0.85,
              solid_capstyle="butt")
-    axA.text(1.22, 1.18, "global rescaling\n(contrast invariant)",
-             color="white", fontsize=8, rotation=44.5, ha="center",
-             va="center", style="italic")
-
-    # markers
-    axA.plot(1.0, 1.0, "o", color=C_CHAR, markersize=8, mec="white", mew=1.2)
-    axA.text(1.03, 0.99, "nominal", fontsize=8, color="white", ha="left",
-             va="center", fontweight="medium")
-    axA.plot(0.7, 1.0, "s", color=C_FOREST, markersize=9, mec="white", mew=1.2)
-    axA.annotate("Saito A15 −30%", xy=(0.7, 1.0), xytext=(0.745, 1.21),
-                 fontsize=7.5, color=C_CHAR, ha="left",
-                 arrowprops=dict(arrowstyle="-|>", color=C_FOREST, lw=0.7,
-                                 shrinkA=0, shrinkB=2))
+    axA.plot(1.0, 1.0, "o", color=C_CHAR, markersize=10, mec="white", mew=1.4,
+             label="nominal $Q_b$ (both sites)")
+    axA.plot(0.7, 1.0, "s", color=C_FOREST, markersize=11, mec="white",
+             mew=1.4, label="Saito reanalysis  (A15 −30%)")
+    axA.plot([], [], "-", color="white", lw=2.6,
+             label="global rescaling diagonal  (contrast invariant)")
+    axA.plot([], [], ls="--", color=C_CHAR, lw=1.0,
+             label="contrast significance contours (2σ, 4σ, 7σ)")
 
     fmt_axis(axA,
-             xlabel=r"A15 $Q_b$ rescaling $\alpha_{15}$",
-             ylabel=r"A17 $Q_b$ rescaling $\alpha_{17}$",
-             title=r"(a)  $K_d^{*}$ contrast vs. non-uniform $Q_b$")
+             xlabel=r"A15 $Q_b$ rescaling factor  $\alpha_{15}$",
+             ylabel=r"A17 $Q_b$ rescaling factor  $\alpha_{17}$",
+             title=r"(a)  Inter-site $K_d^{*}$ contrast vs. non-uniform $Q_b$")
+
+    # legend OUTSIDE on the right of (a)
+    axA.legend(bbox_to_anchor=(1.18, 1.0), loc="upper left",
+               borderaxespad=0.0, frameon=True,
+               handlelength=1.8, borderpad=0.7)
 
     # ── (b)(c) joint K_d × H per site ───────────────────────────────────────
     cf_handle = None
@@ -270,38 +294,22 @@ def fig_robustness(d, out_path):
                          cmap=ANTH_SEQ, alpha=0.92)
         if cf_handle is None:
             cf_handle = cf
-        # white contours at 0.5/1.0/2.0 K above min
         levels_white = [rmse_min + dx for dx in [0.5, 1.0, 2.0, 3.0]]
         cs = ax.contour(kd_grid, h_grid, rmse,
                         levels=levels_white, colors="white",
-                        linewidths=1.0, alpha=0.85)
-        ax.clabel(cs, fmt="%.1f K", fontsize=7.5, inline=True,
+                        linewidths=1.2, alpha=0.85)
+        ax.clabel(cs, fmt="%.1f K", fontsize=FS_TICK, inline=True,
                   inline_spacing=4)
 
-        # joint min star
         ax.plot(j["kd_min"]*1e3, j["h_min"]*100, marker="*",
-                markersize=18, color=C_CORAL, mec="white", mew=1.3,
-                zorder=5)
-
-        # H = 6 cm canonical line
-        ax.axhline(6.0, color="white", ls="--", lw=1.0, alpha=0.85)
-
-        # 1-D K_d* at H=6
+                markersize=22, color=C_CORAL, mec="white", mew=1.5,
+                zorder=5,
+                label=f"joint min  ({j['kd_min']*1e3:.2f}, {j['h_min']*100:.0f} cm)")
+        ax.axhline(6.0, color="white", ls="--", lw=1.2, alpha=0.85)
         kd_1d = d[name]["kd_star"] * 1e3
-        ax.plot(kd_1d, 6.0, "o", markersize=9, color=C_TEAL,
-                mec="white", mew=1.2, zorder=4)
-
-        # custom legend
-        legend_handles = [
-            Line2D([0], [0], marker="*", color="none",
-                   markerfacecolor=C_CORAL, mec="white", markersize=12,
-                   label=f"joint min  ({j['kd_min']*1e3:.2f}, {j['h_min']*100:.0f} cm)"),
-            Line2D([0], [0], marker="o", color="none",
-                   markerfacecolor=C_TEAL, mec="white", markersize=8,
-                   label=f"1-D $K_d^{{*}}$ at $H=6$  ({kd_1d:.2f})"),
-        ]
-        ax.legend(handles=legend_handles, loc="upper right",
-                  fontsize=7.5, framealpha=0.94, borderpad=0.4)
+        ax.plot(kd_1d, 6.0, "o", markersize=11, color=C_TEAL,
+                mec="white", mew=1.4, zorder=4,
+                label=f"1-D $K_d^{{*}}$ at $H=6$  ({kd_1d:.2f})")
 
         fmt_axis(ax,
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
@@ -309,11 +317,21 @@ def fig_robustness(d, out_path):
                  title=label)
 
     # shared colorbar for (b) and (c)
-    cbar2 = fig.colorbar(cf_handle, ax=[axB, axC], pad=0.02, fraction=0.05,
-                         aspect=25)
-    cbar2.ax.set_ylabel("RMSE (K)", fontsize=9, color=C_CHAR)
-    cbar2.ax.tick_params(labelsize=8, colors=C_CHAR)
+    cbar2 = fig.colorbar(cf_handle, ax=[axB, axC], pad=0.02, fraction=0.04,
+                         aspect=18)
+    cbar2.ax.set_ylabel("RMSE  (K)", fontsize=FS_LABEL, color=C_CHAR)
+    cbar2.ax.tick_params(labelsize=FS_TICK, colors=C_CHAR)
     cbar2.outline.set_edgecolor(C_GRID)
+
+    # shared legend OUTSIDE, below the (b)(c) row
+    hb, lb = axB.get_legend_handles_labels()
+    hc, lc = axC.get_legend_handles_labels()
+    fig.legend(hb + hc, lb + lc,
+               loc="lower center", bbox_to_anchor=(0.50, 0.0),
+               ncols=4, frameon=True, edgecolor=C_GRID, framealpha=0.97,
+               handlelength=1.8, borderpad=0.6,
+               title="Joint fit markers",
+               title_fontsize=FS_LABEL)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -324,8 +342,8 @@ def fig_robustness(d, out_path):
 # FIGURE — K_d sweep redesign (letter)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_kd_sweep_v2(d, out_path):
-    fig, ax = plt.subplots(figsize=(7.6, 5.0))
-    fig.subplots_adjust(left=0.10, right=0.97, top=0.88, bottom=0.14)
+    fig, ax = plt.subplots(figsize=(11.0, 5.4))
+    fig.subplots_adjust(left=0.085, right=0.66, top=0.88, bottom=0.16)
 
     for name, color in [("A15", C_A15), ("A17", C_A17)]:
         s = d[name]
@@ -357,23 +375,24 @@ def fig_kd_sweep_v2(d, out_path):
         ax.plot(kdstar, rmsestar, "*", color=color, markersize=18,
                 mec="white", mew=1.3, zorder=5)
 
-    # vertical references
-    ax.axvline(3.4, color=C_TEAL, ls="--", lw=1.0, alpha=0.7, zorder=1)
-    ax.text(3.5, 5.6, "Hayne (2017)\n$K_d = 3.4$", fontsize=8, color=C_TEAL,
-            va="top", linespacing=1.25)
-    ax.axvline(6.3, color=C_MS, ls=":", lw=1.0, alpha=0.7, zorder=1)
-    ax.text(6.4, 5.6, "M&S (2021)\n$K_d = 6.3$", fontsize=8, color=C_MS,
-            va="top", linespacing=1.25)
+    # vertical references with legend entries (so they go OUTSIDE)
+    ax.axvline(3.4, color=C_TEAL, ls="--", lw=1.2, alpha=0.75, zorder=1,
+               label="Hayne 2017  $K_d = 3.4$")
+    ax.axvline(6.3, color=C_MS, ls=":", lw=1.2, alpha=0.75, zorder=1,
+               label="Martínez & Siegler 2021  $K_d = 6.3$")
 
     fmt_axis(ax,
              xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Deep-sensor RMSE  (K)",
-             title="Per-site $K_d$ retrieval under the Hayne (2017) functional form")
+             title="Per-site $K_d$ retrieval under the Hayne 2017 functional form")
     ax.set_xlim(0, 19)
     ax.set_ylim(0, 6)
-    ax.legend(loc="upper right",
-              title="Site  $K_d^{*}$  [95% bootstrap CI]",
-              title_fontsize=8.5, borderpad=0.6)
+    # Legend OUTSIDE on the right
+    ax.legend(bbox_to_anchor=(1.02, 1.0), loc="upper left",
+              borderaxespad=0.0,
+              title=r"Sites  $K_d^{*}$  [95% bootstrap CI]"
+                    "\nand published reference values",
+              handlelength=1.8, borderpad=0.7)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -384,8 +403,8 @@ def fig_kd_sweep_v2(d, out_path):
 # APPENDIX FIGURES — lab comparison + cold-trap (moved from letter)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_lab_comparison(d, out_path):
-    fig, ax = plt.subplots(figsize=(8.6, 4.4))
-    fig.subplots_adjust(left=0.40, right=0.97, top=0.88, bottom=0.16)
+    fig, ax = plt.subplots(figsize=(11.5, 5.0))
+    fig.subplots_adjust(left=0.32, right=0.78, top=0.90, bottom=0.16)
 
     sources = [
         ("Cremers & Birkebak 1971 (lab)", 0.9, 0.2, C_LAB,    "Lab"),
@@ -421,15 +440,19 @@ def fig_lab_comparison(d, out_path):
              title="$K_d$ estimates across measurement scales")
     ax.set_xlim(0, 14)
 
-    # category legend in upper-right (outside data)
+    # category legend OUTSIDE on the right of axes
     legend_handles = [
         mpatches.Patch(color=C_LAB,   alpha=0.78, label="Laboratory  (mm scale)"),
         mpatches.Patch(color=C_HAYNE, alpha=0.78, label="Orbital  (km scale)"),
         mpatches.Patch(color=C_A15,   alpha=0.78, label="In situ  Apollo 15"),
         mpatches.Patch(color=C_A17,   alpha=0.78, label="In situ  Apollo 17"),
     ]
-    ax.legend(handles=legend_handles, loc="lower right",
-              title="Measurement type", title_fontsize=9, borderpad=0.5)
+    ax.legend(handles=legend_handles,
+              bbox_to_anchor=(1.02, 1.0), loc="upper left",
+              borderaxespad=0.0,
+              title="Measurement type",
+              title_fontsize=FS_LABEL, borderpad=0.7,
+              handlelength=1.8)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -441,43 +464,48 @@ def fig_cold_trap(d, out_path):
     Kd = np.array(ct["kd_grid"]) * 1e3
     z  = np.array(ct["depth_stable_m"])
 
-    fig, ax = plt.subplots(figsize=(7.6, 4.6))
-    fig.subplots_adjust(left=0.13, right=0.965, top=0.86, bottom=0.16)
+    fig, ax = plt.subplots(figsize=(10.5, 5.0))
+    fig.subplots_adjust(left=0.10, right=0.66, top=0.88, bottom=0.16)
 
-    ax.plot(Kd, z, color=C_TEAL, lw=2.0)
+    ax.plot(Kd, z, color=C_TEAL, lw=2.4,
+            label="Cold-trap depth model")
     ax.fill_between(Kd, z, 0, color=C_TEAL_L, alpha=0.20)
 
     refs = [
-        (3.4, "Hayne (2017) global", C_TEAL, "below"),
-        (d["A15"]["bootstrap"]["median"]*1e3, "A15 retrieval", C_A15, "below"),
-        (d["A17"]["bootstrap"]["median"]*1e3, "A17 retrieval", C_A17, "left"),
+        (3.4, "Hayne 2017 global  ($K_d = 3.4$)", C_TEAL),
+        (d["A15"]["bootstrap"]["median"]*1e3,
+         f"A15 retrieval  ($K_d = {d['A15']['bootstrap']['median']*1e3:.2f}$)", C_A15),
+        (d["A17"]["bootstrap"]["median"]*1e3,
+         f"A17 retrieval  ($K_d = {d['A17']['bootstrap']['median']*1e3:.2f}$)", C_A17),
     ]
     z_max = z.max()
-    for kd_v, lab, col, pos in refs:
+    for kd_v, lab, col in refs:
         z_v = np.interp(kd_v, Kd, z)
-        ax.plot([kd_v, kd_v], [0, z_v], color=col, ls="--", lw=1.0, alpha=0.85)
-        ax.plot(kd_v, z_v, "o", markersize=8, color=col, mec="white", mew=1.0,
-                zorder=4)
-        if pos == "below":
-            ax.text(kd_v + 0.18, z_v - 0.8, lab, fontsize=8.5, color=col,
-                    ha="left", va="top")
-        else:  # "left"
-            ax.text(kd_v - 0.18, z_v + 0.6, lab, fontsize=8.5, color=col,
-                    ha="right", va="bottom")
+        ax.plot([kd_v, kd_v], [0, z_v], color=col, ls="--", lw=1.2, alpha=0.85)
+        ax.plot(kd_v, z_v, "o", markersize=11, color=col, mec="white", mew=1.3,
+                zorder=4, label=lab)
 
     fmt_axis(ax,
              xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Cold-trap depth  $z_\mathrm{stable}$  (m)",
              title="Implication for polar-volatile cold-trap depth")
     ax.set_xlim(2, 12)
-    ax.set_ylim(0, z_max * 1.12)
+    ax.set_ylim(0, z_max * 1.10)
 
-    ax.text(0.97, 0.04,
-            (f"Polar $Q_b = {ct['Qb_polar']*1e3:.0f}$ mW m$^{{-2}}$, "
+    # Legend OUTSIDE on the right
+    ax.legend(bbox_to_anchor=(1.02, 1.0), loc="upper left",
+              borderaxespad=0.0,
+              title="Reference points",
+              title_fontsize=FS_LABEL, borderpad=0.7, handlelength=2.0)
+
+    # Caption-style note in lower-left INSIDE plot (clearly an annotation
+    # not a legend; small text but readable)
+    ax.text(0.02, 0.04,
+            (f"Polar $Q_b = {ct['Qb_polar']*1e3:.0f}$ mW m$^{{-2}}$,  "
              "$T_\\mathrm{surface} = 80$ K\n"
-             "Schorghofer & Aharonson (2005)-style estimate"),
-            transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=7.5, color=C_DIM, style="italic",
+             "Schorghofer & Aharonson 2005-style estimate"),
+            transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=FS_TICK, color=C_DIM, style="italic",
             bbox=dict(boxstyle="round,pad=0.35", facecolor="white",
                       edgecolor=C_GRID, lw=0.6))
 
@@ -507,9 +535,9 @@ def fig_posterior(out_path):
     # K_d sweep OR re-derive R from rmse_curve. Since json only has the
     # RMSE curve (not the residuals), build a posterior using the RMSE
     # curve directly.
-    fig = plt.figure(figsize=(11.0, 7.5))
-    gs = fig.add_gridspec(2, 2, hspace=0.42, wspace=0.34,
-                          left=0.07, right=0.96, top=0.93, bottom=0.08)
+    fig = plt.figure(figsize=(12.0, 9.0))
+    gs = fig.add_gridspec(2, 2, hspace=0.46, wspace=0.32,
+                          left=0.07, right=0.93, top=0.93, bottom=0.10)
     axes = [[fig.add_subplot(gs[r, c]) for c in (0, 1)] for r in (0, 1)]
 
     for col, name in enumerate(["A15", "A17"]):
@@ -556,10 +584,12 @@ def fig_posterior(out_path):
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$Q_b$  (mW m$^{-2}$)",
                  title=f"({chr(ord('a')+col)})  {name} joint posterior")
+        # legend inside top-right: just one mode marker
         ax.legend(handles=[Line2D([0], [0], marker="*", color="none",
                                   markerfacecolor=C_CORAL, mec="white",
-                                  markersize=10, label="posterior mode")],
-                  loc="upper right", borderpad=0.4)
+                                  markersize=14, label="posterior mode")],
+                  loc="upper right", borderpad=0.5,
+                  facecolor="white", framealpha=0.97)
 
         # ── lower: marginals ──────────────────────────────────────────────
         ax = axes[1][col]
@@ -586,8 +616,10 @@ def fig_posterior(out_path):
         ax2.spines["top"].set_visible(True)
         ax.spines["bottom"].set_color(C_TEAL)
         ax.legend([l1, l2],
-                  [r"$P(K_d)$", r"$P(Q_b)$ (rescaled)"],
-                  loc="upper right", fontsize=8)
+                  [r"$P(K_d \mid \mathrm{data})$",
+                   r"$P(Q_b \mid \mathrm{data})$  (rescaled)"],
+                  bbox_to_anchor=(1.0, -0.30), loc="upper right",
+                  ncols=2, fontsize=FS_LEGEND, borderpad=0.6)
         ax.grid(color=C_GRID, lw=0.5)
         ax.set_axisbelow(True)
         for s in (ax.spines["left"], ax.spines["bottom"]):

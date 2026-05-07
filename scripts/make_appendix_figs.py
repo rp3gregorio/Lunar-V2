@@ -44,7 +44,7 @@ def make_instrument():
         (bs_x, bs_bot), bs_w, bs_top - bs_bot,
         facecolor="#F5F5F5", edgecolor="#777", lw=1.0))
     ax.text(bs_x + bs_w + 0.10, -0.30, "fibreglass\nborestem",
-            ha="left", va="center", fontsize=8.5, color="#444",
+            ha="left", va="center", fontsize=10.5, color="#444",
             linespacing=1.2)
 
     # ── ALSEP enclosure on the surface ───────────────────────────────────────
@@ -53,7 +53,7 @@ def make_instrument():
         (al_x, al_y), al_w, al_h, boxstyle="round,pad=0.02",
         facecolor="#C7CDD3", edgecolor="#444", lw=1.0))
     ax.text(al_x + al_w / 2, al_y + al_h / 2, "ALSEP electronics",
-            ha="center", va="center", fontsize=8, color="#222")
+            ha="center", va="center", fontsize=10, color="#222")
     # cable from ALSEP to borestem
     ax.plot([al_x, bs_x + bs_w], [al_y + 0.05, 0.10],
             color="#444", lw=0.8)
@@ -75,14 +75,14 @@ def make_instrument():
                 [z + 0.05, z - 0.05], color=col, lw=2.5,
                 solid_capstyle="round")
         ax.text(bs_x + bs_w + 0.10, z, f"{abs(z*100):.0f} cm",
-                ha="left", va="center", fontsize=7.5, color=col)
+                ha="left", va="center", fontsize=9.5, color=col)
 
     # bracket showing borestem contamination zone (top 80 cm)
     ax.annotate("", xy=(-1.10, -0.80), xytext=(-1.10, 0),
                 arrowprops=dict(arrowstyle="<->", color="#D14848", lw=1.5))
     ax.text(-1.18, -0.40,
             "contaminated\n(borestem heat-short)\n$z < 80$ cm",
-            ha="right", va="center", color="#D14848", fontsize=8,
+            ha="right", va="center", color="#D14848", fontsize=10,
             linespacing=1.25, style="italic")
 
     # bracket showing retrieval zone
@@ -90,7 +90,7 @@ def make_instrument():
                 arrowprops=dict(arrowstyle="<->", color="#1E5A99", lw=1.5))
     ax.text(-1.18, -1.60,
             "deep-sensor zone\nused for $K_d$ retrieval\n$z \\geq 80$ cm",
-            ha="right", va="center", color="#1E5A99", fontsize=8,
+            ha="right", va="center", color="#1E5A99", fontsize=10,
             linespacing=1.25, style="italic")
 
     # ── heat-flow arrows (ambient + borestem heat-short) ─────────────────────
@@ -100,7 +100,7 @@ def make_instrument():
                     arrowprops=dict(arrowstyle="->", color="#E08020",
                                     lw=1.4))
     ax.text(2.5, 0.50, "diurnal $T$ swing $\\sim$ 100 K",
-            color="#E08020", fontsize=8, ha="center", style="italic")
+            color="#E08020", fontsize=10, ha="center", style="italic")
 
     # heat-short arrow down the borestem (top)
     ax.annotate("", xy=(bs_x + bs_w / 2, -0.55),
@@ -114,11 +114,11 @@ def make_instrument():
                     arrowprops=dict(arrowstyle="->", color="#B03020",
                                     lw=1.4))
     ax.text(2.5, -2.66, "$Q_b$ from interior",
-            color="#B03020", fontsize=8, ha="center", style="italic")
+            color="#B03020", fontsize=10, ha="center", style="italic")
 
     # title
     ax.set_title("Apollo Heat-Flow Experiment — instrument geometry",
-                 fontsize=11, fontweight="bold", pad=4)
+                 fontsize=14, fontweight="bold", pad=4)
 
     fig.tight_layout()
     out = f"{OUT}/fig_instrument_schematic.pdf"
@@ -131,9 +131,9 @@ def make_instrument():
 # FIGURE 2 — Diurnal skin-depth attenuation
 # ═════════════════════════════════════════════════════════════════════════════
 def make_skin_depth():
-    fig, axes = plt.subplots(1, 2, figsize=(11.5, 5.0),
-                             gridspec_kw={"width_ratios": [1.8, 1.0]})
-    fig.subplots_adjust(left=0.06, right=0.97, bottom=0.13, top=0.90,
+    fig, axes = plt.subplots(1, 2, figsize=(12.5, 6.0),
+                             gridspec_kw={"width_ratios": [1.6, 1.0]})
+    fig.subplots_adjust(left=0.06, right=0.97, bottom=0.27, top=0.92,
                         wspace=0.27)
 
     # surface temperature wave (a synthetic 100-K diurnal swing)
@@ -156,15 +156,17 @@ def make_skin_depth():
         T = Tmean + Tamp * attn * np.cos(omega * t * 86400 - phase)
         col = cmap(i / (len(depths) - 1))
         ax.plot(t, T, color=col, lw=1.8, label=f"{lab} cm")
-    ax.set_xlabel("Time (Earth days)", fontsize=10)
-    ax.set_ylabel("Temperature (K)", fontsize=10)
+    ax.set_xlabel("Time (Earth days)", fontsize=12)
+    ax.set_ylabel("Temperature (K)", fontsize=12)
     ax.set_title("(a)  Diurnal wave penetrating the regolith",
-                 fontsize=11, fontweight="bold", loc="left", pad=4)
+                 fontsize=14, fontweight="bold", loc="left", pad=4)
     ax.grid(color="0.90", lw=0.7)
-    ax.legend(loc="upper right", fontsize=8.5, framealpha=0.92,
-              title="depth", title_fontsize=8.5, ncols=2)
+    ax.legend(bbox_to_anchor=(0.5, -0.18), loc="upper center",
+              borderaxespad=0.0, fontsize=11, framealpha=0.97,
+              title="Sensor depth", title_fontsize=12,
+              handlelength=1.8, borderpad=0.7, ncols=7)
     ax.set_xlim(0, 2 * P)
-    ax.tick_params(labelsize=9)
+    ax.tick_params(labelsize=11)
 
     # right panel: attenuation factor vs depth
     ax = axes[1]
@@ -177,26 +179,26 @@ def make_skin_depth():
     ax.axhline(delta * 100, color="0.40", ls="--", lw=1.0)
     ax.text(1e-8, delta * 100 + 1.5,
             r"$\delta \approx 4$ cm",
-            fontsize=8.5, color="0.30", va="top", ha="left")
+            fontsize=10.5, color="0.30", va="top", ha="left")
 
     # mark borestem zone
     ax.axhline(80, color="#1E5A99", ls=":", lw=1.4, alpha=0.8)
     ax.text(1e-8, 80 - 2,
             r"$z = 80$ cm  (borestem cut)" "\n"
             r"  amplitude $\sim 10^{-9}$ K",
-            fontsize=8, color="#1E5A99", va="bottom", ha="left",
+            fontsize=10, color="#1E5A99", va="bottom", ha="left",
             linespacing=1.3)
 
     ax.set_xscale("log")
     ax.set_xlim(1e-15, 2)
     ax.invert_yaxis()
     ax.set_ylim(120, 0)
-    ax.set_xlabel("Diurnal amplitude / surface amplitude", fontsize=10)
-    ax.set_ylabel("Depth (cm)", fontsize=10)
+    ax.set_xlabel("Diurnal amplitude / surface amplitude", fontsize=12)
+    ax.set_ylabel("Depth (cm)", fontsize=12)
     ax.set_title("(b)  Exponential attenuation",
-                 fontsize=11, fontweight="bold", loc="left", pad=4)
+                 fontsize=14, fontweight="bold", loc="left", pad=4)
     ax.grid(color="0.90", lw=0.7, which="both")
-    ax.tick_params(labelsize=9)
+    ax.tick_params(labelsize=11)
 
     out = f"{OUT}/fig_skin_depth.pdf"
     fig.savefig(out, dpi=300, bbox_inches="tight")
@@ -208,7 +210,8 @@ def make_skin_depth():
 # FIGURE 3 — K_d / Q_b degeneracy
 # ═════════════════════════════════════════════════════════════════════════════
 def make_degeneracy():
-    fig, ax = plt.subplots(figsize=(8.0, 6.0))
+    fig, ax = plt.subplots(figsize=(11.0, 6.2))
+    fig.subplots_adjust(left=0.085, right=0.66, top=0.92, bottom=0.12)
 
     Kd = np.linspace(2, 16, 400)        # mW/m/K
     Qb = np.linspace(5, 30, 400)        # mW/m^2
@@ -220,7 +223,7 @@ def make_degeneracy():
     # contour set
     levels = [1, 2, 3, 4, 5, 6, 8]
     cs = ax.contour(KK, QQ, grad, levels=levels, colors="0.40", linewidths=0.9)
-    ax.clabel(cs, inline=True, fontsize=8, fmt="%g K/m")
+    ax.clabel(cs, inline=True, fontsize=10, fmt="%g K/m")
 
     # shaded ridge at the A17 retrieval value (gradient = 15/11.23 = 1.34 K/m)
     grad_A17 = 15 / 11.23
@@ -248,19 +251,22 @@ def make_degeneracy():
                                 lw=1.6, alpha=0.7,
                                 connectionstyle="arc3,rad=0.2"))
     ax.text(9.0, 11.5, "rescaling\n$\\alpha=2/3$",
-            fontsize=8.5, color="#9E2A1F", style="italic", ha="center")
+            fontsize=10.5, color="#9E2A1F", style="italic", ha="center")
 
     # axes
     ax.set_xlabel(r"Deep conductivity $K_d$  (mW m$^{-1}$ K$^{-1}$)",
-                  fontsize=10.5)
-    ax.set_ylabel(r"Basal heat flux $Q_b$  (mW m$^{-2}$)", fontsize=10.5)
+                  fontsize=12)
+    ax.set_ylabel(r"Basal heat flux $Q_b$  (mW m$^{-2}$)", fontsize=12)
     ax.set_title(r"$K_d / Q_b$ degeneracy:  contours of constant deep gradient "
                  r"$|\partial_z T| = Q_b / K_d$",
-                 fontsize=11, fontweight="bold", pad=4)
+                 fontsize=14, fontweight="bold", pad=4)
     ax.grid(color="0.90", lw=0.7)
-    ax.legend(loc="upper left", fontsize=9, framealpha=0.92,
-              edgecolor="0.75")
-    ax.tick_params(labelsize=9)
+    ax.legend(bbox_to_anchor=(1.02, 1.0), loc="upper left",
+              borderaxespad=0.0, fontsize=11, framealpha=0.97,
+              edgecolor="0.75",
+              title="Reference points", title_fontsize=12,
+              handlelength=1.8, borderpad=0.7)
+    ax.tick_params(labelsize=11)
     ax.set_xlim(2, 16)
     ax.set_ylim(5, 30)
 
