@@ -693,6 +693,49 @@ single-borehole inversion.}
 \label{fig:degeneracy}
 \end{figure}
 
+\section{Joint Bayesian posterior in $(K_d, Q_b)$}\label{sec:posterior}
+
+Fig.~\ref{fig:posterior} makes the degeneracy quantitative. We
+construct a joint posterior $P(K_d, Q_b \mid \mathrm{data})$ at
+each Apollo site by combining a Gaussian likelihood
+$\mathcal{L}(K_d, Q_b) \propto \exp[-\tfrac{1}{2}\,N_\mathrm{deep}\,
+\mathrm{RMSE}^2(K_d, Q_b)/\sigma_\mathrm{data}^2]$ (with
+$\sigma_\mathrm{data}=0.5\,\si{\kelvin}$ taken from the
+within-window standard deviation of the deep sensors) with a
+Gaussian prior on $Q_b$ derived from the
+\citet{saito2007,nagihara2018} reanalysis ($Q_b \sim
+\mathcal{N}(18, 5^2)$ for A15 and $\mathcal{N}(13, 4^2)$ for A17,
+in \si{\milli\watt\per\meter\squared}). The likelihood surface
+in the conduction-dominated regime depends on $K_d$ and $Q_b$
+only through the ratio
+$|\partial_z T| = Q_b/K_d$, so the joint posterior contracts onto
+a degenerate ridge along that ratio and is broken in only the
+direction informed by the prior.
+
+The marginal posterior on $K_d$ at A17 is therefore wider than the
+profile-likelihood retrieval reported in the main letter. The
+shift in posterior median between the canonical
+$Q_b=15\,\si{\milli\watt\per\meter\squared}$ and the reanalysis
+prior is the principal driver. Reporting both numbers is more
+honest than reporting only one; the inter-site contrast remains
+robust across the entire posterior because the same $Q_b/K_d$
+ridge constrains both sites identically.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.99\linewidth]{figures/fig_kd_qb_posterior.pdf}
+\caption{\textbf{Joint Bayesian posterior in $(K_d, Q_b)$ at the
+two Apollo sites.} Panels (a)--(b): 2-D posterior densities with
+the maximum a posteriori marker (red star) and dotted iso-ratio
+lines $Q_b/K_d=\mathrm{const}$. Panels (c)--(d): the marginal
+posteriors on $K_d$ (blue, left axis) and on $Q_b$ (red, right
+axis). The posterior contracts onto the iso-ratio ridge along
+which the equilibrium temperature profile is invariant; the prior
+on $Q_b$ breaks the degeneracy in only the orthogonal
+direction.}
+\label{fig:posterior}
+\end{figure}
+
 % =====================================================================
 \chapter{The Numerical Solver}\label{ch:numerics}
 
