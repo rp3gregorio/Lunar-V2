@@ -1211,6 +1211,42 @@ enough to matter for downstream volatile-stability budgets.}
 \label{fig:cold-trap-SI}
 \end{figure}
 
+\section{Held-out validation diagnostics}\label{sec:holdout}
+
+The single-parameter $K_d$ retrieval reported in the main letter is
+supported by two held-out diagnostics
+(Fig.~\ref{fig:holdout-SI}). \emph{Panel (a)} reports the
+TG\,vs.\,TR cross-prediction: at each site we fit $K_d$ using only
+the gradient-bridge (TG) sensors and evaluate the deep RMSE on the
+withheld ring-bridge (TR) sensors, and \emph{vice versa}. The
+out-of-sample RMSEs match their in-sample counterparts to within
+$\sim\!0.2$\,K, indicating that the two sensor populations are
+mutually consistent under the same $K_d$ retrieval. \emph{Panel
+(b)} reports a leave-one-out test in which the deepest sensor at
+each site ($z = \SI{139}{\centi\meter}$ at A15,
+$z = \SI{234}{\centi\meter}$ at A17) is withheld from the fit and
+predicted by the remaining sensors. The model recovers the
+withheld temperature to within
+$|\Delta|=\SI{0.11}{\kelvin}$ (A15) and
+$\SI{0.16}{\kelvin}$ (A17). Both diagnostics show that the
+retrieval has out-of-sample skill, not just in-sample
+goodness-of-fit.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_holdout.pdf}
+\caption{\textbf{Held-out validation of the per-site $K_d$
+retrieval.} (a)~TG\,vs.\,TR cross-prediction: open bars show the
+in-sample deep RMSE achieved by the $K_d^{*}$ retrieval that uses
+only the labelled sensor type; hatched bars show the
+out-of-sample RMSE on the withheld sensor type. The
+$\Delta$ annotations are the change between in-sample and
+out-of-sample RMSE. (b)~Leave-one-out test on the deepest sensor
+at each site: the bar height is the absolute residual at the
+withheld sensor; the deepest-sensor depth is annotated.}
+\label{fig:holdout-SI}
+\end{figure}
+
 % =====================================================================
 \chapter{Glossary}\label{ch:glossary}
 

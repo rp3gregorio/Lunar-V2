@@ -75,20 +75,24 @@ grid; and shallow sensors are excluded \emph{a priori} on the basis
 of the modelled diurnal-amplitude depth profile, removing the
 circular-validation risk inherent in residual-based masking. The
 deep-sensor root-mean-square error is minimised at
-$K_{d,\mathrm{A15}}^{*}=4.85$\,mW\,m$^{-1}$\,K$^{-1}$
-(95\% non-parametric bootstrap CI $3.92$--$6.93$;
-$N=7$, RMSE $=0.91$\,K) and at
+$K_{d,\mathrm{A15}}^{*}=4.88$\,mW\,m$^{-1}$\,K$^{-1}$
+($N=7$, RMSE $=0.90$\,K) and at
 $K_{d,\mathrm{A17}}^{*}=11.23$\,mW\,m$^{-1}$\,K$^{-1}$
-(95\% bootstrap CI $10.12$--$18.0$;
-$N=16$, RMSE $=0.30$\,K). The bootstrap distribution of the
-two-site contrast has median
-$\Delta K_d^{*}=6.4$\,mW\,m$^{-1}$\,K$^{-1}$
-(95\% CI $3.8$--$13.3$, $p<10^{-3}$ for the null of inter-site
-equality), and remains significant at $\geq\!4\sigma$ across the
-full per-site $\pm 30\%$ rescaling envelope of the assumed basal
-heat flux $Q_b$. A two-parameter joint fit varying both $K_d$ and
-the e-folding depth $H$ confirms that $K_d$ is the dominant
-identified lever. The inter-site contrast is invariant under any
+($N=16$, RMSE $=0.30$\,K). A non-parametric bootstrap that
+propagates both sensor resampling and the published $\pm 2.5$\,cm
+sensor-placement uncertainty gives 95\% confidence intervals
+$[3.93,11.71]$ and $[10.18,21.62]$\,mW\,m$^{-1}$\,K$^{-1}$,
+respectively, on a swept range of $1$--$25$\,mW\,m$^{-1}$\,K$^{-1}$
+that is wide enough to bound the upper tail of the bootstrap
+distribution. The bootstrap distribution of the two-site contrast
+has median $\Delta K_d^{*}=6.7$\,mW\,m$^{-1}$\,K$^{-1}$ (95\% CI
+$[3.5,16.6]$, $p\approx 0.013$ for the null of inter-site
+equality), and is robust to the $K_d/Q_b$ degeneracy of
+single-borehole inversions. An $8\times 8$ two-parameter joint fit
+varying both $K_d$ and the e-folding depth $H$ confirms that $K_d$
+is the dominant identified lever, and held-out cross-prediction
+between the two sensor types (TG and TR) at each site corroborates
+the retrieval out of sample. The inter-site contrast is invariant under any
 global rescaling of $Q_b$; the absolute A17 value is conditional on
 the adopted $Q_b$, with a Bayesian posterior median of
 $12.0$\,mW\,m$^{-1}$\,K$^{-1}$ under the
@@ -124,16 +128,20 @@ as large as the inter-site disagreement reported here.
 \begin{itemize}\itemsep1pt
   \item Per-site retrieval of the lunar deep regolith conductivity
         against the restored Apollo Heat-Flow Experiment record
-        yields $K_{d,\mathrm{A15}}^{*}=4.85$ (95\% bootstrap CI
-        $3.92$--$6.93$) and $K_{d,\mathrm{A17}}^{*}=11.23$ (95\% CI
-        $10.12$--$18.0$)\,mW\,m$^{-1}$\,K$^{-1}$.
+        yields $K_{d,\mathrm{A15}}^{*}=4.88$
+        (95\% bootstrap CI $[3.93,11.71]$) and
+        $K_{d,\mathrm{A17}}^{*}=11.23$
+        (95\% CI $[10.18,21.62]$)\,mW\,m$^{-1}$\,K$^{-1}$,
+        with sensor-placement uncertainty propagated through the
+        bootstrap.
   \item The bootstrap distribution of the inter-site contrast
-        excludes zero ($p<10^{-3}$), and both retrievals reject the
-        global value of \citet{hayne2017} at the 95\% level,
+        excludes zero ($p\approx 0.013$), and both retrievals reject
+        the global value of \citet{hayne2017} at the 95\% level,
         indicating regional heterogeneity in $K_d$.
-  \item The contrast is invariant under the $K_d/Q_b$ degeneracy of
-        single-borehole inversions; the absolute A17 value is
-        conditional on the adopted basal heat flux.
+  \item Held-out TG\,vs.\,TR cross-prediction and a leave-one-out
+        test on the deepest sensor confirm out-of-sample skill;
+        the contrast is invariant under the $K_d/Q_b$ degeneracy of
+        single-borehole inversions.
 \end{itemize}
 
 % =====================================================================
@@ -202,7 +210,7 @@ retrievals (\S\ref{sec:results-kd}) disagree by approximately a
 factor of two: the value preferred at Apollo~17 is roughly
 $2.3\times$ the value preferred at Apollo~15, the bootstrap
 distribution of the inter-site contrast excludes zero
-($p<10^{-3}$), and both retrievals reject the published global
+($p\approx 0.013$), and both retrievals reject the published global
 value of \citet{hayne2017} at the 95\% level. We discuss the
 unavoidable $K_d/Q_b$ degeneracy of single-borehole inversions and
 the model-dependence of the absolute A17 value in
@@ -410,11 +418,11 @@ Site & Model & $K_d$ & $N$ & RMSE & Bias & MAE \\
 \midrule
 Apollo 15 & Hayne (2017)               & $3.4$ (fixed)            & 7  & \textbf{1.38} & $+1.03$ & 1.08 \\
 Apollo 15 & 3-layer alt.\ (M\&S 2021)  & $6.3$ (fixed)            & 7  & \textbf{1.08} & $-0.59$ & 1.01 \\
-Apollo 15 & Hayne shape, $K_d^{*}$ fit & $4.85\,[3.92,6.93]$       & 7  & \textbf{0.91} & $+0.01$ & 0.77 \\
+Apollo 15 & Hayne shape, $K_d^{*}$ fit & $4.88\,[3.93,11.71]$       & 7  & \textbf{0.91} & $+0.01$ & 0.77 \\
 \midrule
 Apollo 17 & Hayne (2017)               & $3.4$ (fixed)            & 16 & \textbf{2.68} & $+2.54$ & 2.54 \\
 Apollo 17 & 3-layer alt.\ (M\&S 2021)$^\dagger$ & $6.3$ (fixed) & 16 & \textbf{0.65} & $+0.05$ & 0.54 \\
-Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.12,18.0]$    & 16 & \textbf{0.30} & $-0.03$ & 0.27 \\
+Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.18,21.62]$    & 16 & \textbf{0.30} & $-0.03$ & 0.27 \\
 \bottomrule
 \multicolumn{7}{l}{\footnotesize $^\dagger$\citet{martinez2021}'s 3-layer profile was tuned against the same HFE record;}\\
 \multicolumn{7}{l}{\footnotesize \phantom{$^\dagger$}its A17 row should therefore be read as a fit residual, not an independent test.}\\
@@ -493,36 +501,50 @@ otherwise unchanged. Both curves have a clean, well-resolved minimum
 within the swept range. The parabolic point estimates and 95\%
 non-parametric bootstrap confidence intervals are
 \[
-K_{d,\mathrm{A15}}^{*}=4.85\,[3.92,\,6.93]\,\si{\milli\watt\per\meter\per\kelvin},\qquad
-K_{d,\mathrm{A17}}^{*}=11.23\,[10.12,\,18.0]\,\si{\milli\watt\per\meter\per\kelvin},
+K_{d,\mathrm{A15}}^{*}=4.88\,[3.93,\,11.71]\,\si{\milli\watt\per\meter\per\kelvin},\qquad
+K_{d,\mathrm{A17}}^{*}=11.23\,[10.18,\,21.62]\,\si{\milli\watt\per\meter\per\kelvin},
 \]
-with corresponding deep-sensor RMSE\,$=0.91$\,K ($N=7$) and $0.30$\,K
-($N=16$) respectively (Fig.~\ref{fig:bootstrap}). The A17 upper CI
-saturates the swept-range upper bound at \SI{18}{\milli\watt\per\meter\per\kelvin},
-reflecting a heavy upper tail of the bootstrap distribution at small
-$N$. The retrieval improves on the published-$K_d$
-\Hayne\ baseline at both sites (Table~\ref{tab:rmse}: $1.38\to 0.91$
-at A15, $2.68\to 0.30$ at A17), and at A17 it is also a non-trivial
-improvement on the M\&S 3-layer fit ($0.65\to 0.30$\,K). The bias
-collapses to $\le 0.03$\,K at both sites, indicating that $K_d$ is
-the principal identified lever between the \Hayne\ form and the
-in-situ HFE record once the borestem zone is excluded.
+with corresponding deep-sensor RMSE\,$=0.90$\,K ($N=7$) and
+$0.30$\,K ($N=16$) respectively (Fig.~\ref{fig:bootstrap}). The
+sweep range was extended to $25\,\si{\milli\watt\per\meter\per\kelvin}$
+at A17 to bound the upper tail of the bootstrap distribution. The
+retrieval improves on the published-$K_d$ \Hayne\ baseline at both
+sites (Table~\ref{tab:rmse}: $1.38\to 0.90$ at A15, $2.68\to 0.30$
+at A17), and at A17 it is also a non-trivial improvement on the
+M\&S 3-layer fit ($0.65\to 0.30$\,K). The bias collapses to
+$\le 0.03$\,K at both sites, indicating that $K_d$ is the principal
+identified lever between the \Hayne\ form and the in-situ HFE
+record once the borestem zone is excluded.
 
 The inter-site contrast is
-$\Delta K_d^{*} \approx 6.4\,\si{\milli\watt\per\meter\per\kelvin}$
+$\Delta K_d^{*} \approx 6.7\,\si{\milli\watt\per\meter\per\kelvin}$
 with a 95\% bootstrap confidence interval that excludes zero
-(Fig.~\ref{fig:bootstrap}; non-parametric bootstrap, $p<10^{-3}$
-for the null of inter-site equality). Both retrievals reject the
-global value $K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$
-adopted by \citet{hayne2017} at the 95\% level. The inter-site
-contrast is robust under per-site rescaling of the assumed basal
-heat flux $Q_b$ across the published reanalysis envelope: as shown
-in Fig.~\ref{fig:robustness}, the contrast remains significant
-at $\geq\!4\sigma$ even when one site is rescaled by $\pm 30\%$
-relative to the other. We discuss the unavoidable $K_d/Q_b$
-degeneracy of single-borehole inversions, which makes the absolute
-A17 number (but not the per-site contrast) conditional on the
-adopted $Q_b$, in \S\ref{sec:disc-kd}.
+(Fig.~\ref{fig:bootstrap}; $p\approx 0.013$ for the null of
+inter-site equality). Both retrievals reject the global value
+$K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
+\citet{hayne2017} at the 95\% level. The inter-site contrast is
+robust under per-site rescaling of the assumed basal heat flux
+$Q_b$ across the published reanalysis envelope: as shown in
+Fig.~\ref{fig:robustness}(a), the contrast remains significant at
+$\geq\!2\sigma$ even when one site is rescaled by $\pm 30\%$
+relative to the other.
+
+\paragraph*{Out-of-sample validation.}
+Two held-out tests corroborate the retrieval (Fig.~S\ref{fig:holdout-SI}
+in the SI). \emph{First}, fitting $K_d$ using only the gradient-bridge
+sensors (TG) at each site and then predicting the ring-bridge sensors
+(TR), and vice-versa, yields out-of-sample deep RMSEs that match the
+in-sample values to within $\sim\!0.2$\,K. \emph{Second}, a
+leave-one-out test that withholds the deepest sensor at each site
+($z=139$\,cm at A15, $z=234$\,cm at A17) and refits $K_d$ on the
+remaining sensors recovers the deepest-sensor temperature to within
+$|\Delta|=0.11$ and $0.16$\,K respectively. The retrieval therefore
+generalises out of the data used to fit it.
+
+We discuss the unavoidable $K_d/Q_b$ degeneracy of single-borehole
+inversions, which makes the absolute A17 number (but not the
+per-site contrast) conditional on the adopted $Q_b$, in
+\S\ref{sec:disc-kd}.
 
 \begin{figure}[t]
 \centering
@@ -539,7 +561,7 @@ dashed lines mark the published \citet{hayne2017} value
 \citet{martinez2021} 3-layer deep value
 (\SI{6.3}{\milli\watt\per\meter\per\kelvin}). The two landing-site
 optima differ by approximately
-$6.4\,\si{\milli\watt\per\meter\per\kelvin}$, with a 95\% bootstrap
+$6.7\,\si{\milli\watt\per\meter\per\kelvin}$, with a 95\% bootstrap
 CI that excludes zero (Fig.~\ref{fig:bootstrap}).}
 \label{fig:kdsweep}
 \end{figure}
@@ -557,8 +579,8 @@ dashed line marks the published global value
 $K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$. (b)~Distribution
 of the inter-site contrast $\Delta K_d^{*}=K_{d,\mathrm{A17}}^{*}
 -K_{d,\mathrm{A15}}^{*}$, with the 95\% bootstrap CI shaded; the
-distribution does not overlap zero, giving $p<10^{-3}$ for the null
-of inter-site equality.}
+distribution does not overlap zero, giving $p\approx 0.013$ for
+the null of inter-site equality.}
 \label{fig:bootstrap}
 \end{figure}
 
@@ -594,12 +616,12 @@ The central result of the retrieval (Fig.~\ref{fig:kdsweep},
 \S\ref{sec:results-kd}) is that the deep conductivity required to
 reproduce the in-situ HFE record under the \Hayne\ functional form
 differs between the two landing sites: Apollo~15 prefers
-$K_d^{*}=4.85$ (95\% bootstrap CI $3.92$--$6.93$)\,
+$K_d^{*}=4.88$ (95\% bootstrap CI $[3.93,11.71]$)\,
 $\si{\milli\watt\per\meter\per\kelvin}$ and Apollo~17 prefers
-$K_d^{*}=11.23$ (95\% bootstrap CI $10.12$--$18.0$)\,
+$K_d^{*}=11.23$ (95\% bootstrap CI $[10.18,21.62]$)\,
 $\si{\milli\watt\per\meter\per\kelvin}$. The bootstrap distribution
-of the inter-site contrast excludes zero ($p<10^{-3}$) and both
-retrievals reject the global value
+of the inter-site contrast excludes zero ($p\approx 0.013$) and
+both retrievals reject the global value
 $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
 \citet{hayne2017} at the 95\% level. Because the inputs that differ
 between the two retrievals are restricted to latitude, albedo, basal
@@ -626,7 +648,7 @@ $\sim\!10\,\si{\milli\watt\per\meter\squared}$ value implied by the
 $K_d^{*}\sim\SI{7.5e-3}{\watt\per\meter\per\kelvin}$, comparable to
 the M\&S 3-layer deep value. The per-site
 \emph{contrast} is invariant under any global rescaling of $Q_b$;
-the $\Delta K_d^{*}\!\approx 6.4\,\si{\milli\watt\per\meter\per\kelvin}$
+the $\Delta K_d^{*}\!\approx 6.7\,\si{\milli\watt\per\meter\per\kelvin}$
 result is therefore robust to the $Q_b$ uncertainty, while the
 absolute A17 value is not.
 
@@ -722,12 +744,13 @@ retrieval of the lunar deep regolith conductivity $K_d$ from the
 restored Apollo HFE record, performed within the
 \citet{hayne2017} regolith functional form and propagated through a
 non-parametric bootstrap. The two landing sites require
-$K_{d,\mathrm{A15}}^{*}=4.85$ and
+$K_{d,\mathrm{A15}}^{*}=4.88$ and
 $K_{d,\mathrm{A17}}^{*}=11.23\,\si{\milli\watt\per\meter\per\kelvin}$
-(95\% bootstrap CIs $3.92$--$6.93$ and $10.12$--$18.0$
-respectively), with the bootstrap distribution of the inter-site
-contrast excluding zero ($p<10^{-3}$) and both retrievals
-rejecting the published global value
+(95\% bootstrap CIs $[3.93,11.71]$ and $[10.18,21.62]$,
+with sensor-placement uncertainty propagated). The bootstrap
+distribution of the inter-site contrast excludes zero
+($p\approx 0.013$) and both retrievals reject the published global
+value
 $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ at the 95\% level.
 A two-parameter joint fit varying both $K_d$ and the e-folding
 depth $H$ confirms that $K_d$ is the dominant identified lever.
