@@ -43,6 +43,9 @@ htmlcov/
 *.swp
 .DS_Store
 
+# Local scratch space (cloned upstream code, temp scripts) — never commit.
+.scratch/
+
 # Project data and artifacts — everything in data/ is external, but the
 # manifest (README.md) is tracked so others can reproduce the contents.
 # Bundled peer-reviewed reference tables (Huang 2022, Murty 2025, etc.)
