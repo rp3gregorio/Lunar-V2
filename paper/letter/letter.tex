@@ -230,7 +230,7 @@ The PDE is discretised on a geometric grid
 ($\Delta z_0=\SI{2}{\milli\meter}$, growth ratio $1.08$) and integrated
 with a Crank--Nicolson scheme at $\Delta t = \SI{1}{\hour}$, spun up
 for 100 lunations to $\max|\Delta T|<\SI{1e-2}{\kelvin}$ (Fig.~S6).
-The \Hayne\ thermophysical inputs are imported \emph{verbatim} from
+The \Hayne\ thermophysical inputs are adopted exactly as given in
 the published Appendix~A:
 \begin{align}
 K(T,z) &= \Bigl\{K_s + (K_d-K_s)\bigl[1-e^{-z/H}\bigr]\Bigr\}
@@ -260,28 +260,27 @@ which we explore in the sensitivity sweep (\S\ref{sec:robustness}).
 Fig.~\ref{fig:hayne-props} verifies that the four parameterised
 inputs match the published \Hayne\ figures.
 
-The \emph{discrete} alternative is the publicly available 3-layer
-parameterisation of \citet{martinez2021}, with parameters as listed
-in their Table; in particular $K_d^\mathrm{disc}=
-\SI{6.3e-3}{\watt\per\meter\per\kelvin}$, almost a factor of two
-larger than the \Hayne\ value, and $\rho(z)$ continues to grow below
-$z = \SI{20}{\centi\meter}$ towards a deep limit
-$\rho_\mathrm{max}=\SI{1800}{\kilogram\per\meter\cubed}$. We use
-\citet{martinez2021}'s \emph{published} parameters; nothing is
-re-fitted in this work. We note for the record that
-\citet{martinez2021} explicitly tuned this 3-layer profile against the
-HFE deep gradient, so its agreement with A17 in
-Table~\ref{tab:rmse} should be read as a fit residual rather than
-an independent validation.
-Fig.~\ref{fig:schematic} contrasts the two model architectures: the
-\Hayne\ profile transitions continuously from $K_s$ at the surface to
-$K_d$ at depth via an exponential with e-folding scale $H=6$\,cm,
-while the \citet{martinez2021} 3-layer profile uses a piecewise-linear
-ramp that reaches $K_d$ sharply at 20\,cm.
+As an alternative architecture for $K(z)$ we also consider the
+publicly available 3-layer parameterisation of \citet{martinez2021},
+with parameters adopted as published. In their model the deep
+conductivity is $K_d^\mathrm{disc}=
+\SI{6.3e-3}{\watt\per\meter\per\kelvin}$, approximately a factor of
+two larger than the \Hayne\ value, and the bulk density $\rho(z)$
+continues to increase below $z = \SI{20}{\centi\meter}$ toward a
+deep limit $\rho_\mathrm{max}=\SI{1800}{\kilogram\per\meter\cubed}$.
+Because \citet{martinez2021} tuned this 3-layer profile directly
+against the same HFE deep gradient analysed here, its agreement with
+the A17 record in Table~\ref{tab:rmse} should be interpreted as a
+fit residual rather than as an independent validation.
+Fig.~\ref{fig:schematic} contrasts the two architectures: the
+\Hayne\ profile transitions continuously from $K_s$ to $K_d$ through
+an exponential with e-folding scale $H=\SI{6}{\centi\meter}$, while
+the \citet{martinez2021} profile reaches $K_d$ through a
+piecewise-linear ramp that saturates at $z=\SI{20}{\centi\meter}$.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.99\linewidth]{figures/fig2_model_schematic.pdf}
+\includegraphics[width=0.78\linewidth]{figures/fig2_model_schematic.pdf}
 \caption{\textbf{Conceptual comparison of the two regolith conductivity
 model architectures.} (a)~Physical layer structure: the \Hayne\
 profile (blue) transitions continuously from a surface value
@@ -397,25 +396,26 @@ Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\!\pm\!0.61$       & 16 & \textbf
 \end{table}
 
 \subsection{Diurnal-amplitude depth profile}\label{sec:results-amp}
-The mean profile in Fig.~\ref{fig:meanT} only constrains the
-\emph{DC level} of the subsurface temperature; the amplitude of the
-diurnal wave tests the model's frequency-domain response. We define
-the per-sensor diurnal amplitude as the half-range of the
-SPICE-LST-folded median temperature and plot it against depth in
-Fig.~\ref{fig:amplitude}. Above $z\!=\!\zborestem$ the observed
-amplitude rises sharply above the modelled regolith attenuation curve
---- the borestem signature (\S\ref{sec:borestem}). Below
-$\zborestem$ both models predict an amplitude
-$\lesssim\!10^{-7}\,\si{\kelvin}$ ($\sim\!18$ e-foldings of the
-diurnal skin depth $\delta\sim$3--5\,cm, eq.~\ref{eq:K}--\ref{eq:cp}),
-which is two to three orders of magnitude below the digitisation noise
-floor of the restored 1971--1977 record ($\sim\!0.05$--$0.2\,
-\si{\kelvin}$). The deep-sensor amplitudes therefore carry no
-useful information on $\kappa = K/(\rho c_p)$ at the in-situ scale;
-the diurnal panel functions exclusively as a borestem diagnostic,
-not as a frequency-domain validation. Per-sensor phase-folded
-diurnal cycles for every Apollo HFE sensor (deep \emph{and} shallow)
-are reproduced as Figs.~S1--S2.
+The mean profile in Fig.~\ref{fig:meanT} constrains only the
+time-averaged subsurface temperature; the amplitude of the diurnal
+wave provides an independent test of the frequency-domain response
+of the model. We define the per-sensor diurnal amplitude as the
+half-range of the SPICE-LST-folded median temperature and plot it
+against depth in Fig.~\ref{fig:amplitude}. Above
+$z\!=\!\zborestem$ the observed amplitudes lie an order of magnitude
+or more above the modelled regolith attenuation curve, consistent
+with the borestem heat-short identified by \citet{nagihara2018}
+(\S\ref{sec:borestem}). Below $\zborestem$ both models predict an
+amplitude $\lesssim\!10^{-7}\,\si{\kelvin}$ (corresponding to
+$\sim\!18$ e-foldings of the diurnal skin depth $\delta$ for
+$\delta\sim 3$--$\SI{5}{\centi\meter}$), two to three orders of
+magnitude below the digitisation noise floor of the restored
+1971--1977 record ($\sim\!0.05$--$\SI{0.2}{\kelvin}$). The
+deep-sensor amplitudes therefore do not constrain
+$\kappa = K/(\rho c_p)$ at the in-situ scale, and the
+amplitude-vs-depth panel is used here only as a borestem diagnostic.
+Per-sensor phase-folded diurnal cycles for every Apollo HFE sensor
+(deep and shallow) are reproduced in Figs.~S1--S2 of the SI.
 
 \begin{figure}[t]
 \centering
@@ -527,67 +527,73 @@ $6.4\pm 0.9\,\si{\milli\watt\per\meter\per\kelvin}$
 % =====================================================================
 \section{Discussion}\label{sec:discussion}\label{sec:disc}
 
-\paragraph{Per-site $K_d$ disagreement is the headline result.}\label{sec:disc-kd}
-The central scientific finding (Fig.~\ref{fig:kdsweep},
-\S\ref{sec:results-kd}) is that the deep conductivity required by
-the in-situ Apollo HFE record is not the same at the two landing
-sites under the \Hayne\ functional form: A15 demands
-$K_d^{*}=4.85\pm 0.59$ and A17 demands $K_d^{*}=11.23\pm 0.61\,
-\si{\milli\watt\per\meter\per\kelvin}$, a contrast of
-$\sim\!7.5\sigma$ on the leave-one-out jackknife. Both values reject
-the global \Hayne\ value $3.4\,\si{\milli\watt\per\meter\per\kelvin}$
-at $\geq 2\sigma$. Because the only thing that differs between the
-two retrievals is the latitude, albedo, basal flux, and the in-situ
-deep temperatures themselves, the disagreement cannot be absorbed
-into the \Hayne\ shape, the radiative multiplier, the heat capacity
-parameterisation, or the surface forcing chain (all of which are
-identical at A15 and A17 in our pipeline). It is a real
-\emph{regional} contrast in the conductivity that the regolith
-delivers to a buried thermometer.
+\paragraph{Regional contrast in the deep conductivity.}\label{sec:disc-kd}
+The central result of the retrieval (Fig.~\ref{fig:kdsweep},
+\S\ref{sec:results-kd}) is that the deep conductivity required to
+reproduce the in-situ HFE record under the \Hayne\ functional form
+differs between the two landing sites: Apollo~15 prefers
+$K_d^{*}=4.85\pm 0.59\,\si{\milli\watt\per\meter\per\kelvin}$ and
+Apollo~17 prefers
+$K_d^{*}=11.23\pm 0.61\,\si{\milli\watt\per\meter\per\kelvin}$,
+corresponding to a contrast of $\sim\!7.5\sigma$ on the leave-one-out
+jackknife. Both values reject the global value
+$3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
+\citet{hayne2017} at $\geq 2\sigma$. Because the inputs that differ
+between the two retrievals are limited to latitude, albedo, basal
+heat flux, and the in-situ deep temperatures themselves, the
+disagreement cannot be absorbed into the \Hayne\ shape parameters,
+the radiative multiplier, the heat-capacity parameterisation, or the
+surface-forcing chain --- all of which are identical at A15 and A17
+in the present pipeline. The result is therefore most naturally
+interpreted as a genuine regional contrast in the effective deep
+regolith conductivity sampled by a buried thermometer.
 
 \paragraph{The $K_d/Q_b$ degeneracy.}
 Single-borehole inversions of buried thermometers cannot break the
 degeneracy between deep conductivity and basal heat flux at steady
-state: the deep gradient is $|\partial_z T|=Q_b/K(T_d)$, so any
+state: the deep gradient is $|\partial_z T|=Q_b/K(T_d)$, and any
 multiplicative rescaling $(K_d,Q_b)\to(\alpha K_d,\alpha Q_b)$
 leaves the equilibrium profile invariant in the conduction-dominated
-limit. The absolute A17 retrieval is therefore tied to our adopted
+limit. The absolute A17 retrieval is consequently conditioned on the
+adopted basal heat flux,
 $Q_{b,\mathrm{A17}}=15\,\si{\milli\watt\per\meter\squared}$
-(\citealt{langseth1976,nagihara2018}). If the
-\citet{saito2007,nagihara2018} reanalyses imply $Q_{b,\mathrm{A17}}$
-closer to $\sim\!10\,\si{\milli\watt\per\meter\squared}$, the
-degeneracy rescales the A17 retrieval to
-$K_d^{*}\sim 7.5\,\si{\milli\watt\per\meter\per\kelvin}$, comparable
-to the M\&S 3-layer deep value. Crucially, the per-site
-\emph{contrast} is invariant under any single global rescaling of
-$Q_b$ because it differences out, so the
-\textbf{$\Delta K_d^{*}\!\sim\!6.4\,\si{\milli\watt\per\meter\per\kelvin}$
-result is the robust statement}; the absolute A17 value should be
-quoted with the explicit caveat that it is conditioned on the chosen
-$Q_b$.
+\citep{langseth1976,nagihara2018}. Adopting instead the
+$\sim\!10\,\si{\milli\watt\per\meter\squared}$ value implied by the
+\citet{saito2007,nagihara2018} reanalyses rescales the retrieval to
+$K_d^{*}\sim\SI{7.5e-3}{\watt\per\meter\per\kelvin}$, comparable to
+the M\&S 3-layer deep value. The per-site
+\emph{contrast} is invariant under any global rescaling of $Q_b$;
+the $\Delta K_d^{*}\!\approx 6.4\,\si{\milli\watt\per\meter\per\kelvin}$
+result is therefore robust to the $Q_b$ uncertainty, while the
+absolute A17 value is not.
 
-\paragraph{Why the M\&S 3-layer profile recovered A17 so well.}
-The M\&S 3-layer parameters were tuned against the same HFE deep
-gradient, so the column-2 success at A17 in Table~\ref{tab:rmse} is
-a fit residual rather than independent confirmation. Our $K_d^{*}$
-retrieval (column 3) recovers a deep conductivity within $\sim\!2\times$
-of the M\&S deep layer ($11.2$ vs.\ $6.3\,\si{\milli\watt\per\meter\per\kelvin}$),
-which --- together with the $K_d/Q_b$ caveat above --- frames the
-M\&S deep layer as a particular point in the
+\paragraph{Comparison with the \citet{martinez2021} 3-layer profile.}
+Because the \citet{martinez2021} parameters were tuned directly
+against the HFE deep gradient analysed here, the agreement with the
+A17 record reported in Table~\ref{tab:rmse} (column 2) is a fit
+residual rather than an independent confirmation. The
+single-parameter retrieval reported in column 3 recovers a deep
+conductivity within a factor of two of the \citet{martinez2021}
+deep-layer value
+($11.2$ vs.\ $\SI{6.3e-3}{\watt\per\meter\per\kelvin}$). Combined
+with the $K_d/Q_b$ degeneracy described above, this places the
+\citet{martinez2021} deep layer as one point within a
 $(K_d,Q_b,\mathrm{shape})$ family of solutions consistent with the
-restored HFE record, not as a uniquely preferred parameterisation.
+restored HFE record, rather than as a uniquely preferred
+parameterisation.
 
 \paragraph{The borestem identification is independent of residuals.}
-The shallow-sensor exclusion (\S\ref{sec:borestem}) is read directly
-off Fig.~\ref{fig:amplitude} --- the observed amplitude departs from
-the modelled attenuation curve at $z\!\sim\!\zborestem$ at both sites
-\emph{independently}. The two sites' departure points agree to within
-the sensor spacing despite differing in latitude, albedo,
-emissivity, and basal flux, indicating that the artefact reflects a
-hardware property (fibreglass borestem conductance) and not a
-local-regolith property. This is the strongest argument for the
-$z<\zborestem$ exclusion that we know how to make from the data
-alone, and it precedes the deep-RMSE statistics in
+The shallow-sensor exclusion (\S\ref{sec:borestem}) is determined
+directly from Fig.~\ref{fig:amplitude}: the observed diurnal
+amplitude departs from the modelled regolith attenuation at
+$z\!\sim\!\zborestem$ at both sites independently. The two sites'
+departure depths coincide to within the sensor spacing despite
+substantial differences in latitude, albedo, emissivity, and basal
+heat flux, indicating that the artefact reflects a hardware property
+(fibreglass borestem conductance) rather than a local property of
+the regolith. The exclusion criterion therefore depends only on the
+amplitude-attenuation prediction $A(z\,;K,\rho,c_p)$, and is fixed
+prior to evaluation of the deep-RMSE statistics in
 Table~\ref{tab:rmse} and the $K_d$ retrieval in
 Fig.~\ref{fig:kdsweep}.
 

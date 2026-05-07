@@ -345,6 +345,31 @@ gradient (which requires a quiet zone several skin depths below the
 deepest measurement) we extend the modelled column to $\SI{5}{\meter}$.
 \end{key}
 
+Fig.~\ref{fig:skindepth} illustrates this graphically. The left panel
+shows synthetic temperature time-series at several depths, all driven
+by the same surface diurnal forcing of $\sim\!100$\,K amplitude; the
+right panel shows the attenuation factor versus depth. Below
+$\zborestem$ the diurnal amplitude has been reduced by 18 e-foldings
+to $\sim\!10^{-9}$\,K, explaining why the deep-sensor amplitudes
+carry no information about the in-situ regolith thermal diffusivity.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.99\linewidth]{figures/fig_skin_depth.pdf}
+\caption{\textbf{Diurnal-wave attenuation in the lunar regolith.}
+(a)~Two lunations of synthetic surface-driven temperature at
+selected depths; the surface (yellow) sees the full $\sim\!200$\,K
+peak-to-peak diurnal swing while sensors at $40$\,cm and below show
+an essentially flat trace. (b)~The corresponding amplitude
+attenuation factor $\exp(-z/\delta)$ on a logarithmic axis, with the
+e-folding skin depth $\delta\approx 4$\,cm and the borestem-cut
+threshold $\zborestem$ marked. Below $\zborestem$ the residual
+diurnal amplitude $\sim\!10^{-9}$\,K is many orders of magnitude
+below the digitisation noise floor of the restored 1971--1977 record
+($\sim\!0.05$--$\SI{0.2}{\kelvin}$).}
+\label{fig:skindepth}
+\end{figure}
+
 \section{What the Apollo Heat-Flow Experiment actually measured}
 
 Each Apollo~15 and Apollo~17 borehole was drilled to roughly
@@ -372,6 +397,31 @@ The complete dataset, restored from the original tapes by
 and provides the only \emph{in-situ} subsurface temperature
 measurements ever made on the Moon.
 
+Fig.~\ref{fig:instrument} shows the geometry of a single Apollo HFE
+borehole. The fibreglass borestem extends from the surface down to
+the bottom of the hole, and the temperature probe sits inside it.
+Sensors above $\zborestem$ are shaded red because they are
+contaminated by heat conducted down the borestem from the surface
+(see the box below); sensors below $\zborestem$ are shaded blue
+because they sit deep enough that the borestem heat-short is
+negligible relative to the regolith conductive flux.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/fig_instrument_schematic.pdf}
+\caption{\textbf{Geometry of an Apollo HFE borehole.} A fibreglass
+borestem (white tube) keeps the drilled hole open and houses an
+eight-sensor temperature probe. Sensors above $\zborestem$ (red
+brackets) record diurnal swings inflated by heat conducted down the
+borestem from the surface and are excluded \emph{a priori} from the
+$K_d$ retrieval. Sensors below $\zborestem$ (blue brackets) sit deep
+enough that the borestem heat-short is negligible and constitute the
+deep-sensor set used in this work. Solar insolation drives the
+$\sim\!100$\,K diurnal swing at the surface (orange arrows); the
+basal heat flux $Q_b$ enters from below (red arrows).}
+\label{fig:instrument}
+\end{figure}
+
 \begin{warn}[The borestem heat-short]
 The fibreglass borestem itself has a non-zero thermal conductivity
 and reaches all the way to the lunar surface, where it sees the full
@@ -380,7 +430,7 @@ contaminates the upper sensors, raising their effective day-time
 temperature and inflating their diurnal amplitude well above what the
 regolith alone would predict. \citet{nagihara2018} attribute the
 contamination to the upper $\sim\!\zborestem$ of the column. We
-inherit that depth as our shallow-sensor exclusion threshold and
+adopt that depth as the shallow-sensor exclusion threshold and
 verify it independently in \S\ref{sec:borestem-diag}.
 \end{warn}
 
@@ -605,15 +655,43 @@ independently-published global parameterisation
 captures the deep conductivity at the in-situ scale than the
 \Hayne\ smooth form derived from orbital brightness alone.
 
-\begin{aside}[An explicit $K_d$ sweep is deferred to Phase~2]
-The two endpoints $3.4$ and $6.3\times10^{-3}\,\si{\watt\per\meter\per\kelvin}$
-bracket a factor-of-two range, but Phase~1 only tests the two
-published values. A dense $K_d$ sweep that maps RMSE$_\mathrm{depth}$
-versus the deep conductivity is part of the Phase-2 regression
-companion paper, where it can be performed jointly with the heat-flow
-$Q_b$ retrieval to avoid the well-known $K_d/Q_b$ degeneracy in
-single-borehole inversions.
+\begin{aside}[The $K_d/Q_b$ degeneracy of single-borehole inversions]
+At long times every depth in the column reaches an equilibrium where
+the conductive heat flux is uniform and equal to the basal flux
+$Q_b$. The deep gradient is therefore
+$|\partial_z T| = Q_b / K(T_d)$, which means a single buried
+thermometer constrains only the \emph{ratio} $Q_b/K_d$ and not
+either quantity on its own. Any rescaling
+$(K_d, Q_b) \to (\alpha K_d, \alpha Q_b)$ leaves the equilibrium
+profile invariant in the conduction-dominated limit.
+Fig.~\ref{fig:degeneracy} shows the resulting iso-gradient ridge in
+the $(K_d, Q_b)$ plane and the location of the per-site retrievals
+along it. The single-parameter $K_d$ retrieval performed in the
+main letter (\S2.4 and Fig.~5) therefore yields a value that is
+conditional on the adopted $Q_b$ at each site; the per-site
+\emph{contrast} is invariant under any global rescaling of $Q_b$
+and is the more robust of the two reported quantities.
 \end{aside}
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/fig_kd_qb_degeneracy.pdf}
+\caption{\textbf{The $K_d / Q_b$ degeneracy of single-borehole
+inversions.} Grey contours show curves of constant deep equilibrium
+gradient $|\partial_z T| = Q_b/K_d$. The Apollo~17 retrieval (red
+star) and the Apollo~15 retrieval (green square) sit on different
+contours, confirming that the inter-site contrast is not a $Q_b$
+artefact. The blue circle shows where the A17 retrieval would move
+if the basal heat flux were closer to the
+\citet{saito2007,nagihara2018} reanalysis value of
+$\sim\!10\,\si{\milli\watt\per\meter\squared}$: the rescaling
+($\alpha=2/3$, red arrow) slides the retrieval along the same
+iso-gradient ridge from $(K_d,Q_b)=(11.2, 15)$ to
+$(K_d,Q_b)=(7.5, 10)$. Crucially, this rescaling does not change
+the equilibrium temperature profile, and so it is invisible to a
+single-borehole inversion.}
+\label{fig:degeneracy}
+\end{figure}
 
 % =====================================================================
 \chapter{The Numerical Solver}\label{ch:numerics}
