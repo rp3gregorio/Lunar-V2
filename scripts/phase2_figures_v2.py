@@ -17,13 +17,22 @@ import matplotlib.ticker as mtick
 from matplotlib.lines import Line2D
 from matplotlib.colors import LinearSegmentedColormap
 
-# ─── Style — publication-grade, restrained warm palette ──────────────────────
-# Larger, consistent sizes (all figures match) and legends always outside data.
-FS_BASE   = 11.5
-FS_TITLE  = 13.0
-FS_LABEL  = 12.0
-FS_TICK   = 10.5
-FS_LEGEND = 10.5
+# ─── Style — JGR:Planets-compliant figure sizes ──────────────────────────────
+# JGR:Planets column widths:  single 95 mm = 3.74 in,
+#                             1.5-col 140 mm = 5.51 in,
+#                             full   190 mm = 7.48 in.
+# We design at FULL-width (7.48 in) and intentionally use a slightly larger
+# font budget than the print size requires, so that text is readable when
+# AGU's typesetter reduces the figure to the column width.
+JGR_FULL    = 7.48      # in  (190 mm full-page width)
+JGR_HALF    = 5.51      # in  (140 mm 1.5-column width)
+JGR_SINGLE  = 3.74      # in  (95 mm single-column width)
+
+FS_BASE   = 10.0
+FS_TITLE  = 11.5
+FS_LABEL  = 10.5
+FS_TICK   = 9.5
+FS_LEGEND = 9.5
 
 plt.rcParams.update({
     "font.family": "serif",
@@ -133,10 +142,12 @@ def fmt_axis(ax, *, xlabel="", ylabel="", title=""):
 # FIGURE 1 — Bootstrap distributions (letter)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_bootstrap(d, out_path):
-    fig = plt.figure(figsize=(12.0, 5.2))
-    # leave generous right margin for outside legend
-    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.36,
-                          left=0.07, right=0.78, top=0.88, bottom=0.16)
+    """JGR:Planets full-width (190 mm = 7.48 in). Both panels stacked
+    vertically so legends fit inside each panel without competing
+    with the data."""
+    fig = plt.figure(figsize=(JGR_FULL, 6.4))
+    gs = fig.add_gridspec(2, 1, hspace=0.50,
+                          left=0.10, right=0.97, top=0.94, bottom=0.08)
     ax0 = fig.add_subplot(gs[0])
     ax1 = fig.add_subplot(gs[1])
 
@@ -168,9 +179,11 @@ def fig_bootstrap(d, out_path):
              xlabel=r"$K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel="bootstrap count",
              title="(a)  Per-site bootstrap distributions")
-    ax0.set_xlim(2, 19)
-    ax0.set_ylim(0, ymax * 1.15)
+    ax0.set_xlim(2, 22)
+    ax0.set_ylim(0, ymax * 1.30)
     ax0.xaxis.set_minor_locator(mtick.AutoMinorLocator())
+    ax0.legend(loc="upper right", fontsize=FS_LEGEND, framealpha=0.95,
+               handlelength=1.5, borderpad=0.5)
 
     # ── (b) inter-site contrast distribution ────────────────────────────────
     contrast = (boot17 - boot15)
@@ -204,18 +217,10 @@ def fig_bootstrap(d, out_path):
              xlabel=r"$\Delta K_d^{*}$ (A17 − A15)  (mW m$^{-1}$ K$^{-1}$)",
              ylabel="bootstrap count",
              title="(b)  Inter-site contrast distribution")
-    ax1.set_xlim(-2, 16)
+    ax1.set_xlim(-2, 17)
     ax1.xaxis.set_minor_locator(mtick.AutoMinorLocator())
-
-    # ── single legend OUTSIDE on the right, covering both panels ────────────
-    h0, l0 = ax0.get_legend_handles_labels()
-    h1, l1 = ax1.get_legend_handles_labels()
-    fig.legend(h0 + h1, l0 + l1,
-               loc="center left", bbox_to_anchor=(0.80, 0.5),
-               frameon=True, edgecolor=C_GRID, framealpha=0.97,
-               handlelength=1.8, borderpad=0.7,
-               title="95% bootstrap CIs   (2000 resamples)",
-               title_fontsize=FS_LABEL)
+    ax1.legend(loc="upper left", fontsize=FS_LEGEND, framealpha=0.95,
+               handlelength=1.5, borderpad=0.5)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -226,13 +231,14 @@ def fig_bootstrap(d, out_path):
 # FIGURE 2 — Robustness suite (letter): Q_b sensitivity + joint K_d × H
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_robustness(d, out_path):
-    """Stacked layout: (a) full-width Q_b heatmap on top, (b)(c) joint
-    K_d × H side-by-side below.  Shared legend BELOW the figure."""
-    fig = plt.figure(figsize=(12.0, 9.5))
-    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0],
+    """JGR:Planets full-width (190 mm). Three panels: (a) Q_b heatmap
+    spans full top row; (b)(c) joint K_d × H per site below. Legends
+    inside the data area."""
+    fig = plt.figure(figsize=(JGR_FULL, 7.6))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.95],
                           width_ratios=[1.0, 1.0],
-                          hspace=0.42, wspace=0.30,
-                          left=0.075, right=0.93, top=0.94, bottom=0.10)
+                          hspace=0.50, wspace=0.32,
+                          left=0.09, right=0.92, top=0.94, bottom=0.09)
     axA = fig.add_subplot(gs[0, :])      # full-width Q_b heatmap
     axB = fig.add_subplot(gs[1, 0])
     axC = fig.add_subplot(gs[1, 1])
@@ -275,10 +281,9 @@ def fig_robustness(d, out_path):
              ylabel=r"A17 $Q_b$ rescaling factor  $\alpha_{17}$",
              title=r"(a)  Inter-site $K_d^{*}$ contrast vs. non-uniform $Q_b$")
 
-    # legend OUTSIDE on the right of (a)
-    axA.legend(bbox_to_anchor=(1.18, 1.0), loc="upper left",
-               borderaxespad=0.0, frameon=True,
-               handlelength=1.8, borderpad=0.7)
+    # legend INSIDE upper-right of (a)
+    axA.legend(loc="upper right", fontsize=FS_LEGEND - 0.5,
+               framealpha=0.95, handlelength=1.4, borderpad=0.4)
 
     # ── (b)(c) joint K_d × H per site ───────────────────────────────────────
     cf_handle = None
@@ -323,15 +328,10 @@ def fig_robustness(d, out_path):
     cbar2.ax.tick_params(labelsize=FS_TICK, colors=C_CHAR)
     cbar2.outline.set_edgecolor(C_GRID)
 
-    # shared legend OUTSIDE, below the (b)(c) row
-    hb, lb = axB.get_legend_handles_labels()
-    hc, lc = axC.get_legend_handles_labels()
-    fig.legend(hb + hc, lb + lc,
-               loc="lower center", bbox_to_anchor=(0.50, 0.0),
-               ncols=4, frameon=True, edgecolor=C_GRID, framealpha=0.97,
-               handlelength=1.8, borderpad=0.6,
-               title="Joint fit markers",
-               title_fontsize=FS_LABEL)
+    # individual legends inside each panel
+    for ax in (axB, axC):
+        ax.legend(loc="upper right", fontsize=FS_LEGEND - 1.0,
+                  framealpha=0.95, handlelength=1.4, borderpad=0.4)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -342,8 +342,9 @@ def fig_robustness(d, out_path):
 # FIGURE — K_d sweep redesign (letter)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_kd_sweep_v2(d, out_path):
-    fig, ax = plt.subplots(figsize=(11.0, 5.4))
-    fig.subplots_adjust(left=0.085, right=0.66, top=0.88, bottom=0.16)
+    """JGR:Planets full-width with legend inside the upper-right."""
+    fig, ax = plt.subplots(figsize=(JGR_FULL, 4.8))
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.89, bottom=0.13)
 
     for name, color in [("A15", C_A15), ("A17", C_A17)]:
         s = d[name]
@@ -385,14 +386,12 @@ def fig_kd_sweep_v2(d, out_path):
              xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Deep-sensor RMSE  (K)",
              title="Per-site $K_d$ retrieval under the Hayne 2017 functional form")
-    ax.set_xlim(0, 19)
+    ax.set_xlim(0, 22)
     ax.set_ylim(0, 6)
-    # Legend OUTSIDE on the right
-    ax.legend(bbox_to_anchor=(1.02, 1.0), loc="upper left",
-              borderaxespad=0.0,
-              title=r"Sites  $K_d^{*}$  [95% bootstrap CI]"
-                    "\nand published reference values",
-              handlelength=1.8, borderpad=0.7)
+    # Legend INSIDE upper-right
+    ax.legend(loc="upper right", fontsize=FS_LEGEND, framealpha=0.95,
+              title=r"Sites:  $K_d^{*}$  [95% bootstrap CI]",
+              title_fontsize=FS_LEGEND, handlelength=1.4, borderpad=0.5)
 
     fig.savefig(out_path)
     plt.close(fig)

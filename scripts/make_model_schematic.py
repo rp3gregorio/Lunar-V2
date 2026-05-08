@@ -40,9 +40,9 @@ C_MS_S, C_MS_M, C_MS_D = "#F2C2A6", "#D7825A", "#9E2A1F"
 C_TXT = "#222222"
 
 # ══════════════════════════════════════════════════════════════════════════════
-fig = plt.figure(figsize=(11.5, 7.6))
+fig = plt.figure(figsize=(7.48, 7.0))
 gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 1.0],
-                      left=0.10, right=0.78, bottom=0.10, top=0.93, hspace=0.16)
+                      left=0.10, right=0.97, bottom=0.10, top=0.93, hspace=0.16)
 ax0 = fig.add_subplot(gs[0])   # panel A: concept
 ax1 = fig.add_subplot(gs[1])   # panel B: K(z)
 
@@ -204,7 +204,7 @@ ax1.xaxis.set_minor_locator(ticker.AutoMinorLocator())
 ax1.yaxis.set_minor_locator(ticker.AutoMinorLocator())
 ax1.grid(color="0.90", lw=0.7)
 ax1.tick_params(labelsize=11)
-ax1.legend(loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0, fontsize=11, framealpha=0.96, edgecolor="0.75")
+ax1.legend(loc="lower right", fontsize=11, framealpha=0.96, edgecolor="0.75")
 
 # ── save ──────────────────────────────────────────────────────────────────────
 out_pdf = "/tmp/fig_model_schematic.pdf"
