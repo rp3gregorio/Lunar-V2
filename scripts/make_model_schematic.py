@@ -45,18 +45,19 @@ def K_ms(z, T=T_plot):
 z    = np.linspace(0, 0.32, 800)
 z_cm = z * 100
 
-# ── colours ───────────────────────────────────────────────────────────────────
-C_H, C_H_BG = "#1F538F", "#9FBBDC"
-C_MS_S, C_MS_M, C_MS_D = "#F2C2A6", "#D7825A", "#9E2A1F"
-C_TXT = "#222222"
+# ── colours (unified with phase2_figures_v2.py palette) ──────────────────────
+C_H,    C_H_BG = "#2A6478", "#7CA3B0"     # teal — same as C_HAYNE elsewhere
+C_MS_S, C_MS_M, C_MS_D = "#F2C2A6", "#D7825A", "#9E2A1F"   # warm reds
+C_TXT  = "#2A2520"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Figure layout — JGR:Planets full-width (190 mm = 7.48 in)
+# Reserve a strip at the bottom for a SHARED legend (no in-axes legends).
 # ══════════════════════════════════════════════════════════════════════════════
-fig = plt.figure(figsize=(7.48, 8.6))
+fig = plt.figure(figsize=(7.48, 8.9))
 gs  = fig.add_gridspec(
     3, 1, height_ratios=[1.45, 1.10, 0.85], hspace=0.45,
-    left=0.11, right=0.97, bottom=0.06, top=0.96,
+    left=0.11, right=0.97, bottom=0.10, top=0.96,
 )
 ax0 = fig.add_subplot(gs[0])     # concept
 ax1 = fig.add_subplot(gs[1])     # K(z)
@@ -209,10 +210,7 @@ ax1.xaxis.set_minor_locator(ticker.AutoMinorLocator())
 ax1.yaxis.set_minor_locator(ticker.AutoMinorLocator())
 ax1.grid(color="0.90", lw=0.7)
 ax1.tick_params(labelsize=10)
-# Legend in UPPER-RIGHT where the curves haven't reached yet (low-K region
-# of the y=top zone is empty since both curves start at K~1.5 at z~0).
-ax1.legend(loc="upper right", fontsize=9.5, framealpha=0.95,
-           edgecolor="0.75", borderpad=0.5, handlelength=1.6)
+# (no in-axes legend — shared legend at the bottom of the figure)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PANEL C — K(T) at z = 30 cm (deep)
@@ -248,11 +246,23 @@ ax2.xaxis.set_minor_locator(ticker.AutoMinorLocator())
 ax2.yaxis.set_minor_locator(ticker.AutoMinorLocator())
 ax2.grid(color="0.90", lw=0.7)
 ax2.tick_params(labelsize=10)
-# Legend in the lower-LEFT — the curves at T~80–180 are at K~3–6,
-# which leaves the K=0–2 region clear; the legend fits there without
-# overlapping any curve.
-ax2.legend(loc="lower left", fontsize=10, framealpha=0.95,
-           edgecolor="0.75", borderpad=0.5, handlelength=1.8)
+# (no in-axes legend — shared legend at the bottom of the figure)
+
+# ── shared legend BELOW all panels ────────────────────────────────────────────
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+legend_handles = [
+    Line2D([0], [0], color=C_H, lw=2.4,
+           label="Hayne (2017) — smooth exponential"),
+    Line2D([0], [0], color=C_MS_D, lw=2.4, ls="--",
+           label="Martinez & Siegler (2021) — piecewise 3-layer"),
+    Patch(facecolor=C_MS_D, alpha=0.10,
+          label="M\\&S $>$ Hayne region (panel b)"),
+]
+fig.legend(handles=legend_handles, loc="lower center",
+           bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
+           edgecolor="0.75", framealpha=0.97, fontsize=10,
+           handlelength=2.2, borderpad=0.6, columnspacing=1.5)
 
 # ── save ──────────────────────────────────────────────────────────────────────
 out_pdf = "/tmp/fig_model_schematic.pdf"

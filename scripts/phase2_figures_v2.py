@@ -142,12 +142,11 @@ def fmt_axis(ax, *, xlabel="", ylabel="", title=""):
 # FIGURE 1 — Bootstrap distributions (letter)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_bootstrap(d, out_path):
-    """JGR:Planets full-width (190 mm = 7.48 in). Both panels stacked
-    vertically so legends fit inside each panel without competing
-    with the data."""
-    fig = plt.figure(figsize=(JGR_FULL, 6.4))
-    gs = fig.add_gridspec(2, 1, hspace=0.50,
-                          left=0.10, right=0.97, top=0.94, bottom=0.08)
+    """JGR:Planets full-width. Two panels stacked; SINGLE shared
+    legend below the figure so no in-axes legend competes with data."""
+    fig = plt.figure(figsize=(JGR_FULL, 7.6))
+    gs = fig.add_gridspec(2, 1, hspace=0.45,
+                          left=0.10, right=0.97, top=0.94, bottom=0.21)
     ax0 = fig.add_subplot(gs[0])
     ax1 = fig.add_subplot(gs[1])
 
@@ -180,10 +179,9 @@ def fig_bootstrap(d, out_path):
              ylabel="bootstrap count",
              title="(a)  Per-site bootstrap distributions")
     ax0.set_xlim(2, 22)
-    ax0.set_ylim(0, ymax * 1.30)
+    ax0.set_ylim(0, ymax * 1.10)
     ax0.xaxis.set_minor_locator(mtick.AutoMinorLocator())
-    ax0.legend(loc="upper right", fontsize=FS_LEGEND, framealpha=0.95,
-               handlelength=1.5, borderpad=0.5)
+    # NB: no in-axes legend — the shared legend is below the figure.
 
     # ── (b) inter-site contrast distribution ────────────────────────────────
     contrast = (boot17 - boot15)
@@ -219,8 +217,29 @@ def fig_bootstrap(d, out_path):
              title="(b)  Inter-site contrast distribution")
     ax1.set_xlim(-2, 17)
     ax1.xaxis.set_minor_locator(mtick.AutoMinorLocator())
-    ax1.legend(loc="upper left", fontsize=FS_LEGEND, framealpha=0.95,
-               handlelength=1.5, borderpad=0.5)
+    # (no in-axes legend — shared legend below)
+
+    # ── shared legend BELOW the figure ───────────────────────────────────────
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    handles = [
+        Patch(facecolor=C_A15, alpha=0.55, edgecolor=C_A15,
+              label=f"Apollo 15  median {a15_med:.2f}  [{a15_lo:.2f}, {a15_hi:.2f}]"),
+        Patch(facecolor=C_A17, alpha=0.55, edgecolor=C_A17,
+              label=f"Apollo 17  median {a17_med:.2f}  [{a17_lo:.2f}, {a17_hi:.2f}]"),
+        Line2D([0], [0], ls="--", color=C_CHAR,
+               label=r"Hayne 2017  $K_d = 3.4$"),
+        Line2D([0], [0], color=C_A17, lw=1.6,
+               label=f"contrast median  {cmed:.2f}"),
+        Patch(facecolor=C_A17, alpha=0.10,
+              label=f"contrast 95% CI  [{clo:.2f}, {chi_:.2f}]"),
+    ]
+    fig.legend(handles=handles, loc="lower center",
+               bbox_to_anchor=(0.5, 0.005), ncols=2, frameon=True,
+               edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
+               handlelength=2.0, borderpad=0.6, columnspacing=2.0,
+               title="Bootstrap distributions  ($N_{\\rm boot} = 2000$, sensor-placement uncertainty propagated)",
+               title_fontsize=FS_LABEL)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -231,14 +250,14 @@ def fig_bootstrap(d, out_path):
 # FIGURE 2 — Robustness suite (letter): Q_b sensitivity + joint K_d × H
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_robustness(d, out_path):
-    """JGR:Planets full-width (190 mm). Three panels: (a) Q_b heatmap
-    spans full top row; (b)(c) joint K_d × H per site below. Legends
-    inside the data area."""
-    fig = plt.figure(figsize=(JGR_FULL, 7.6))
+    """JGR:Planets full-width. Three panels: (a) Q_b heatmap spans
+    full top row; (b)(c) joint K_d × H per site below. SHARED legend
+    below the figure (no in-axes legends)."""
+    fig = plt.figure(figsize=(JGR_FULL, 9.0))
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.95],
                           width_ratios=[1.0, 1.0],
-                          hspace=0.50, wspace=0.32,
-                          left=0.09, right=0.92, top=0.94, bottom=0.09)
+                          hspace=0.55, wspace=0.32,
+                          left=0.09, right=0.92, top=0.94, bottom=0.20)
     axA = fig.add_subplot(gs[0, :])      # full-width Q_b heatmap
     axB = fig.add_subplot(gs[1, 0])
     axC = fig.add_subplot(gs[1, 1])
@@ -281,9 +300,7 @@ def fig_robustness(d, out_path):
              ylabel=r"A17 $Q_b$ rescaling factor  $\alpha_{17}$",
              title=r"(a)  Inter-site $K_d^{*}$ contrast vs. non-uniform $Q_b$")
 
-    # legend INSIDE upper-right of (a)
-    axA.legend(loc="upper right", fontsize=FS_LEGEND - 0.5,
-               framealpha=0.95, handlelength=1.4, borderpad=0.4)
+    # (no in-axes legend — shared legend below the figure)
 
     # ── (b)(c) joint K_d × H per site ───────────────────────────────────────
     cf_handle = None
@@ -328,10 +345,30 @@ def fig_robustness(d, out_path):
     cbar2.ax.tick_params(labelsize=FS_TICK, colors=C_CHAR)
     cbar2.outline.set_edgecolor(C_GRID)
 
-    # individual legends inside each panel
-    for ax in (axB, axC):
-        ax.legend(loc="upper right", fontsize=FS_LEGEND - 1.0,
-                  framealpha=0.95, handlelength=1.4, borderpad=0.4)
+    # ── shared legend BELOW the figure ───────────────────────────────────────
+    from matplotlib.lines import Line2D
+    handles = [
+        Line2D([0],[0], marker="o", color="none", markerfacecolor=C_CHAR,
+               mec="white", markersize=10,
+               label=r"nominal $Q_b$  (both sites)"),
+        Line2D([0],[0], marker="s", color="none", markerfacecolor=C_FOREST,
+               mec="white", markersize=10,
+               label=r"Saito reanalysis  ($\alpha_{15}=0.7$)"),
+        Line2D([0],[0], color="white", lw=2.4,
+               label="global rescaling diagonal  (contrast invariant)"),
+        Line2D([0],[0], ls="--", color=C_CHAR, lw=1.0,
+               label=r"contrast significance  ($2\sigma$, $4\sigma$, $7\sigma$)"),
+        Line2D([0],[0], marker="*", color="none", markerfacecolor=C_CORAL,
+               mec="white", markersize=14,
+               label=r"joint $(K_d, H)$ minimum  (panels b, c)"),
+        Line2D([0],[0], marker="o", color="none", markerfacecolor=C_TEAL,
+               mec="white", markersize=10,
+               label=r"1-D $K_d^{*}$ at $H = 6$ cm  (panels b, c)"),
+    ]
+    fig.legend(handles=handles, loc="lower center",
+               bbox_to_anchor=(0.5, 0.005), ncols=2, frameon=True,
+               edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
+               handlelength=2.0, borderpad=0.6, columnspacing=2.4)
 
     fig.savefig(out_path)
     plt.close(fig)
