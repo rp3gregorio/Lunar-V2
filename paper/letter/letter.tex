@@ -29,6 +29,16 @@
 \setlength{\bibsep}{2pt}
 \renewcommand{\arraystretch}{1.15}
 
+% --- Float placement: keep figures near their references ----------------------
+\usepackage{placeins}             % \FloatBarrier
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+
 % --- Lightweight \plainlanguagesummary so the layout matches GRL ----
 % (Remove this environment when switching to the AGU class.)
 \newenvironment{plainlanguagesummary}{%
@@ -296,7 +306,7 @@ an exponential with e-folding scale $H=\SI{6}{\centi\meter}$, while
 the \citet{martinez2021} profile reaches $K_d$ through a
 piecewise-linear ramp that saturates at $z=\SI{20}{\centi\meter}$.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.78\linewidth]{figures/fig2_model_schematic.pdf}
 \caption{\textbf{Conceptual comparison of the two regolith conductivity
@@ -359,7 +369,7 @@ The shaded band ($z<\zborestem$, the borestem-contaminated zone) marks
 sensors that are excluded \emph{a priori} from the quantitative
 comparison; see \S\ref{sec:borestem}.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.96\linewidth]{figures/fig2_apollo_mean_T_profile.pdf}
 \caption{\textbf{Annual-mean subsurface temperature profile
@@ -426,7 +436,7 @@ amplitude-vs-depth panel is used here only as a borestem diagnostic.
 Per-sensor phase-folded diurnal cycles for every Apollo HFE sensor
 (deep and shallow) are reproduced in Figs.~S1--S2 of the SI.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/apollo_amplitude_vs_depth.pdf}
 \caption{\textbf{Diurnal amplitude (half-range of the SPICE-LST-folded
@@ -464,7 +474,7 @@ radiative coefficient $\chi$ over the full
 \Hayne / \Vas\ disagreement, and the choice of specific-heat
 parameterisation (Hemingway--Robie--Wilson polynomial vs
 \citealt{biele2022} rational fit) --- shifts the deep-sensor RMSE
-by $<\SI{0.5}{\kelvin}$ at both sites (Fig.~S\ref{fig:sensitivity-SI}
+by $<\SI{0.5}{\kelvin}$ at both sites (Fig.~S2 in the Supporting Information
 in the SI). $K_d$ is treated separately as the controlled retrieval
 parameter in \S\ref{sec:results-kd}.
 
@@ -507,7 +517,7 @@ relative to the other.
 \paragraph*{Out-of-sample validation.}
 Three independent diagnostics, derived from data not used in the
 retrieval, support the per-site $K_d^{*}$ values (SI
-\S\ref{sec:diviner-closure}, \S\ref{sec:holdout}):
+see Supporting Information \S\,4 and \S\,5):
 \begin{enumerate}\itemsep2pt
 \item[(i)] \emph{Diviner surface-temperature closure.} The modelled
       surface trace at each site, evaluated at the per-site
@@ -537,7 +547,7 @@ inversions, which makes the absolute A17 number (but not the
 per-site contrast) conditional on the adopted $Q_b$, in
 \S\ref{sec:disc-kd}.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.92\linewidth]{figures/fig5_kd_sweep.pdf}
 \caption{\textbf{Per-site $K_d$ retrieval under the \Hayne\
@@ -557,7 +567,7 @@ CI that excludes zero (Fig.~\ref{fig:bootstrap}).}
 \label{fig:kdsweep}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\linewidth]{figures/fig_bootstrap.pdf}
 \caption{\textbf{Non-parametric bootstrap distributions for the
@@ -575,7 +585,7 @@ giving $p\approx 0.013$ for the null of inter-site equality.}
 \label{fig:bootstrap}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_robustness.pdf}
 \caption{\textbf{Robustness of the per-site $K_d^{*}$ contrast.}
@@ -600,6 +610,7 @@ trade-off with $H$.}
 \end{figure}
 
 % =====================================================================
+\FloatBarrier
 \section{Discussion}\label{sec:discussion}\label{sec:disc}
 
 \paragraph{The inter-site contrast indicates regional heterogeneity.}\label{sec:disc-kd}
@@ -677,7 +688,7 @@ Fig.~\ref{fig:kdsweep}.
 Across the full $Q_b$ debate, the \Hayne / \Vas\ disagreement on
 $\chi$, and the choice of $c_p(T)$ parameterisation, the deep RMSE
 shifts by $<\SI{0.5}{\kelvin}$ at both sites
-(Fig.~\ref{fig:sensitivity}). The corresponding shift in the
+(Fig.~S2 in the Supporting Information). The corresponding shift in the
 retrieved $K_d^{*}$ is small compared to the per-site contrast:
 $Q_b$ rescales the absolute value (per the degeneracy above), $\chi$
 enters $K(T,z)$ only through the radiative multiplier and produces
@@ -729,6 +740,7 @@ should therefore allow regional variation of $K_d$, not only of the
 shallow regolith inertia.
 
 % =====================================================================
+\FloatBarrier
 \section{Conclusion}
 
 We have presented a per-site, single-parameter retrieval of the deep
