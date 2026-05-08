@@ -13,7 +13,10 @@ RES = pathlib.Path('/Users/rp3gregorio/Lunar-V2/output/phase_a_results.json')
 d = json.loads(RES.read_text())
 
 # Add Q_b sensitivity (analytical via K_d/Q_b degeneracy on the new K_d*)
-alphas = np.linspace(0.7, 1.3, 13)
+# Grid extended down to alpha=0 so the published Saito-reanalysis case
+# (alpha_15 = 0.7) sits comfortably inside the panel rather than at the
+# left edge of the data extent.
+alphas = np.linspace(0.0, 1.3, 27)
 g15, g17 = np.meshgrid(alphas, alphas, indexing='ij')
 kd15 = d['A15']['kd_star'] * g15
 kd17 = d['A17']['kd_star'] * g17

@@ -282,9 +282,9 @@ def make_comparison_figure(samples, summary):
     """
     from scipy.stats import gaussian_kde
 
-    fig = plt.figure(figsize=(JGR_FULL, 5.4))
-    gs = fig.add_gridspec(1, 2, wspace=0.28,
-                          left=0.08, right=0.98, top=0.88, bottom=0.34)
+    fig = plt.figure(figsize=(JGR_FULL, 4.6))
+    gs = fig.add_gridspec(1, 2, wspace=0.26,
+                          left=0.08, right=0.98, top=0.88, bottom=0.30)
     axA = fig.add_subplot(gs[0])
     axB = fig.add_subplot(gs[1])
 
@@ -354,16 +354,22 @@ def make_comparison_figure(samples, summary):
              xlabel=r"$K_d^{\rm A17} - K_d^{\rm A15}$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"$P(\Delta K_d \mid \mathrm{data})$",
              title="(b)  Posterior of the inter-site contrast")
-    # Stats subtitle ABOVE axes — no histogram overlap
-    stat_line = (f"median {med_c:+.2f},  68% [{q16_c:+.2f}, {q84_c:+.2f}],  "
-                 f"95% [{q025_c:+.2f}, {q975_c:+.2f}]")
-    axB.text(0.5, 1.005, stat_line, transform=axB.transAxes,
-             ha="center", va="bottom", fontsize=FS_TICK, color=C_DIM)
+    # No subtitle on the axes — the contrast stats are folded into the
+    # shared legend title below the figure (cleaner layout).
+    contrast_stats = (
+        rf"$\Delta K_d$ posterior:  "
+        rf"median ${med_c:+.2f}$,  "
+        rf"68% [${q16_c:+.2f}, {q84_c:+.2f}$],  "
+        rf"95% [${q025_c:+.2f}, {q975_c:+.2f}$]   "
+        rf"(units: mW m$^{{-1}}$ K$^{{-1}}$)"
+    )
 
     fig.suptitle("emcee MCMC posteriors — direct comparison of the two sites",
-                 fontsize=FS_TITLE, color=C_CHAR, y=0.97)
+                 fontsize=FS_TITLE, color=C_CHAR, y=0.98)
 
-    # Shared legend BELOW the figure (in its own box)
+    # Shared legend BELOW the figure (in its own box).  The contrast
+    # stats that previously sat above panel (b) are folded into the
+    # legend title here, so all stats live in one block.
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch
     handles = [
@@ -378,9 +384,10 @@ def make_comparison_figure(samples, summary):
                label=r"$\Delta K_d = 0$  (null)"),
     ]
     fig.legend(handles=handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.03), ncols=3, frameon=True,
+               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
-               handlelength=2.2, borderpad=0.7, columnspacing=1.6)
+               handlelength=2.0, borderpad=0.5, columnspacing=1.4,
+               title=contrast_stats, title_fontsize=FS_LEGEND)
 
     out = pathlib.Path(
         "/Users/rp3gregorio/Lunar-V2/paper/letter/figures/fig_posterior_compare.pdf")

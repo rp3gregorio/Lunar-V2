@@ -299,10 +299,10 @@ def fig_robustness(d, out_path):
              xlabel=r"A15 $Q_b$ rescaling factor  $\alpha_{15}$",
              ylabel=r"A17 $Q_b$ rescaling factor  $\alpha_{17}$",
              title=r"(a)  Inter-site $K_d^{*}$ contrast vs. non-uniform $Q_b$")
-    # Pad axis past the data extent so the Saito green square at the
-    # boundary α=0.7 is fully visible rather than half-clipped.
-    axA.set_xlim(alphas[0] - 0.03, alphas[-1] + 0.03)
-    axA.set_ylim(alphas[0] - 0.03, alphas[-1] + 0.03)
+    # The alpha grid now starts at 0 so the Saito-reanalysis green square
+    # at alpha_15 = 0.7 sits inside the panel (not at the data boundary).
+    axA.set_xlim(alphas[0], alphas[-1])
+    axA.set_ylim(alphas[0], alphas[-1])
 
     # (no in-axes legend — shared legend below the figure)
 
