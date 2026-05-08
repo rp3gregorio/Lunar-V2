@@ -218,20 +218,25 @@ def main():
         for q, ls in [(16, ":"), (50, "-"), (84, ":")]:
             v = np.percentile(s_kd, q)
             ax_kd.axvline(v, color=C_CHAR, lw=1.0, ls=ls, alpha=0.85)
-        ax_kd.text(0.97, 0.97,
-                   f"median {med_kd:.2f}\n"
-                   f"16/84  [{np.percentile(s_kd,16):.2f}, "
-                   f"{np.percentile(s_kd,84):.2f}]\n"
-                   f"95% CI [{np.percentile(s_kd,2.5):.2f}, "
-                   f"{np.percentile(s_kd,97.5):.2f}]",
-                   transform=ax_kd.transAxes, ha="right", va="top",
-                   fontsize=FS_TICK,
-                   bbox=dict(boxstyle="round,pad=0.4",
-                             facecolor="white", edgecolor=C_GRID, lw=0.6))
         fmt_axis(ax_kd,
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$P(K_d \mid \mathrm{data})$",
-                 title=f"{marg_lbl}  Apollo {name[1:]}  —  marginal $P(K_d)$")
+                 title=f"{marg_lbl}  Apollo {name[1:]} — marginal $P(K_d)$")
+        # Compact summary box in the corner of the panel that is empty
+        # of histogram support (upper-right for A15; histograms decay
+        # at high K_d there; for A17 we use upper-left where the
+        # histogram is also nearly zero below K_d~6).
+        x_ann, ha = (0.97, "right") if name == "A15" else (0.04, "left")
+        ax_kd.text(x_ann, 0.97,
+                   f"median {med_kd:.2f}\n"
+                   f"16/84 [{np.percentile(s_kd,16):.2f}, "
+                   f"{np.percentile(s_kd,84):.2f}]\n"
+                   f"95% CI [{np.percentile(s_kd,2.5):.2f}, "
+                   f"{np.percentile(s_kd,97.5):.2f}]",
+                   transform=ax_kd.transAxes, ha=ha, va="top",
+                   fontsize=FS_TICK, linespacing=1.3,
+                   bbox=dict(boxstyle="round,pad=0.4",
+                             facecolor="white", edgecolor=C_GRID, lw=0.6))
 
     # ── shared legend BELOW ──────────────────────────────────────────────────
     from matplotlib.lines import Line2D

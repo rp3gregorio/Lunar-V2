@@ -528,7 +528,9 @@ def fig_cold_trap(d, out_path):
     fmt_axis(ax,
              xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Cold-trap depth  $z_\mathrm{stable}$  (m)",
-             title="Implication for polar-volatile cold-trap depth")
+             title=("Implication for polar-volatile cold-trap depth   "
+                    f"(polar $Q_b = {ct['Qb_polar']*1e3:.0f}$ mW m$^{{-2}}$, "
+                    "$T_\\mathrm{surface} = 80$ K)"))
     ax.set_xlim(2, 12)
     ax.set_ylim(0, z_max * 1.10)
 
@@ -538,9 +540,11 @@ def fig_cold_trap(d, out_path):
               title="Reference points",
               title_fontsize=FS_LABEL, borderpad=0.7, handlelength=2.0)
 
-    # Caption-style note in lower-left INSIDE plot (clearly an annotation
-    # not a legend; small text but readable)
-    ax.text(0.02, 0.04,
+    # The Schorghofer–Aharonson framework citation goes only into the
+    # caption now (not as an in-axes annotation), so the curve runs
+    # through the whole panel without obstruction.
+    if False:
+        ax.text(0.02, 0.04,
             (f"Polar $Q_b = {ct['Qb_polar']*1e3:.0f}$ mW m$^{{-2}}$,  "
              "$T_\\mathrm{surface} = 80$ K\n"
              "Schorghofer & Aharonson 2005-style estimate"),

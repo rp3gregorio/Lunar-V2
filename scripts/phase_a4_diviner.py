@@ -228,11 +228,13 @@ def main():
         ax.plot(lst_mod, T_mod, "-", color=col_site, lw=2.0)
         fmt_axis(ax, xlabel="Local solar time (h)",
                  ylabel="Surface T (K)" if col == 0 else "",
-                 title=f"{panel_lbl[(name, 0)]}  {name}  full diurnal")
-        ax.text(0.97, 0.04,
-                f"RMSE {rmse_full:.1f} K   bias {bias_full:+.1f} K",
-                transform=ax.transAxes, ha="right", va="bottom",
-                fontsize=FS_TICK, color=C_DIM,
+                 title=f"{panel_lbl[(name, 0)]}  {name} — full diurnal")
+        # Stats inside the panel, in the upper-left where the data is at
+        # low T (night-floor) and the curve has not yet risen.
+        ax.text(1.0, 360,
+                f"RMSE {rmse_full:.1f} K\nbias {bias_full:+.1f} K",
+                ha="left", va="top", fontsize=FS_TICK, color=C_DIM,
+                linespacing=1.3,
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
                           edgecolor=C_GRID, lw=0.6))
         ax.set_xlim(0, 24)
@@ -244,19 +246,13 @@ def main():
         ax.plot(lst_div[night], T_div[night], "o", markersize=4.5,
                 color=col_site, alpha=0.6, mec="white", mew=0.4)
         ax.plot(lst_mod, T_mod, "-", color=col_site, lw=2.0, alpha=0.85)
-        # label the day-side mask
-        ymax = max(T_div) if len(T_div) else 380
-        ax.text(12, ymax * 0.55,
-                "(day-side excluded;\nanisothermal-bias regime)",
-                ha="center", va="center", fontsize=FS_TICK, color=C_DIM,
-                style="italic", linespacing=1.3)
         fmt_axis(ax, xlabel="Local solar time (h)",
                  ylabel="Surface T (K)" if col == 0 else "",
-                 title=f"{panel_lbl[(name, 1)]}  {name}  night-side only")
-        ax.text(0.97, 0.04,
-                f"RMSE {rmse_night:.1f} K   bias {bias_night:+.1f} K",
-                transform=ax.transAxes, ha="right", va="bottom",
-                fontsize=FS_TICK, color=C_DIM,
+                 title=f"{panel_lbl[(name, 1)]}  {name} — night-side only")
+        ax.text(1.0, 360,
+                f"RMSE {rmse_night:.1f} K\nbias {bias_night:+.1f} K",
+                ha="left", va="top", fontsize=FS_TICK, color=C_DIM,
+                linespacing=1.3,
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
                           edgecolor=C_GRID, lw=0.6))
         ax.set_xlim(0, 24)
