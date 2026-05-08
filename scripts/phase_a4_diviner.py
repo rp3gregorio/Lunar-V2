@@ -169,12 +169,24 @@ def main():
     print(f"Cache directory: {DATA_DIR}", flush=True)
     print()
 
-    out = {}
-    fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.6),
-                             gridspec_kw={"wspace": 0.30})
-    fig.subplots_adjust(left=0.07, right=0.97, top=0.86, bottom=0.16)
+    # Pull the unified style + helpers
+    sys.path.insert(0, "/Users/rp3gregorio/Lunar-V2/scripts")
+    from phase2_figures_v2 import JGR_FULL, FS_LEGEND, FS_TICK, C_GRID, C_DIM   # type: ignore
 
-    for ax, name in zip(axes, ["A15", "A17"]):
+    out = {}
+    # Two-row × two-col layout:
+    #   row 1 = full diurnal cycle
+    #   row 2 = night-side only (LST < 6 or LST >= 18) — avoids the
+    #           sub-pixel anisothermal-bias regime that dominates the
+    #           daytime residual.
+    fig, axes = plt.subplots(2, 2, figsize=(JGR_FULL, 7.6),
+                             gridspec_kw={"wspace": 0.30, "hspace": 0.55})
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.93, bottom=0.16)
+
+    panel_lbl = {("A15", 0): "(a)", ("A17", 0): "(b)",
+                 ("A15", 1): "(c)", ("A17", 1): "(d)"}
+
+    for col, name in enumerate(["A15", "A17"]):
         cfg = SITES[name]
         kd  = phase_a[name]["kd_star"]
         print(f"=== {name}  ({cfg['label']}, lat = {cfg['lat']:.2f}°) ===",
@@ -185,27 +197,88 @@ def main():
         print(f"   running solver at K_d* = {kd*1e3:.2f} mW/m/K ...", flush=True)
         lst_mod, T_mod = model_surface_diurnal(cfg, kd)
 
-        # Resample model onto the Diviner LST bins for residual stats
         T_mod_at_div = np.interp(lst_div, lst_mod, T_mod)
-        rmse = float(np.sqrt(np.nanmean((T_mod_at_div - T_div) ** 2)))
-        bias = float(np.nanmean(T_mod_at_div - T_div))
-        print(f"   RMSE = {rmse:.2f} K,  bias = {bias:+.2f} K", flush=True)
-        out[name] = dict(kd_used=kd, rmse_K=rmse, bias_K=bias,
-                         n_diviner_bins=int(np.sum(np.isfinite(T_div))))
+        rmse_full = float(np.sqrt(np.nanmean((T_mod_at_div - T_div) ** 2)))
+        bias_full = float(np.nanmean(T_mod_at_div - T_div))
 
-        # plot
-        col = C_A15 if name == "A15" else C_A17
-        ax.plot(lst_div, T_div, "o", markersize=4.5, color=col, alpha=0.55,
-                mec="white", mew=0.4, label="Diviner (GCP)")
-        ax.plot(lst_mod, T_mod, "-", color=col, lw=2.0,
-                label=f"Model  ($K_d^{{*}} = {kd*1e3:.2f}$)")
-        fmt_axis(ax,
-                 xlabel="Local solar time  (hours)",
-                 ylabel="Surface temperature  (K)",
-                 title=f"({['a','b'][['A15','A17'].index(name)]})  {name}    "
-                       f"RMSE = {rmse:.1f} K,  bias = {bias:+.1f} K")
+        night = (lst_div < 6.0) | (lst_div >= 18.0)
+        rmse_night = float(np.sqrt(np.nanmean(
+            (T_mod_at_div[night] - T_div[night]) ** 2)))
+        bias_night = float(np.nanmean(T_mod_at_div[night] - T_div[night]))
+
+        print(f"   full cycle:  RMSE = {rmse_full:.2f} K,  bias = {bias_full:+.2f} K",
+              flush=True)
+        print(f"   night only:  RMSE = {rmse_night:.2f} K,  bias = {bias_night:+.2f} K",
+              flush=True)
+
+        out[name] = dict(
+            kd_used=kd,
+            full=dict(rmse_K=rmse_full, bias_K=bias_full,
+                      n_bins=int(np.sum(np.isfinite(T_div)))),
+            night=dict(rmse_K=rmse_night, bias_K=bias_night,
+                       n_bins=int(np.sum(night & np.isfinite(T_div)))),
+        )
+
+        col_site = C_A15 if name == "A15" else C_A17
+
+        # ── row 0: full diurnal ─────────────────────────────────────────────
+        ax = axes[0, col]
+        ax.plot(lst_div, T_div, "o", markersize=4.5, color=col_site,
+                alpha=0.55, mec="white", mew=0.4)
+        ax.plot(lst_mod, T_mod, "-", color=col_site, lw=2.0)
+        fmt_axis(ax, xlabel="Local solar time (h)",
+                 ylabel="Surface T (K)" if col == 0 else "",
+                 title=f"{panel_lbl[(name, 0)]}  {name}  full diurnal")
+        ax.text(0.97, 0.04,
+                f"RMSE {rmse_full:.1f} K   bias {bias_full:+.1f} K",
+                transform=ax.transAxes, ha="right", va="bottom",
+                fontsize=FS_TICK, color=C_DIM,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                          edgecolor=C_GRID, lw=0.6))
         ax.set_xlim(0, 24)
-        ax.legend(loc="upper left", borderpad=0.6)
+
+        # ── row 1: night-side only ─────────────────────────────────────────
+        ax = axes[1, col]
+        # shade day-side as visual cue
+        ax.axvspan(6, 18, color="0.92", alpha=0.7, zorder=0)
+        ax.plot(lst_div[night], T_div[night], "o", markersize=4.5,
+                color=col_site, alpha=0.6, mec="white", mew=0.4)
+        ax.plot(lst_mod, T_mod, "-", color=col_site, lw=2.0, alpha=0.85)
+        # label the day-side mask
+        ymax = max(T_div) if len(T_div) else 380
+        ax.text(12, ymax * 0.55,
+                "(day-side excluded;\nanisothermal-bias regime)",
+                ha="center", va="center", fontsize=FS_TICK, color=C_DIM,
+                style="italic", linespacing=1.3)
+        fmt_axis(ax, xlabel="Local solar time (h)",
+                 ylabel="Surface T (K)" if col == 0 else "",
+                 title=f"{panel_lbl[(name, 1)]}  {name}  night-side only")
+        ax.text(0.97, 0.04,
+                f"RMSE {rmse_night:.1f} K   bias {bias_night:+.1f} K",
+                transform=ax.transAxes, ha="right", va="bottom",
+                fontsize=FS_TICK, color=C_DIM,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                          edgecolor=C_GRID, lw=0.6))
+        ax.set_xlim(0, 24)
+
+    # ── shared legend below ──────────────────────────────────────────────────
+    from matplotlib.lines import Line2D
+    handles = [
+        Line2D([0],[0], marker="o", color="none",
+               markerfacecolor=C_A15, mec="white", markersize=8,
+               label="Diviner GCP — A15"),
+        Line2D([0],[0], color=C_A15, lw=2.4,
+               label="Model  $K_d^{*} = 4.88$  — A15"),
+        Line2D([0],[0], marker="o", color="none",
+               markerfacecolor=C_A17, mec="white", markersize=8,
+               label="Diviner GCP — A17"),
+        Line2D([0],[0], color=C_A17, lw=2.4,
+               label="Model  $K_d^{*} = 11.23$  — A17"),
+    ]
+    fig.legend(handles=handles, loc="lower center",
+               bbox_to_anchor=(0.5, 0.005), ncols=4, frameon=True,
+               edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
+               handlelength=2.2, borderpad=0.6, columnspacing=2.0)
 
     OUT_JSON.write_text(json.dumps(out, indent=2))
     print(f"\nSaved: {OUT_JSON}", flush=True)

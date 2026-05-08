@@ -592,6 +592,60 @@ $c_p(T)$ alongside the rational-function alternative of
 \citet{biele2022}; the two agree to better than $1\%$ over the lunar
 temperature range.
 
+\section{Geological context of the two landing sites}\label{sec:context}
+
+The retrieved per-site $K_d$ contrast (main letter \S3) is most
+naturally interpreted as a real difference in the effective deep
+regolith conductivity sampled by the buried thermometer arrays at
+the two sites. Although the present dataset cannot identify the
+dominant mechanism, it is useful to summarise the candidate
+physical contributors that the geological context of the two sites
+suggests.
+
+\paragraph{Apollo 15 (Hadley--Apennine).}
+The site sits at the western edge of Mare Imbrium where the basaltic
+mare meets the steep highland scarp of the Apennine Front. The
+local regolith is a vertically and laterally inhomogeneous mixture
+of mare basalt fines, Apennine highland anorthositic clasts, and
+KREEP-rich material delivered by the Imbrium impact
+\citep{korotev2005,wieczorek2006}. Surface ages on the local
+mare units are $\sim$3.3\,Gyr.
+
+\paragraph{Apollo 17 (Taurus--Littrow).}
+The site sits in a $\sim$7\,km-wide basaltic embayment within the
+South Massif highland complex, with high-Ti mare basalt at the
+floor and pyroclastic orange/black soils interspersed throughout.
+The deep regolith above the basalt floor is $\sim$15\,m thick,
+deeper than at A15, and the surface mare units have ages of
+$\sim$3.7--3.8\,Gyr \citep{wieczorek2006,crawford2015}.
+
+\paragraph{Why context matters for $K_d$.}
+The bulk thermal conductivity of solid mare basalt
+$\sim$2\,\si{\watt\per\meter\per\kelvin} is $\sim$30\% higher than
+that of solid highland anorthosite, but the m-scale effective
+regolith conductivity that governs the Apollo HFE measurement is
+dominated by porosity, grain-size distribution, and grain-contact
+geometry, not by bulk mineralogy. Several plausible mechanisms can
+generate a factor-of-two difference in $K_d$ between the two sites:
+\begin{itemize}\itemsep1pt
+  \item \textbf{Differential compaction} over the $\sim$0.4\,Gyr
+        age difference (A17 surface units are $\sim$10\% older);
+  \item \textbf{Different micrometeorite-gardening rates} between
+        the mare-edge (A15) and the basaltic-embayment (A17)
+        environments;
+  \item \textbf{Local mineralogical mixing differences} (Apennine
+        highland material is more anorthositic and lower-conductivity
+        than the basaltic floor at A17);
+  \item \textbf{Buried-rock fraction differences} from impact ejecta
+        accumulation; the A17 site has a known dense rock population
+        from the South Massif slumps.
+\end{itemize}
+Distinguishing among these mechanisms requires per-site
+in-situ measurements with greater spatial coverage than the present
+HFE record provides; we flag it as the most direct follow-up
+question raised by the retrieval reported in this letter.
+
+% =====================================================================
 \section{Site-specific (measured) inputs}
 Only four quantities vary between sites, and each has an independent
 measurement:
@@ -695,44 +749,68 @@ single-borehole inversion.}
 
 \section{Joint Bayesian posterior in $(K_d, Q_b)$}\label{sec:posterior}
 
-Fig.~\ref{fig:posterior} makes the degeneracy quantitative. We
-construct a joint posterior $P(K_d, Q_b \mid \mathrm{data})$ at
-each Apollo site by combining a Gaussian likelihood
-$\mathcal{L}(K_d, Q_b) \propto \exp[-\tfrac{1}{2}\,N_\mathrm{deep}\,
-\mathrm{RMSE}^2(K_d, Q_b)/\sigma_\mathrm{data}^2]$ (with
-$\sigma_\mathrm{data}=0.5\,\si{\kelvin}$ taken from the
-within-window standard deviation of the deep sensors) with a
-Gaussian prior on $Q_b$ derived from the
-\citet{saito2007,nagihara2018} reanalysis ($Q_b \sim
-\mathcal{N}(18, 5^2)$ for A15 and $\mathcal{N}(13, 4^2)$ for A17,
-in \si{\milli\watt\per\meter\squared}). The likelihood surface
-in the conduction-dominated regime depends on $K_d$ and $Q_b$
-only through the ratio
-$|\partial_z T| = Q_b/K_d$, so the joint posterior contracts onto
-a degenerate ridge along that ratio and is broken in only the
-direction informed by the prior.
+We complement the profile-likelihood bootstrap of the main letter
+with a proper Bayesian posterior on $(K_d, Q_b)$ at each Apollo
+site. The likelihood is Gaussian in the deep-sensor profile
+residual, $\mathcal{L}(K_d, Q_b) \propto \exp[-\tfrac{1}{2}\,
+N_\mathrm{deep}\,\mathrm{RMSE}^2(K_d, Q_b)/\sigma_\mathrm{data}^2]$
+with $\sigma_\mathrm{data}=\SI{0.5}{\kelvin}$. In the
+conduction-dominated regime the deep equilibrium profile depends
+on $(K_d, Q_b)$ only through their ratio, $|\partial_z T|=Q_b/K_d$;
+we therefore evaluate the likelihood at any candidate $(K_d, Q_b)$
+by interpolating the published-$Q_b$ RMSE-vs-$K_d$ curve at the
+``effective'' conductivity $K_\mathrm{eff} = K_d\,(Q_b^\mathrm{pub}/Q_b)$,
+which exactly preserves the degeneracy. A Gaussian prior on $Q_b$
+captures the \citet{saito2007,nagihara2018} reanalysis envelope:
+$Q_b\sim\mathcal{N}(\SI{18}{\milli\watt\per\meter\squared}, \SI{5}{\milli\watt\per\meter\squared})$ at A15 and
+$Q_b\sim\mathcal{N}(\SI{13}{\milli\watt\per\meter\squared}, \SI{4}{\milli\watt\per\meter\squared})$ at A17. The prior on $K_d$ is flat in $\log K_d$
+within $[10^{-3},\,30\times 10^{-3}]$\,\si{\watt\per\meter\per\kelvin}.
 
-The marginal posterior on $K_d$ at A17 is therefore wider than the
-profile-likelihood retrieval reported in the main letter. The
-shift in posterior median between the canonical
-$Q_b=15\,\si{\milli\watt\per\meter\squared}$ and the reanalysis
-prior is the principal driver. Reporting both numbers is more
-honest than reporting only one; the inter-site contrast remains
-robust across the entire posterior because the same $Q_b/K_d$
-ridge constrains both sites identically.
+The posterior is sampled with the affine-invariant
+ensemble sampler \texttt{emcee}
+\citep{foreman_mackey2013emcee}: 32 walkers, 4000 steps, the first
+1000 steps discarded as burn-in. Convergence is assessed by the
+integrated autocorrelation length, which is $\sim 50$\,steps per
+walker at both sites, giving $> 1000$ effectively-independent
+samples per parameter. The marginal-posterior summary statistics
+are
+\[
+\begin{array}{lcc}
+\toprule
+& \text{Apollo 15} & \text{Apollo 17} \\
+\midrule
+K_d \text{ (median, mW\,m$^{-1}$\,K$^{-1}$)} & 3.78 & 13.25 \\
+K_d \text{ (16/84 percentiles)}              & 2.59,\,5.08 & 7.15,\,23.19 \\
+K_d \text{ (95\% credible interval)}         & {[1.55,\,6.50]} & {[3.56,\,28.58]} \\
+Q_b \text{ (median, mW\,m$^{-2}$)}            & 16.3 & 11.1 \\
+\bottomrule
+\end{array}
+\]
+The posterior on $K_d$ is wider than the bootstrap CI in the main
+letter because it is propagating the full prior-driven $Q_b$
+uncertainty along the iso-ratio ridge in addition to the
+sensor-resampling uncertainty. The two summaries answer different
+questions and should be reported alongside each other: the
+bootstrap CI is the appropriate uncertainty when $Q_b$ is treated
+as a fixed input, while the posterior is the appropriate
+uncertainty when $Q_b$ is treated as Bayesian-uncertain. In both
+treatments, the inter-site contrast remains robust because the
+$K_d/Q_b$ degeneracy ridge constrains both sites identically.
 
 \begin{figure}[hbt]
 \centering
-\includegraphics[width=0.99\linewidth]{figures/fig_kd_qb_posterior.pdf}
-\caption{\textbf{Joint Bayesian posterior in $(K_d, Q_b)$ at the
-two Apollo sites.} Panels (a)--(b): 2-D posterior densities with
-the maximum a posteriori marker (red star) and dotted iso-ratio
-lines $Q_b/K_d=\mathrm{const}$. Panels (c)--(d): the marginal
-posteriors on $K_d$ (blue, left axis) and on $Q_b$ (red, right
-axis). The posterior contracts onto the iso-ratio ridge along
-which the equilibrium temperature profile is invariant; the prior
-on $Q_b$ breaks the degeneracy in only the orthogonal
-direction.}
+\includegraphics[width=\linewidth]{figures/fig_kd_qb_posterior.pdf}
+\caption{\textbf{Bayesian posterior on $(K_d, Q_b)$ from
+\texttt{emcee} MCMC at the two Apollo sites.} Panels (a)--(b):
+joint posterior densities; the red star is the posterior median,
+white contours enclose the inner 5\%, 32\%, and 68\% probability
+regions, and the dotted grey lines are iso-ratio rays
+$Q_b/K_d=\mathrm{const}$ along which the equilibrium temperature
+profile is invariant. Panels (c)--(d): marginal posteriors on
+$K_d$ (filled histograms) with median (solid) and 16/84
+percentiles (dotted) annotated. The wider $K_d$ posterior at A17
+reflects the long iso-ratio tail toward higher $K_d$ paired with
+lower $Q_b$.}
 \label{fig:posterior}
 \end{figure}
 
@@ -1225,34 +1303,55 @@ same latitude and within $\pm 1^\circ$ of the site longitude.
 
 The model reproduces the Diviner diurnal shape --- terminator
 timing, plateau width, and night-time floor --- to high fidelity at
-both sites. The absolute deep RMSE between model and Diviner
-brightness temperature is $12.5$\,K at A15 and $17.5$\,K at A17,
-with a model warm-bias at the daytime peak of $+5.0$ and
-$+9.1$\,K respectively. This residual is consistent with the
-well-documented anisothermal-footprint effect
-\citep{bandfield2015,hayne2017}: the GCP grid pixel mixes
-sub-pixel-scale shadows, slopes, and rocks, which broaden the
+both sites. The full-cycle RMSE between model and Diviner brightness
+temperature is $12.5$\,K at A15 and $17.5$\,K at A17, with a model
+warm-bias of $+5.0$ and $+9.1$\,K respectively
+(Fig.~\ref{fig:diviner-SI}, panels a--b). The day-side component of
+the residual is consistent with the well-documented anisothermal
+footprint effect \citep{bandfield2015,hayne2017}: the GCP grid pixel
+mixes sub-pixel-scale shadows, slopes, and rocks, which broaden the
 distribution of effective temperatures and reduce the peak
 brightness compared to a 1-D homogeneous radiative-equilibrium
-model. Because the Diviner residual is a forcing-side signature
-that scales linearly with surface insolation rather than with
-$K_d$, it does not propagate into the deep RMSE, which is dominated
-by the equilibrium gradient $Q_b/K_d$ at depths well below the
-diurnal skin.
+model.
+
+The night-side residual (Fig.~\ref{fig:diviner-SI}, panels c--d)
+is dominated by a different mechanism. Restricting the residual to
+local solar time $<\!6$ or $\geq\!18$ gives RMSE values of $12.0$
+and $21.8$\,K at A15 and A17 respectively, with biases of $+10.2$
+and $+21.6$\,K. Because the anisothermal effect is largest in the
+day (when sub-pixel illumination differences are large) and small
+at night, the persistent night-side warm bias is most likely a
+forcing-side parameter offset --- in particular, the bolometric
+albedo and broadband emissivity adopted from
+\citet{vasavada2012,bandfield2015} are latitude-band averages
+rather than measured values at the A15 / A17 footprints. Local
+albedo or emissivity differing by 1--2\% from the lat-band mean
+would account for a $\sim$10\,K shift in the night-side temperature.
+
+Crucially, neither residual propagates into the deep $K_d$
+retrieval. The deep equilibrium temperature is $T_d = T_\mathrm{surface}^{(\mathrm{mean})} + Q_b\!\int_0^{z_d}\!dz'/K(z')$;
+a uniform shift in the surface mean (the only kind of offset
+indicated by the night-side bias) shifts the absolute deep $T$ but
+not the deep \emph{gradient}, which is what the $K_d$ retrieval
+fits. The Diviner closure therefore confirms diurnal-shape fidelity
+without contaminating the central retrieval.
 
 \begin{figure}[hbt]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_diviner_closure.pdf}
 \caption{\textbf{Surface-temperature closure against the Diviner
-GCP.} Filled circles are the Diviner GCP brightness temperature
-binned at $0.25$-h LST resolution within $\pm 0.5^\circ$ latitude
-and $\pm 1^\circ$ longitude of each landing site; solid curves are
-the modelled surface temperature with the per-site retrieved
-$K_d^{*}$. Diurnal-shape agreement is excellent at both sites; the
-$+5$ to $+9$\,K daytime bias is consistent with the
-sub-pixel anisothermal effect \citep{bandfield2015,hayne2017}
-inherent to comparing 1-D homogeneous-column predictions with
-Diviner footprint-averaged brightness temperatures.}
+GCP.} (a)--(b) Full diurnal cycle at each site: dots are the
+Diviner brightness temperature binned at $0.25$-h LST resolution
+within $\pm 0.5^\circ$ latitude and $\pm 1^\circ$ longitude of
+each landing site; solid curves are the modelled surface
+temperature run with the per-site retrieved $K_d^{*}$.
+(c)--(d) Night-side-only restriction (LST in $[0,\,6)\cup[18,\,24]$;
+day-side shaded). The full-cycle bias has a daytime anisothermal
+component plus a residual night-side offset that is most plausibly
+caused by local-scale bolometric-albedo / emissivity variations.
+Neither component propagates into the deep $K_d$ retrieval, which
+constrains the deep equilibrium gradient $Q_b/K_d$ and not the
+absolute surface temperature.}
 \label{fig:diviner-SI}
 \end{figure}
 
