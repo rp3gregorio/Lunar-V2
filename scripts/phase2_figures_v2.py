@@ -337,10 +337,7 @@ def fig_robustness(d, out_path):
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$H$  (cm)" if ax is axB else "",
                  title=label)
-        # Pad the y-axis so the joint-min star markers (at H=10 for A15
-        # and H=4 for A17, both at the swept-grid edge) are fully visible
-        # rather than clipped by the axis frame.
-        ax.set_ylim(2.5, 10.7)
+        ax.set_ylim(h_grid[0], h_grid[-1])
 
     # shared colorbar for (b) and (c)
     cbar2 = fig.colorbar(cf_handle, ax=[axB, axC], pad=0.02, fraction=0.04,
