@@ -218,25 +218,21 @@ def main():
         for q, ls in [(16, ":"), (50, "-"), (84, ":")]:
             v = np.percentile(s_kd, q)
             ax_kd.axvline(v, color=C_CHAR, lw=1.0, ls=ls, alpha=0.85)
+        # Stats in the title text (above the axes) so they NEVER overlap
+        # the histogram, regardless of where the distribution has support.
+        q16, q84 = np.percentile(s_kd, 16), np.percentile(s_kd, 84)
+        q025, q975 = np.percentile(s_kd, 2.5), np.percentile(s_kd, 97.5)
+        title_main = f"{marg_lbl}  Apollo {name[1:]} — marginal $P(K_d)$"
+        title_sub = (f"median {med_kd:.2f},  68\\% [{q16:.2f}, {q84:.2f}],  "
+                     f"95\\% [{q025:.2f}, {q975:.2f}]")
         fmt_axis(ax_kd,
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$P(K_d \mid \mathrm{data})$",
-                 title=f"{marg_lbl}  Apollo {name[1:]} — marginal $P(K_d)$")
-        # Compact summary box in the corner of the panel that is empty
-        # of histogram support (upper-right for A15; histograms decay
-        # at high K_d there; for A17 we use upper-left where the
-        # histogram is also nearly zero below K_d~6).
-        x_ann, ha = (0.97, "right") if name == "A15" else (0.04, "left")
-        ax_kd.text(x_ann, 0.97,
-                   f"median {med_kd:.2f}\n"
-                   f"16/84 [{np.percentile(s_kd,16):.2f}, "
-                   f"{np.percentile(s_kd,84):.2f}]\n"
-                   f"95% CI [{np.percentile(s_kd,2.5):.2f}, "
-                   f"{np.percentile(s_kd,97.5):.2f}]",
-                   transform=ax_kd.transAxes, ha=ha, va="top",
-                   fontsize=FS_TICK, linespacing=1.3,
-                   bbox=dict(boxstyle="round,pad=0.4",
-                             facecolor="white", edgecolor=C_GRID, lw=0.6))
+                 title="")
+        ax_kd.set_title(title_main, pad=18)
+        ax_kd.text(0.5, 1.005, title_sub, transform=ax_kd.transAxes,
+                   ha="center", va="bottom", fontsize=FS_TICK,
+                   color=C_DIM)
 
     # ── shared legend BELOW ──────────────────────────────────────────────────
     from matplotlib.lines import Line2D
@@ -263,8 +259,127 @@ def main():
     plt.close(fig)
     print(f"\nSaved: {OUT_FIG}", flush=True)
 
+    # ── Companion figure: clean two-site comparison + contrast posterior ────
+    make_comparison_figure(samples, summary_all)
+
     OUT_JSON.write_text(json.dumps(summary_all, indent=2))
     print(f"Saved: {OUT_JSON}", flush=True)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  Two-site posterior comparison (overlay + contrast distribution)
+# ═════════════════════════════════════════════════════════════════════════════
+def make_comparison_figure(samples, summary):
+    """Two-panel side-by-side comparison.
+
+    (a) Both sites' marginal P(K_d) overlaid as filled KDE curves with
+        66% (16-84) shaded ranges and median lines.  Annotation gives
+        the posterior probability that A17 > A15.
+    (b) Posterior of the contrast K_d^{A17} − K_d^{A15}, computed by
+        sampling from each marginal independently (the two sites' data
+        are independent, so the joint factors).  Median, 66%, 95%
+        ranges shaded; vertical line at zero for reference.
+    """
+    from scipy.stats import gaussian_kde
+
+    fig = plt.figure(figsize=(JGR_FULL, 4.4))
+    gs = fig.add_gridspec(1, 2, wspace=0.28,
+                          left=0.08, right=0.98, top=0.86, bottom=0.30)
+    axA = fig.add_subplot(gs[0])
+    axB = fig.add_subplot(gs[1])
+
+    s15_kd, _ = samples["A15"]
+    s17_kd, _ = samples["A17"]
+
+    # ── Panel (a): two-site overlay ─────────────────────────────────────────
+    x_grid = np.linspace(0, max(s17_kd.max(), s15_kd.max()) * 1.05, 600)
+    kde15 = gaussian_kde(s15_kd, bw_method=0.25)(x_grid)
+    kde17 = gaussian_kde(s17_kd, bw_method=0.25)(x_grid)
+
+    # Normalise each KDE to its own maximum so both peaks are visible
+    # on a shared axis; the annotated P(A17>A15) is computed from the
+    # raw samples, so the comparison is still quantitatively correct.
+    for s, kde, color, label in [
+        (s15_kd, kde15 / kde15.max(), C_A15, "Apollo 15"),
+        (s17_kd, kde17 / kde17.max(), C_A17, "Apollo 17"),
+    ]:
+        axA.fill_between(x_grid, 0, kde, color=color, alpha=0.28,
+                         linewidth=0)
+        axA.plot(x_grid, kde, color=color, lw=1.7, label=label)
+        med = np.median(s)
+        q16, q84 = np.percentile(s, [16, 84])
+        axA.axvline(med, color=color, ls="-", lw=1.2, alpha=0.85)
+        # 66% range as a thin shaded band just below zero
+        axA.plot([q16, q84], [-0.04, -0.04], color=color, lw=4,
+                 solid_capstyle="butt", alpha=0.85)
+
+    # P(A17 > A15) by Monte-Carlo on the marginals (same length, paired
+    # samples — they were drawn from the same chain length so the
+    # ordering is arbitrary but the marginal probability is well-defined)
+    n = min(len(s15_kd), len(s17_kd))
+    rng = np.random.default_rng(0)
+    idx15 = rng.choice(len(s15_kd), size=n, replace=False)
+    idx17 = rng.choice(len(s17_kd), size=n, replace=False)
+    p_gt = float(np.mean(s17_kd[idx17] > s15_kd[idx15]))
+
+    fmt_axis(axA,
+             xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
+             ylabel=r"posterior density (normalised)",
+             title="(a)  Two-site posterior overlay")
+    axA.set_ylim(-0.10, 1.18)
+    axA.legend(loc="upper right", frameon=True, edgecolor=C_GRID,
+               framealpha=0.95, fontsize=FS_LEGEND)
+    axA.text(0.04, 0.95,
+             rf"$P(K_d^{{\rm A17}} > K_d^{{\rm A15}}) = {p_gt*100:.1f}\%$",
+             transform=axA.transAxes, ha="left", va="top",
+             fontsize=FS_LABEL, color=C_CHAR,
+             bbox=dict(boxstyle="round,pad=0.4", facecolor="white",
+                       edgecolor=C_GRID, lw=0.6))
+
+    # ── Panel (b): contrast posterior ───────────────────────────────────────
+    contrast = s17_kd[idx17] - s15_kd[idx15]
+    med_c = float(np.median(contrast))
+    q16_c, q84_c = np.percentile(contrast, [16, 84])
+    q025_c, q975_c = np.percentile(contrast, [2.5, 97.5])
+
+    bins = np.linspace(contrast.min(), contrast.max(), 70)
+    axB.hist(contrast, bins=bins, density=True, color=C_CORAL,
+             alpha=0.55, edgecolor=C_CORAL, lw=0.4)
+    # 66% and 95% shaded slabs
+    ymax = axB.get_ylim()[1]
+    axB.axvspan(q025_c, q975_c, color=C_CORAL, alpha=0.12,
+                label="95% credible interval")
+    axB.axvspan(q16_c, q84_c, color=C_CORAL, alpha=0.22,
+                label="66% credible interval")
+    axB.axvline(med_c, color=C_CHAR, lw=1.5, label=f"median = {med_c:.2f}")
+    axB.axvline(0.0, color=C_DIM, ls="--", lw=1.2,
+                label=r"$\Delta K_d = 0$  (null)")
+    fmt_axis(axB,
+             xlabel=r"$K_d^{\rm A17} - K_d^{\rm A15}$  (mW m$^{-1}$ K$^{-1}$)",
+             ylabel=r"$P(\Delta K_d \mid \mathrm{data})$",
+             title="(b)  Posterior of the inter-site contrast")
+    axB.legend(loc="upper right", frameon=True, edgecolor=C_GRID,
+               framealpha=0.95, fontsize=FS_LEGEND)
+    axB.text(0.04, 0.95,
+             (f"median {med_c:+.2f}\n"
+              f"68\\% [{q16_c:+.2f}, {q84_c:+.2f}]\n"
+              f"95\\% [{q025_c:+.2f}, {q975_c:+.2f}]"),
+             transform=axB.transAxes, ha="left", va="top",
+             fontsize=FS_TICK, color=C_CHAR, linespacing=1.3,
+             bbox=dict(boxstyle="round,pad=0.4", facecolor="white",
+                       edgecolor=C_GRID, lw=0.6))
+
+    fig.suptitle("emcee MCMC posteriors — direct comparison of the two sites",
+                 fontsize=FS_TITLE, color=C_CHAR, y=0.97)
+    out = pathlib.Path(
+        "/Users/rp3gregorio/Lunar-V2/paper/letter/figures/fig_posterior_compare.pdf")
+    fig.savefig(out)
+    out2 = pathlib.Path(
+        "/Users/rp3gregorio/Lunar-V2/paper/appendix/figures/fig_posterior_compare.pdf")
+    fig.savefig(out2)
+    plt.close(fig)
+    print(f"Saved: {out}", flush=True)
+    print(f"Saved: {out2}", flush=True)
 
 
 if __name__ == "__main__":

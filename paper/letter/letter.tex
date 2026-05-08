@@ -656,6 +656,30 @@ reanalysis prior on $Q_b$.}
 \label{fig:posterior-main}
 \end{figure}
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
+\caption{\textbf{Direct two-site comparison of the MCMC posteriors.}
+(a)~The Apollo~15 (teal) and Apollo~17 (coral) marginal $P(K_d\,|\,
+\mathrm{data})$ are overlaid on the same axes; filled curves are
+Gaussian-KDE estimates of the posterior, vertical lines mark
+medians, and the short bars at the foot of each curve span the 16--84
+percentile range. The annotated probability is computed by drawing
+paired samples from the two marginals (the two sites' data are
+independent), and quantifies how strongly the data discriminate
+$K_d^{\rm A17}$ from $K_d^{\rm A15}$. (b)~Posterior distribution of
+the inter-site contrast
+$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$, formed from the
+same paired draws. The 66\% (darker) and 95\% (lighter) credible
+intervals are shaded; the dashed line at $\Delta K_d = 0$ shows the
+null hypothesis of a uniform deep conductivity. The bulk of the
+posterior mass lies well above zero, providing a clean
+distribution-level statement of the regional heterogeneity finding
+that complements the bootstrap-based contrast in
+Fig.~\ref{fig:bootstrap}.}
+\label{fig:posterior-compare}
+\end{figure}
+
 % =====================================================================
 \FloatBarrier
 \section{Discussion}\label{sec:discussion}\label{sec:disc}
@@ -672,7 +696,12 @@ $\si{\milli\watt\per\meter\per\kelvin}$. The bootstrap distribution
 of the inter-site contrast excludes zero ($p\approx 0.013$) and
 both retrievals reject the global value
 $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
-\citet{hayne2017} at the 95\% level. Because the inputs that differ
+\citet{hayne2017} at the 95\% level. The same conclusion follows from
+the Bayesian posteriors shown directly side-by-side in
+Fig.~\ref{fig:posterior-compare}: the marginals are well separated,
+and the posterior of the contrast
+$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$ places the bulk of
+its mass well above zero. Because the inputs that differ
 between the two retrievals are restricted to latitude, albedo, basal
 heat flux, and the in-situ deep temperatures themselves, the
 disagreement cannot be absorbed into the \Hayne\ shape parameters,
