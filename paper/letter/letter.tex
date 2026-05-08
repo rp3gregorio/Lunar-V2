@@ -692,16 +692,26 @@ differs between the two landing sites: Apollo~15 prefers
 $K_d^{*}=4.88$ (95\% bootstrap CI $[3.93,11.71]$)\,
 $\si{\milli\watt\per\meter\per\kelvin}$ and Apollo~17 prefers
 $K_d^{*}=11.23$ (95\% bootstrap CI $[10.18,21.62]$)\,
-$\si{\milli\watt\per\meter\per\kelvin}$. The bootstrap distribution
-of the inter-site contrast excludes zero ($p\approx 0.013$) and
-both retrievals reject the global value
-$3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
+$\si{\milli\watt\per\meter\per\kelvin}$. The bootstrap distributions
+underlying these intervals are shown in Fig.~\ref{fig:bootstrap}: the
+two posteriors are well separated, and the distribution of the
+inter-site contrast $\Delta K_d^{*}$ (Fig.~\ref{fig:bootstrap}b)
+excludes zero ($p\approx 0.013$). Both retrievals reject the global
+value $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
 \citet{hayne2017} at the 95\% level. The same conclusion follows from
-the Bayesian posteriors shown directly side-by-side in
-Fig.~\ref{fig:posterior-compare}: the marginals are well separated,
+the Bayesian \texttt{emcee} MCMC analysis. The full joint
+$(K_d, Q_b)$ posteriors at each site
+(Fig.~\ref{fig:posterior-main}a,b) trace the iso-ratio degeneracy
+ridge $Q_b/K_d=\mathrm{const}$, while the marginals
+(Fig.~\ref{fig:posterior-main}c,d) collapse to two well-localised
+distributions in $K_d$. Plotted side-by-side
+(Fig.~\ref{fig:posterior-compare}a) the two marginals are clearly
+separated, with $P(K_d^{\rm A17} > K_d^{\rm A15}) \approx 96\%$;
 and the posterior of the contrast
-$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$ places the bulk of
-its mass well above zero. Because the inputs that differ
+$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$
+(Fig.~\ref{fig:posterior-compare}b) places the bulk of its mass well
+above zero, providing a Bayesian counterpart to the bootstrap
+contrast. Because the inputs that differ
 between the two retrievals are restricted to latitude, albedo, basal
 heat flux, and the in-situ deep temperatures themselves, the
 disagreement cannot be absorbed into the \Hayne\ shape parameters,
@@ -717,7 +727,11 @@ degeneracy between deep conductivity and basal heat flux at steady
 state: the deep gradient is $|\partial_z T|=Q_b/K(T_d)$, and any
 multiplicative rescaling $(K_d,Q_b)\to(\alpha K_d,\alpha Q_b)$
 leaves the equilibrium profile invariant in the conduction-dominated
-limit. The absolute A17 retrieval is consequently conditioned on the
+limit. This degeneracy is visible directly in the joint posteriors
+(Fig.~\ref{fig:posterior-main}a,b) as the dotted iso-ratio rays
+$Q_b/K_d = \mathrm{const}$ along which the likelihood is flat, and
+explicitly tested in the $K_d^{*}$-contrast heatmap of
+Fig.~\ref{fig:robustness}a. The absolute A17 retrieval is consequently conditioned on the
 adopted basal heat flux,
 $Q_{b,\mathrm{A17}}=15\,\si{\milli\watt\per\meter\squared}$
 \citep{langseth1976,nagihara2018}. Adopting instead the
@@ -761,7 +775,8 @@ Table~\ref{tab:rmse} and the $K_d$ retrieval in
 Fig.~\ref{fig:kdsweep}.
 
 \paragraph{The contrast survives the auxiliary-parameter envelope.}
-Across the full $Q_b$ debate, the \Hayne / \Vas\ disagreement on
+Across the full $Q_b$ debate
+(Fig.~\ref{fig:robustness}a), the \Hayne / \Vas\ disagreement on
 $\chi$, and the choice of $c_p(T)$ parameterisation, the deep RMSE
 shifts by $<\SI{0.5}{\kelvin}$ at both sites
 (Fig.~S2 in the Supporting Information). The corresponding shift in the
@@ -771,13 +786,19 @@ enters $K(T,z)$ only through the radiative multiplier and produces
 $\lesssim\!10\%$ shifts in the parabolic minimum, and $c_p$ enters
 only through the spin-up rate (not the steady-state mean). A
 two-parameter joint fit varying both $K_d$ and the e-folding depth
-$H$ (Fig.~\ref{fig:robustness}) confirms that the joint minimum is
-co-located with the 1-parameter $K_d$ minimum at the canonical
+$H$ (Fig.~\ref{fig:robustness}b,c) confirms that the joint minimum
+is co-located with the 1-parameter $K_d$ minimum at the canonical
 $H=\SI{6}{\centi\meter}$, demonstrating that $K_d$ is the dominant
 identified lever and that the retrieval is not a degenerate
 trade-off with $H$. The inter-site contrast in $K_d^{*}$ is
 therefore not an artefact of any single under-constrained \Hayne\
-ingredient.
+ingredient. As an out-of-sample forcing-side check, the same
+forward model evaluated at each site produces noon-time and
+night-time surface brightness temperatures consistent with the
+\citet{williams2017diviner} Diviner gridded climate product to
+within $\sim\!1$--$2$\,K (Fig.~\ref{fig:diviner}); the residual is
+absorbed into the surface boundary condition and does not propagate
+to the deep retrieval.
 
 \paragraph{Comparison with laboratory measurements of returned regolith.}
 Direct laboratory measurements on Apollo regolith samples in vacuum
@@ -834,11 +855,12 @@ factor-$\sim\!2$ error in $K_d$ translates directly into a
 factor-$\sim\!2$ error in the deep equilibrium gradient
 $|\partial_z T|=Q_b/K(T_d)$ and propagates through the $T^4$
 surface-radiation balance to a multi-metre shift of the cold-trap
-depth at which water ice is stable on geological timescales
-(Fig.~\ref{fig:cold-trap}). Adopting the A17 retrieval rather than
-the published global value pushes the indicative cold-trap
-threshold from $\sim\!9$\,m to $\sim\!28$\,m at the polar boundary
-conditions of \citet{schorghofer2005}. Future work that attempts
+depth at which water ice is stable on geological timescales: at the
+polar boundary conditions of \citet{schorghofer2005}, the indicative
+stability depth $z_\mathrm{stable}(K_d)$ traced in
+Fig.~\ref{fig:cold-trap} grows from $\sim\!9$\,m at the global
+\citet{hayne2017} value to $\sim\!28$\,m at the A17 retrieval --- a
+$3\times$ shift driven entirely by the regional $K_d$ contrast. Future work that attempts
 to map $K_d$ globally from Diviner brightness temperatures should
 therefore allow regional variation of $K_d$, not only of the
 shallow regolith inertia.

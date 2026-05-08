@@ -299,6 +299,10 @@ def fig_robustness(d, out_path):
              xlabel=r"A15 $Q_b$ rescaling factor  $\alpha_{15}$",
              ylabel=r"A17 $Q_b$ rescaling factor  $\alpha_{17}$",
              title=r"(a)  Inter-site $K_d^{*}$ contrast vs. non-uniform $Q_b$")
+    # Pad axis past the data extent so the Saito green square at the
+    # boundary α=0.7 is fully visible rather than half-clipped.
+    axA.set_xlim(alphas[0] - 0.03, alphas[-1] + 0.03)
+    axA.set_ylim(alphas[0] - 0.03, alphas[-1] + 0.03)
 
     # (no in-axes legend — shared legend below the figure)
 
@@ -501,8 +505,8 @@ def fig_cold_trap(d, out_path):
     Kd = np.array(ct["kd_grid"]) * 1e3
     z  = np.array(ct["depth_stable_m"])
 
-    fig, ax = plt.subplots(figsize=(10.5, 5.0))
-    fig.subplots_adjust(left=0.10, right=0.66, top=0.88, bottom=0.16)
+    fig, ax = plt.subplots(figsize=(JGR_FULL, 5.4))
+    fig.subplots_adjust(left=0.09, right=0.97, top=0.88, bottom=0.32)
 
     ax.plot(Kd, z, color=C_TEAL, lw=2.4,
             label="Cold-trap depth model")
@@ -531,11 +535,13 @@ def fig_cold_trap(d, out_path):
     ax.set_xlim(2, 12)
     ax.set_ylim(0, z_max * 1.10)
 
-    # Legend OUTSIDE on the right
-    ax.legend(bbox_to_anchor=(1.02, 1.0), loc="upper left",
-              borderaxespad=0.0,
-              title="Reference points",
-              title_fontsize=FS_LABEL, borderpad=0.7, handlelength=2.0)
+    # Shared legend BELOW the figure in its own box
+    fig.legend(loc="lower center", bbox_to_anchor=(0.5, 0.04),
+               ncols=2, frameon=True, edgecolor=C_GRID,
+               framealpha=0.97, fontsize=FS_LEGEND,
+               title="Reference points  (cold-trap stability depth at each $K_d$)",
+               title_fontsize=FS_LABEL, borderpad=0.7,
+               handlelength=2.0, columnspacing=2.0)
 
     # The Schorghofer–Aharonson framework citation goes only into the
     # caption now (not as an in-axes annotation), so the curve runs
