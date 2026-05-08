@@ -144,9 +144,9 @@ def fmt_axis(ax, *, xlabel="", ylabel="", title=""):
 def fig_bootstrap(d, out_path):
     """JGR:Planets full-width. Two panels stacked; SINGLE shared
     legend below the figure so no in-axes legend competes with data."""
-    fig = plt.figure(figsize=(JGR_FULL, 7.6))
+    fig = plt.figure(figsize=(JGR_FULL, 5.5))
     gs = fig.add_gridspec(2, 1, hspace=0.45,
-                          left=0.10, right=0.97, top=0.94, bottom=0.21)
+                          left=0.10, right=0.97, top=0.94, bottom=0.22)
     ax0 = fig.add_subplot(gs[0])
     ax1 = fig.add_subplot(gs[1])
 
@@ -235,11 +235,12 @@ def fig_bootstrap(d, out_path):
               label=f"contrast 95% CI  [{clo:.2f}, {chi_:.2f}]"),
     ]
     fig.legend(handles=handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.005), ncols=2, frameon=True,
-               edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
-               handlelength=2.0, borderpad=0.6, columnspacing=2.0,
+               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
+               edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
+               handlelength=1.6, borderpad=0.4, columnspacing=1.2,
+               labelspacing=0.3,
                title="Bootstrap distributions  ($N_{\\rm boot} = 2000$, sensor-placement uncertainty propagated)",
-               title_fontsize=FS_LABEL)
+               title_fontsize=9.0)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -253,7 +254,7 @@ def fig_robustness(d, out_path):
     """JGR:Planets full-width. Three panels: (a) Q_b heatmap spans
     full top row; (b)(c) joint K_d × H per site below. SHARED legend
     below the figure (no in-axes legends)."""
-    fig = plt.figure(figsize=(JGR_FULL, 9.0))
+    fig = plt.figure(figsize=(JGR_FULL, 6.8))
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.95],
                           width_ratios=[1.0, 1.0],
                           hspace=0.55, wspace=0.32,
@@ -371,9 +372,10 @@ def fig_robustness(d, out_path):
                label=r"1-D $K_d^{*}$ at $H = 6$ cm  (panels b, c)"),
     ]
     fig.legend(handles=handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.005), ncols=2, frameon=True,
-               edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
-               handlelength=2.0, borderpad=0.6, columnspacing=2.4)
+               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
+               edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
+               handlelength=1.6, borderpad=0.4, columnspacing=1.2,
+               labelspacing=0.3)
 
     fig.savefig(out_path)
     plt.close(fig)
@@ -385,8 +387,8 @@ def fig_robustness(d, out_path):
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_kd_sweep_v2(d, out_path):
     """JGR:Planets full-width with legend inside the upper-right."""
-    fig, ax = plt.subplots(figsize=(JGR_FULL, 4.8))
-    fig.subplots_adjust(left=0.10, right=0.97, top=0.89, bottom=0.13)
+    fig, ax = plt.subplots(figsize=(JGR_FULL, 4.2))
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.89, bottom=0.15)
 
     for name, color in [("A15", C_A15), ("A17", C_A17)]:
         s = d[name]
@@ -505,8 +507,8 @@ def fig_cold_trap(d, out_path):
     Kd = np.array(ct["kd_grid"]) * 1e3
     z  = np.array(ct["depth_stable_m"])
 
-    fig, ax = plt.subplots(figsize=(JGR_FULL, 5.4))
-    fig.subplots_adjust(left=0.09, right=0.97, top=0.88, bottom=0.32)
+    fig, ax = plt.subplots(figsize=(JGR_FULL, 4.6))
+    fig.subplots_adjust(left=0.09, right=0.97, top=0.88, bottom=0.36)
 
     ax.plot(Kd, z, color=C_TEAL, lw=2.4,
             label="Cold-trap depth model")

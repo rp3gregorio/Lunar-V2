@@ -282,9 +282,9 @@ def make_comparison_figure(samples, summary):
     """
     from scipy.stats import gaussian_kde
 
-    fig = plt.figure(figsize=(JGR_FULL, 4.6))
+    fig = plt.figure(figsize=(JGR_FULL, 4.4))
     gs = fig.add_gridspec(1, 2, wspace=0.26,
-                          left=0.08, right=0.98, top=0.88, bottom=0.30)
+                          left=0.08, right=0.98, top=0.88, bottom=0.28)
     axA = fig.add_subplot(gs[0])
     axB = fig.add_subplot(gs[1])
 
@@ -327,14 +327,6 @@ def make_comparison_figure(samples, summary):
              ylabel=r"posterior density (normalised)",
              title="(a)  Two-site posterior overlay")
     axA.set_ylim(-0.10, 1.18)
-    # The probability statement stays in the upper-left empty region
-    # above the A17 KDE descent — but no in-axes legend (moved below).
-    axA.text(0.04, 0.95,
-             rf"$P(K_d^{{\rm A17}} > K_d^{{\rm A15}}) = {p_gt*100:.1f}\,\%$",
-             transform=axA.transAxes, ha="left", va="top",
-             fontsize=FS_LABEL, color=C_CHAR,
-             bbox=dict(boxstyle="round,pad=0.4", facecolor="white",
-                       edgecolor=C_GRID, lw=0.6))
 
     # ── Panel (b): contrast posterior ───────────────────────────────────────
     contrast = s17_kd[idx17] - s15_kd[idx15]
@@ -357,11 +349,12 @@ def make_comparison_figure(samples, summary):
     # No subtitle on the axes — the contrast stats are folded into the
     # shared legend title below the figure (cleaner layout).
     contrast_stats = (
+        rf"$P(K_d^{{\rm A17}} > K_d^{{\rm A15}}) = {p_gt*100:.1f}\%$   |   "
         rf"$\Delta K_d$ posterior:  "
         rf"median ${med_c:+.2f}$,  "
         rf"68% [${q16_c:+.2f}, {q84_c:+.2f}$],  "
-        rf"95% [${q025_c:+.2f}, {q975_c:+.2f}$]   "
-        rf"(units: mW m$^{{-1}}$ K$^{{-1}}$)"
+        rf"95% [${q025_c:+.2f}, {q975_c:+.2f}$]  "
+        rf"(mW m$^{{-1}}$ K$^{{-1}}$)"
     )
 
     fig.suptitle("emcee MCMC posteriors — direct comparison of the two sites",
@@ -385,9 +378,10 @@ def make_comparison_figure(samples, summary):
     ]
     fig.legend(handles=handles, loc="lower center",
                bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
-               edgecolor=C_GRID, framealpha=0.97, fontsize=FS_LEGEND,
-               handlelength=2.0, borderpad=0.5, columnspacing=1.4,
-               title=contrast_stats, title_fontsize=FS_LEGEND)
+               edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
+               handlelength=1.6, borderpad=0.4, columnspacing=1.2,
+               labelspacing=0.3,
+               title=contrast_stats, title_fontsize=8.5)
 
     out = pathlib.Path(
         "/Users/rp3gregorio/Lunar-V2/paper/letter/figures/fig_posterior_compare.pdf")
