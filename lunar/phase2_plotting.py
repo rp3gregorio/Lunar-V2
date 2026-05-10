@@ -115,8 +115,13 @@ def legend_below(
     n_rows = (len(handles) + ncol - 1) // ncol
 
     fig = ax.figure
+    # Disable constrained_layout so subplots_adjust can make room below
+    try:
+        fig.set_layout_engine(None)
+    except AttributeError:
+        fig.set_constrained_layout(False)
     bottom_pad = pad + 0.04 * max(0, n_rows - 1)
-    fig.subplots_adjust(bottom=bottom_pad + 0.10)
+    fig.subplots_adjust(bottom=bottom_pad + 0.10, hspace=0.38, wspace=0.32)
 
     leg = fig.legend(
         handles, labels,

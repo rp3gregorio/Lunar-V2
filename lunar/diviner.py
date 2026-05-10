@@ -225,10 +225,16 @@ def load_gcp_band(
     raw = np.fromfile(path, dtype=np.uint8)
     n_records, remainder = divmod(raw.size, _RECORD_BYTES)
     if remainder != 0:
-        raise ValueError(
-            f"GCP file {path} length {raw.size} is not a multiple of "
-            f"{_RECORD_BYTES} bytes; expected fixed-width PDS3 records."
+        import warnings
+        warnings.warn(
+            f"GCP file {path.name} has {remainder} trailing byte(s) after "
+            f"{n_records} complete {_RECORD_BYTES}-byte records; truncating. "
+            f"This can happen when a concurrent download created a slightly "
+            f"oversized file. Data loss is at most one record.",
+            UserWarning,
+            stacklevel=2,
         )
+        raw = raw[: n_records * _RECORD_BYTES]
     view = raw.reshape(n_records, _RECORD_BYTES)[1:]  # drop header row
 
     def _parse(name: str) -> np.ndarray:
