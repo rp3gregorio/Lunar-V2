@@ -54,6 +54,11 @@ data/*
 !data/README.md
 !data/reference/
 !data/reference/*.csv
+# Upstream Martinez 2021 data — small committed files (14 KB .mat + README)
+!data/upstream/
+!data/upstream/martinez2021/
+!data/upstream/martinez2021/*.mat
+!data/upstream/martinez2021/README.md
 # Diviner data — large .tab grids stay out, but track the directory's
 # README and the small PDS label/format files (self-documenting schema).
 !data/diviner/

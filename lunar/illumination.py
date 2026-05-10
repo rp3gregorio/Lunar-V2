@@ -376,6 +376,117 @@ def synthetic_crater_dem(
 # ---------------------------------------------------------------------------
 
 
+def crater_floor_insolation(
+    t: np.ndarray,
+    *,
+    latitude_deg: float,
+    diameter_norm: float,
+    declination_rad: float = 0.0,
+    period_s: float = 2.55024e6,
+    solar_constant: float = 1361.0,
+    bond_albedo: float = 0.12,
+    emissivity: float = 0.95,
+) -> np.ndarray:
+    """Bowl-crater floor insolation per Martinez & Siegler (2021).
+
+    Direct port of the upstream ``1DFunctions/insolationcrater.m`` (8 lines).
+    Returns the absorbed flux on a bowl-crater floor as a function of time:
+
+        Q_s = (S * 4*eps*(1-A) / D**2) * (1 + A/eps) * max(0, cos theta)
+
+    where ``D`` is a dimensionless diameter ratio that scales the
+    visible-light flux on the floor by the geometric extent of the
+    crater opening relative to the sub-solar disc.
+
+    The Hayne-style ``(1 + A/eps)`` factor accounts for the floor
+    receiving both direct scattered solar and re-emitted thermal IR
+    from the warm sunlit walls under simple equilibrium.
+
+    Parameters
+    ----------
+    t : array of times in seconds [0, period_s].
+    latitude_deg : crater-center latitude (degrees).
+    diameter_norm : ``D_crater / D_subsolar`` dimensionless ratio.
+        Set externally per crater (Martinez 2021 uses pre-tuned values).
+    declination_rad : solar declination (rad). Default 0 (equinox).
+    period_s : synodic period (s). Default 2.55024e6 s ~ 29.53 d.
+
+    Returns
+    -------
+    Q : ndarray of shape ``t.shape``, absorbed insolation in W/m^2.
+
+    Notes
+    -----
+    For PSR floors with non-zero direct insolation cut off by topography,
+    use ``load_shoemaker_illumination`` instead — that loads the full
+    ray-traced ``IRillumination + visibleillumination`` time series the
+    upstream paper actually published.
+    """
+    phi = np.deg2rad(latitude_deg)
+    h = 2.0 * np.pi * np.asarray(t) / period_s
+    cos_th = (
+        np.sin(phi) * np.sin(declination_rad)
+        + np.cos(phi) * np.cos(declination_rad) * np.cos(h)
+    )
+    cos_th_pos = 0.5 * (cos_th + np.abs(cos_th))
+    return (
+        solar_constant
+        * 4.0 * emissivity * (1.0 - bond_albedo)
+        / diameter_norm ** 2
+        * (1.0 + bond_albedo / emissivity)
+        * cos_th_pos
+    )
+
+
+def load_shoemaker_illumination(path: Path | str | None = None) -> dict:
+    """Load the upstream Shoemaker scattered-illumination time series.
+
+    Reads ``shoemakerIllumination.mat`` from the Martinez & Siegler (2021)
+    code release. Bit-for-bit copy ships at
+    ``data/upstream/martinez2021/shoemakerIllumination.mat`` (14 KB,
+    Zenodo DOI 10.5281/zenodo.12586656).
+
+    Returns
+    -------
+    dict with keys ``t_jd``, ``Q_visible``, ``Q_ir``, ``Q_total``,
+    ``T_reference``, ``latitude``, ``longitude``. The arrays are 697-long
+    time series at the Shoemaker tile (-87.91, 45.51) — exactly what the
+    upstream ``PSRShoemaker/UpdatedModel/heat1DShoemaker.m`` driver
+    consumes via ``Qs = IRillumination + visibleillumination``.
+    """
+    try:
+        from scipy.io import loadmat
+    except ImportError as exc:  # pragma: no cover
+        raise ImportError(
+            "scipy is required to read shoemakerIllumination.mat"
+        ) from exc
+
+    if path is None:
+        repo = Path(__file__).resolve().parents[1]
+        path = repo / "data" / "upstream" / "martinez2021" / "shoemakerIllumination.mat"
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"shoemakerIllumination.mat not found at {path}. See "
+            "data/upstream/martinez2021/README.md for provenance."
+        )
+
+    m = loadmat(str(path))
+    Q_vis = m["visibleillumination"].squeeze()
+    Q_ir = m["IRillumination"].squeeze()
+    lat = m["latitude"].squeeze()
+    lon = m["longitude"].squeeze()
+    return {
+        "t_jd": m["juliandate"].squeeze(),
+        "Q_visible": Q_vis,
+        "Q_ir": Q_ir,
+        "Q_total": Q_vis + Q_ir,
+        "T_reference": m["daveTemp"].squeeze(),
+        "latitude": float(lat.flat[0]),
+        "longitude": float(lon.flat[0]),
+    }
+
+
 def compute_view_factors(dem: DEM) -> np.ndarray:  # pragma: no cover
     """Sparse PSR-to-sunlit view-factor matrix.
 
