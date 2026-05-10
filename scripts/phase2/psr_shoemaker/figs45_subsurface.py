@@ -51,6 +51,9 @@ if str(_REPO_ROOT) not in sys.path:
 from lunar.constants import Q_B_EQUATORIAL
 from lunar.grid import make_geometric_grid
 from lunar.illumination import load_shoemaker_illumination
+from lunar.phase2_plotting import (
+    COLORS, apply_phase2_style, legend_below, savefig_pair,
+)
 from lunar.properties import conductivity_hayne, conductivity_martinez
 
 Z_MAX = 5.0   # m — must reach > 4 m to trace the paper's "4-m" depth
@@ -106,48 +109,44 @@ def main() -> int:
     T_m = integrate_steady_state(T_surf, z_face, conductivity_martinez)
     dT = T_m - T_h
 
+    apply_phase2_style()
+
     # ---- Figure 4: T(z) profile ----
-    fig4, ax = plt.subplots(figsize=(6.5, 5.8), constrained_layout=True)
-    ax.plot(T_h, z_face, color="#d62728", lw=1.8, label="Hayne χ-T³")
-    ax.plot(T_m, z_face, color="#1f77b4", lw=1.8, label="Martinez & Siegler K(T, ρ)")
-    ax.invert_yaxis()
-    ax.set_xlabel("Temperature (K)", fontsize=11)
-    ax.set_ylabel("Depth (m)", fontsize=11)
-    ax.set_title(
-        "Phase 2 Fig. 4 — Shoemaker PSR T(z) profile\n"
+    fig4, ax4 = plt.subplots(figsize=(7.0, 6.0))
+    ax4.plot(T_h, z_face, color=COLORS["hayne"], lw=1.9, label="Hayne χ-T³")
+    ax4.plot(T_m, z_face, color=COLORS["ms"], lw=1.9,
+             label="Martinez & Siegler K(T, ρ)")
+    ax4.invert_yaxis()
+    ax4.set_xlabel("Temperature (K)")
+    ax4.set_ylabel("Depth (m)")
+    ax4.set_title(
+        "Shoemaker PSR T(z) profile  (Fig 11 of Martinez & Siegler 2021)\n"
         f"Dirichlet T(0) = {T_surf:.1f} K (daveTemp mean, upstream .mat), "
-        f"Q_b = {Q_B_EQUATORIAL*1e3:.0f} mW/m²",
-        fontsize=11,
+        f"Q_b = {Q_B_EQUATORIAL*1e3:.0f} mW/m²"
     )
-    ax.legend(loc="lower right", fontsize=10, framealpha=0.9)
-    ax.grid(alpha=0.3)
+    legend_below(ax4, ncol=2, pad=0.15)
     fig4_path = _REPO_ROOT / "output" / "figures" / "phase2_fig4_shoemaker_Tz.pdf"
     fig4_path.parent.mkdir(parents=True, exist_ok=True)
-    fig4.savefig(fig4_path)
-    fig4.savefig(fig4_path.with_suffix(".png"), dpi=150)
+    savefig_pair(fig4, fig4_path)
     plt.close(fig4)
     print(f"Saved {fig4_path.relative_to(_REPO_ROOT)}")
 
     # ---- Figure 5: ΔT vs depth ----
     dT_4m = float(np.interp(4.0, z_face, dT))
-    fig5, ax = plt.subplots(figsize=(6.5, 5.0), constrained_layout=True)
-    ax.plot(z_face, dT, color="0.15", lw=1.8)
-    ax.axhline(0.0, color="0.5", lw=0.6, ls=":")
-    ax.axvline(4.0, color="#d62728", lw=0.8, ls="--",
-               label=f"4 m (paper depth):  ΔT = {dT_4m:+.1f} K")
-    ax.set_xlabel("Depth (m)", fontsize=11)
-    ax.set_ylabel("ΔT = T(M&S) − T(Hayne)  (K)", fontsize=11)
-    ax.set_xlim(0, Z_MAX)
-    ax.set_title(
-        "Phase 2 Fig. 5 — K-model ΔT vs depth at Shoemaker\n"
-        "1-D proxy for the paper's 2-D 4-m ΔT map; same K-model physics",
-        fontsize=10.5,
+    fig5, ax5 = plt.subplots(figsize=(7.5, 5.2))
+    ax5.plot(z_face, dT, color="0.15", lw=1.9, label="ΔT = T(M&S) − T(Hayne)")
+    ax5.axhline(0.0, color="0.6", lw=0.6, ls=":")
+    ax5.axvline(4.0, color=COLORS["highlight"], lw=1.0, ls="--",
+                label=f"4 m (paper depth):  ΔT = {dT_4m:+.1f} K")
+    ax5.set_xlabel("Depth (m)")
+    ax5.set_ylabel("ΔT = T(M&S) − T(Hayne)  (K)")
+    ax5.set_xlim(0, Z_MAX)
+    ax5.set_title(
+        "K-model ΔT vs depth at Shoemaker  (1-D proxy for Fig 9 of M&S 2021)"
     )
-    ax.legend(loc="best", fontsize=10, framealpha=0.9)
-    ax.grid(alpha=0.3)
+    legend_below(ax5, ncol=2, pad=0.18)
     fig5_path = _REPO_ROOT / "output" / "figures" / "phase2_fig5_dT_vs_depth.pdf"
-    fig5.savefig(fig5_path)
-    fig5.savefig(fig5_path.with_suffix(".png"), dpi=150)
+    savefig_pair(fig5, fig5_path)
     plt.close(fig5)
     print(f"Saved {fig5_path.relative_to(_REPO_ROOT)}")
 

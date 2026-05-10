@@ -1,10 +1,14 @@
-"""Figure 1 of Phase 2 — analytical K(T, rho) overlay.
+"""K(T, rho) overlay — Phase 2 figure 1 in our notebook ordering.
 
-Reproduces the comparison shown in Martinez & Siegler (2021) LPSC abstract
-Fig 1: thermal conductivity vs temperature for several bulk densities,
+This corresponds to **Fig 3 of the Martinez & Siegler (2021) JGR paper**
+(a multi-density extension of their single-density K(T) comparison). The
+paper's Fig 1 is a *different* plot showing K(T) at rho=1300 across three
+models (Woods-Robinson, Hayne, Vasavada top-layer) — that's a separate
+script (fig1_three_models.py, future work).
+
+Reproduces thermal conductivity vs temperature for eight bulk densities,
 standard Hayne (2017) chi-T^3 model vs Martinez & Siegler density-and-
-temperature-dependent low-T model. Pure analytical, no Diviner data
-required.
+temperature-dependent low-T model. Pure analytical, no Diviner required.
 
 Output: ``output/figures/phase2_fig1_K_vs_T_multi_rho.pdf``
 """
@@ -27,9 +31,12 @@ from lunar.constants import (
     H_PARAMETER, CHI_RADIATIVE, T_REFERENCE,
     K_DEEP, K_SURFACE,
     RHO_SURFACE, RHO_DEEP,
+    MS_A1, MS_A2, MS_B1, MS_B2,
+)
+from lunar.phase2_plotting import (
+    apply_phase2_style, legend_below, savefig_pair,
 )
 from lunar.properties import _woods_robinson_kam
-from lunar.constants import MS_A1, MS_A2, MS_B1, MS_B2
 
 # Temperature grid covering the full lunar range plus the low-T regime
 # the M&S model targets (PSRs at 25-100 K, polar nights, dayside peaks).
@@ -61,7 +68,8 @@ def K_martinez(T_arr: np.ndarray, rho: float) -> np.ndarray:
 
 
 def main() -> int:
-    fig, ax = plt.subplots(figsize=(7.5, 5.0), constrained_layout=True)
+    apply_phase2_style()
+    fig, ax = plt.subplots(figsize=(8.0, 5.6))
 
     cmap = plt.get_cmap("viridis", len(DENSITIES))
     for i, rho in enumerate(DENSITIES):
@@ -69,37 +77,28 @@ def main() -> int:
         ax.plot(
             T, K_hayne_from_rho(T, rho) * 1e3,
             color=color, linestyle="--", linewidth=1.4,
-            label=f"Hayne {rho:.0f} kg/m³",
+            label=f"{rho:.0f} kg/m³ (Hayne, dashed)",
         )
         ax.plot(
             T, K_martinez(T, rho) * 1e3,
-            color=color, linestyle="-", linewidth=1.6,
+            color=color, linestyle="-", linewidth=1.7,
         )
 
-    ax.set_xlabel("Temperature (K)", fontsize=12)
-    ax.set_ylabel(r"Thermal conductivity (W m$^{-1}$ K$^{-1}$) $\times 10^{-3}$",
-                  fontsize=12)
+    ax.set_xlabel("Temperature (K)")
+    ax.set_ylabel(r"Thermal conductivity $K\;\times 10^{-3}$  (W m$^{-1}$ K$^{-1}$)")
     ax.set_xlim(0, 400)
     ax.set_ylim(0, 16)
-    ax.grid(alpha=0.3)
     ax.set_title(
-        "Phase 2 Fig. 1 — K(T, ρ): Hayne (2017) vs Martinez & Siegler (2021)\n"
-        "Solid = M&S low-T model, Dashed = Hayne χ-T³",
-        fontsize=11,
+        "K(T, ρ): Hayne χ-T³ (dashed) vs Martinez & Siegler K(T,ρ) (solid)\n"
+        "Replicates Fig 3 of Martinez & Siegler (2021)"
     )
 
-    # Two-column legend, sized to fit
-    leg = ax.legend(
-        loc="upper left", fontsize=8, ncol=2, framealpha=0.9,
-        title="Hayne curves only (solid M&S overlap at same color)",
-        title_fontsize=8,
-    )
+    legend_below(ax, ncol=4, pad=0.20)
 
     out_dir = _REPO_ROOT / "output" / "figures"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "phase2_fig1_K_vs_T_multi_rho.pdf"
-    fig.savefig(out_path)
-    fig.savefig(out_path.with_suffix(".png"), dpi=150)
+    savefig_pair(fig, out_path)
     plt.close(fig)
 
     # Brief numerical sanity check vs LPSC Fig 1 visual targets:

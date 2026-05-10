@@ -41,6 +41,9 @@ from lunar.constants import (
     EMISSIVITY_DEFAULT, Q_B_EQUATORIAL, SOLAR_CONSTANT,
 )
 from lunar.diviner import load_gcp_band, select_diurnal_curve
+from lunar.phase2_plotting import (
+    COLORS, apply_phase2_style, legend_below, savefig_pair,
+)
 from lunar.grid import make_geometric_grid
 from lunar.properties import (
     conductivity_hayne, conductivity_martinez, density_hayne, specific_heat,
@@ -148,53 +151,50 @@ def main() -> int:
           f"range {T_div.min():.1f}-{T_div.max():.1f} K")
 
     # Plot — full diurnal panel + nighttime zoom
-    fig, axes = plt.subplots(
-        1, 2, figsize=(11.5, 4.3), constrained_layout=True
-    )
+    apply_phase2_style()
+    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.8))
     for ax in axes:
         ax.scatter(
-            LT_div, T_div, s=18, color="0.25", marker="o",
+            LT_div, T_div, s=18, color=COLORS["diviner"], marker="o",
             label="Diviner T7 (Williams et al. 2017)", zorder=3,
         )
-        ax.plot(LT_model, Ts_h, color="#d62728", lw=1.6,
+        ax.plot(LT_model, Ts_h, color=COLORS["hayne"], lw=1.7,
                 label="Hayne χ-T³ (Phase 1 default)")
-        ax.plot(LT_model, Ts_m, color="#1f77b4", lw=1.6,
+        ax.plot(LT_model, Ts_m, color=COLORS["ms"], lw=1.7,
                 label="Martinez & Siegler K(T, ρ)")
-        ax.grid(alpha=0.3)
-        ax.set_xlabel("Local time (hours)", fontsize=11)
-        ax.set_ylabel("Surface T (K)", fontsize=11)
+        ax.set_xlabel("Local time (hours)")
+        ax.set_ylabel("Surface T (K)")
 
     axes[0].set_title("Full diurnal cycle, 45° N highlands")
     axes[0].set_xlim(0, 24)
-    axes[0].legend(loc="upper right", fontsize=9, framealpha=0.9)
 
     axes[1].set_title("Nighttime zoom (LT 16:00 – 08:00)")
     nightmask = (LT_model >= 16) | (LT_model <= 8)
-    axes[1].set_xlim(16, 32)  # wrap LT axis: 16->8 = 16->24->32
-    # Reflect the 0-8 wrap onto the 24-32 axis for visual continuity
+    axes[1].set_xlim(16, 32)
     LT_wrap = np.where(LT_model <= 8, LT_model + 24, LT_model)
     order_n = np.argsort(LT_wrap[nightmask])
     axes[1].plot(LT_wrap[nightmask][order_n], Ts_h[nightmask][order_n],
-                 color="#d62728", lw=1.6)
+                 color=COLORS["hayne"], lw=1.7)
     axes[1].plot(LT_wrap[nightmask][order_n], Ts_m[nightmask][order_n],
-                 color="#1f77b4", lw=1.6)
+                 color=COLORS["ms"], lw=1.7)
     LT_div_wrap = np.where(LT_div <= 8, LT_div + 24, LT_div)
     night_div = (LT_div >= 16) | (LT_div <= 8)
     axes[1].scatter(LT_div_wrap[night_div], T_div[night_div],
-                    s=18, color="0.25", zorder=3)
+                    s=18, color=COLORS["diviner"], zorder=3)
     axes[1].set_xticks([16, 18, 20, 22, 24, 26, 28, 30, 32])
     axes[1].set_xticklabels(["16", "18", "20", "22", "00", "02", "04", "06", "08"])
 
     fig.suptitle(
-        "Phase 2 Fig. 2 — 45° N highlands surface T: Hayne vs M&S vs Diviner",
-        fontsize=12,
+        "45° N highlands surface T: Hayne vs M&S vs Diviner  (Fig 5a of M&S 2021)",
+        fontsize=12, y=0.99,
     )
+
+    legend_below(axes[0], ncol=3, pad=0.20)
 
     out_dir = _REPO_ROOT / "output" / "figures"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "phase2_fig2_diurnal_45N.pdf"
-    fig.savefig(out_path)
-    fig.savefig(out_path.with_suffix(".png"), dpi=150)
+    savefig_pair(fig, out_path)
     plt.close(fig)
     print(f"Saved {out_path.relative_to(_REPO_ROOT)}")
 

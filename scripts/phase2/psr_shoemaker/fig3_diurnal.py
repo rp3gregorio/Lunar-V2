@@ -50,6 +50,9 @@ if str(_REPO_ROOT) not in sys.path:
 from lunar.constants import EMISSIVITY_DEFAULT, Q_B_EQUATORIAL, SIGMA_SB
 from lunar.grid import make_geometric_grid
 from lunar.illumination import load_shoemaker_illumination
+from lunar.phase2_plotting import (
+    COLORS, apply_phase2_style, legend_below, savefig_pair,
+)
 from lunar.properties import (
     conductivity_hayne, conductivity_martinez, density_hayne, specific_heat,
 )
@@ -157,38 +160,36 @@ def main() -> int:
     )
 
     # 5. Plot
+    apply_phase2_style()
     days = (t_input_s - t_input_s[0]) / 86400.0
-    fig, ax = plt.subplots(figsize=(8.5, 5.0), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(9.0, 5.4))
     ax.plot(
         days, T_ref,
-        color="0.25", lw=1.2, marker=".", ms=2.5,
-        label="Diviner / Dave-Paige reference T (upstream daveTemp)",
+        color=COLORS["diviner"], lw=1.2, marker=".", ms=2.5,
+        label="Diviner ch9 / Dave-Paige reference (daveTemp)",
     )
     ax.plot(
         days, Th_at_ref,
-        color="#d62728", lw=1.6,
+        color=COLORS["hayne"], lw=1.7,
         label=f"Hayne χ-T³  (RMSE {rmse_h:.1f} K, bias {bias_h:+.1f} K)",
     )
     ax.plot(
         days, Tm_at_ref,
-        color="#1f77b4", lw=1.6, ls="--",
+        color=COLORS["ms"], lw=1.7, ls="--",
         label=f"M&S K(T,ρ)  (RMSE {rmse_m:.1f} K, bias {bias_m:+.1f} K)",
     )
-    ax.set_xlabel("Days since first sample (697-day span ≈ 23 lunations)", fontsize=11)
-    ax.set_ylabel("Surface temperature (K)", fontsize=11)
+    ax.set_xlabel("Days since first sample  (697-day span ≈ 23 lunations)")
+    ax.set_ylabel("Surface temperature (K)")
     ax.set_title(
-        "Phase 2 Fig. 3 — Shoemaker PSR surface T, real ray-traced illumination input\n"
-        f"Q_total = visibleillumination + IRillumination from upstream "
-        f"shoemakerIllumination.mat (mean {Q_total_input.mean():.3f} W/m²)",
-        fontsize=10.5,
+        "Shoemaker PSR surface T, real ray-traced illumination  (Fig 10 of M&S 2021)\n"
+        f"Q_total = vis + IR from upstream shoemakerIllumination.mat "
+        f"(mean {Q_total_input.mean():.3f} W/m²)"
     )
-    ax.legend(loc="upper right", fontsize=9.5, framealpha=0.92)
-    ax.grid(alpha=0.3)
+    legend_below(ax, ncol=3, pad=0.18)
 
     out_path = _REPO_ROOT / "output" / "figures" / "phase2_fig3_shoemaker_diurnal.pdf"
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path)
-    fig.savefig(out_path.with_suffix(".png"), dpi=150)
+    savefig_pair(fig, out_path)
     plt.close(fig)
     print(f"\nSaved {out_path.relative_to(_REPO_ROOT)}")
 
