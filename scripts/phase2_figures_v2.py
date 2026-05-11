@@ -781,10 +781,11 @@ def fig_thermal_profiles(d, out_path):
         return z_mid * 100, out.T.mean(axis=1)   # depth in cm, mean T profile
 
     # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
+    # Legend goes ABOVE the plots (top of figure) so it can never overlap axes.
     fig = plt.figure(figsize=(JGR_FULL, 9.0))
     gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
                            hspace=0.10, wspace=0.32,
-                           left=0.10, right=0.97, top=0.94, bottom=0.08)
+                           left=0.10, right=0.97, top=0.84, bottom=0.07)
     axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
     axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 
@@ -893,9 +894,9 @@ def fig_thermal_profiles(d, out_path):
                        markerfacecolor=C_NEUTRAL, markersize=6,
                        label="HFE shallow sensors (borestem-excluded)")]
 
-    # ── shared legend below the bottom row ───────────────────────────────────
-    fig.legend(handles=legend_handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.0), ncols=2, frameon=True,
+    # ── shared legend above the top row (never overlaps axes) ────────────────
+    fig.legend(handles=legend_handles, loc="upper center",
+               bbox_to_anchor=(0.5, 0.99), ncols=2, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=2.0, borderpad=0.5, columnspacing=1.4,
                labelspacing=0.3,
