@@ -265,28 +265,56 @@ def fig_robustness(d, out_path):
 
     # ── (a) Q_b sensitivity heatmap ─────────────────────────────────────────
     qbs = d["qb_sensitivity"]
-    alphas = np.array(qbs["alpha_grid"])
-    contrast = np.array(qbs["contrast_grid"]) * 1e3
-    sig = np.array(qbs["significance_grid"])
+    alphas = np.array(qbs["alpha_grid"])           # 0.7 … 1.3
+    contrast_comp = np.array(qbs["contrast_grid"]) * 1e3   # shape (13,13)
+    sig_comp      = np.array(qbs["significance_grid"])      # shape (13,13)
 
-    im = axA.imshow(contrast.T, origin="lower", aspect="auto",
-                    extent=[alphas[0], alphas[-1], alphas[0], alphas[-1]],
-                    cmap=ANTH_DIVERGE, vmin=-3, vmax=12,
-                    interpolation="nearest")
-    axA.set_facecolor("#F5F1EA")   # neutral background for the no-data region
+    # Extend alpha15 grid analytically using the exact K_d / Q_b degeneracy:
+    # at steady state K_d*(α·Q_b) = α·K_d*(Q_b), so
+    # ΔK_d(α15,α17) = K_d_A17* · α17 − K_d_A15* · α15  (exact).
+    kd_A15_nom = d["A15"]["kd_star"] * 1e3
+    kd_A17_nom = d["A17"]["kd_star"] * 1e3
+    bs = d["contrast_bootstrap"]
+    sigma_c = (bs["ci_hi"] - bs["ci_lo"]) * 1e3 / (2 * 1.96)
+
+    a15_ext  = np.linspace(0.05, alphas[0] - 0.01, 15)   # 0.05 … 0.69
+    a17_all  = alphas                                       # y unchanged
+
+    # Full x-grid: analytical extension + computed
+    a15_full = np.concatenate([a15_ext, alphas])           # shape (28,)
+
+    # Analytical ΔK_d for the whole grid (rows=α17, cols=α15)
+    A15_full, A17_full = np.meshgrid(a15_full, a17_all)   # shape (13,28)
+    contrast_full = kd_A17_nom * A17_full - kd_A15_nom * A15_full
+
+    # Overwrite the right portion with the numerically computed values
+    contrast_full[:, len(a15_ext):] = contrast_comp.T     # contrast_comp.T: rows=α17, cols=α15
+
+    # Significance grid (same merge)
+    sig_full = contrast_full / sigma_c
+    sig_full[:, len(a15_ext):] = sig_comp.T
+
+    im = axA.pcolormesh(a15_full, a17_all, contrast_full,
+                        cmap=ANTH_DIVERGE, vmin=-3, vmax=12,
+                        shading="nearest")
+    # vertical dotted line separating analytical extension from computed region
+    axA.axvline(alphas[0], color="white", lw=1.0, ls=":", alpha=0.55)
+
     cbar = fig.colorbar(im, ax=axA, pad=0.02, fraction=0.04, aspect=18)
     cbar.ax.set_ylabel(r"$\Delta K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
                        fontsize=FS_LABEL, color=C_CHAR)
     cbar.ax.tick_params(labelsize=FS_TICK, colors=C_CHAR)
     cbar.outline.set_edgecolor(C_GRID)
 
-    cs = axA.contour(alphas, alphas, sig.T, levels=[2, 4, 7],
+    cs = axA.contour(a15_full, a17_all, sig_full, levels=[2, 4, 7],
                      colors=C_CHAR, linewidths=1.0, linestyles="--",
                      alpha=0.75)
     axA.clabel(cs, fmt=lambda x: f"{int(x)}σ",
                fontsize=FS_TICK, inline=True, inline_spacing=4)
 
-    axA.plot([0, alphas[-1]], [0, alphas[-1]], color="white", lw=2.6, alpha=0.85,
+    # Diagonal (global rescaling, a15=a17) only where both axes overlap
+    diag_a = np.linspace(alphas[0], alphas[-1], 100)
+    axA.plot(diag_a, diag_a, color="white", lw=2.6, alpha=0.85,
              solid_capstyle="butt")
     axA.plot(1.0, 1.0, "o", color=C_CHAR, markersize=10, mec="white", mew=1.4,
              label="nominal $Q_b$ (both sites)")
