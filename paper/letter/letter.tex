@@ -321,6 +321,39 @@ the original Langseth A15 value is biased high by $\sim\!30\%$,
 which we explore in the sensitivity sweep (\S\ref{sec:robustness}).
 A provenance check of the four parameterised inputs against the
 published \Hayne\ figures is reproduced in the Supporting Information.
+All fixed parameters are collected in Table~\ref{tab:params}.
+
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\caption{\textbf{Fixed thermophysical input parameters.} \Hayne\ values
+adopted exactly from their Appendix~A; only $K_d$ is varied in the
+retrieval (\S\ref{sec:methods-kd}).
+A15/A17 entries separated by a slash where values differ.}
+\label{tab:params}
+\begin{tabular}{@{}llcll@{}}
+\toprule
+Parameter & Symbol & Value & Unit & Source \\
+\midrule
+\multicolumn{5}{l}{\textit{Hayne 2017 shape parameters (global, fixed)}} \\[1pt]
+Surface conductivity   & $K_s$             & $7.4\times10^{-4}$     & W\,m$^{-1}$\,K$^{-1}$  & \citet{hayne2017}  \\
+Deep conductivity (ref.)& $K_d$            & $3.4\times10^{-3}$     & W\,m$^{-1}$\,K$^{-1}$  & \citet{hayne2017}  \\
+e-folding depth        & $H$               & 0.06                   & m                       & \citet{hayne2017}  \\
+Radiative multiplier   & $\chi$            & 2.7                    & ---                     & \citet{hayne2017}  \\
+Reference temperature  & $T_\mathrm{ref}$  & 350                    & K                       & \citet{hayne2017}  \\
+Surface / deep density & $\rho_s/\rho_d$   & 1100 / 1800            & kg\,m$^{-3}$            & \citet{hayne2017}  \\
+Specific heat $c_p(T)$ & ---               & polynomial             & J\,kg$^{-1}$\,K$^{-1}$ & \citet{hemingway1973} \\[2pt]
+\multicolumn{5}{l}{\textit{Site-specific measured quantities}} \\[1pt]
+Latitude               & $\phi$            & $26.1^\circ$N / $20.2^\circ$N & ---            & ALSEP gazetteer \\
+Bond albedo            & $A$               & 0.131 / 0.137          & ---                     & \citet{vasavada2012} \\
+Emissivity             & $\varepsilon$     & 0.95                   & ---                     & \citet{bandfield2015} \\
+Basal heat flux        & $Q_b$             & 21 / 15                & mW\,m$^{-2}$            & \citet{langseth1976,nagihara2018} \\
+Solar constant         & $S_0$             & 1361                   & W\,m$^{-2}$             & \citet{kopp2011} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 As an alternative architecture for $K(z)$ we also consider the
 publicly available 3-layer parameterisation of \citet{martinez2021},

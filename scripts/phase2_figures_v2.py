@@ -273,6 +273,7 @@ def fig_robustness(d, out_path):
                     extent=[alphas[0], alphas[-1], alphas[0], alphas[-1]],
                     cmap=ANTH_DIVERGE, vmin=-3, vmax=12,
                     interpolation="nearest")
+    axA.set_facecolor("#F5F1EA")   # neutral background for the no-data region
     cbar = fig.colorbar(im, ax=axA, pad=0.02, fraction=0.04, aspect=18)
     cbar.ax.set_ylabel(r"$\Delta K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
                        fontsize=FS_LABEL, color=C_CHAR)
@@ -285,7 +286,7 @@ def fig_robustness(d, out_path):
     axA.clabel(cs, fmt=lambda x: f"{int(x)}σ",
                fontsize=FS_TICK, inline=True, inline_spacing=4)
 
-    axA.plot(alphas, alphas, color="white", lw=2.6, alpha=0.85,
+    axA.plot([0, alphas[-1]], [0, alphas[-1]], color="white", lw=2.6, alpha=0.85,
              solid_capstyle="butt")
     axA.plot(1.0, 1.0, "o", color=C_CHAR, markersize=10, mec="white", mew=1.4,
              label="nominal $Q_b$ (both sites)")
@@ -300,9 +301,7 @@ def fig_robustness(d, out_path):
              xlabel=r"A15 $Q_b$ rescaling factor  $\alpha_{15}$",
              ylabel=r"A17 $Q_b$ rescaling factor  $\alpha_{17}$",
              title=r"(a)  Inter-site $K_d^{*}$ contrast vs. non-uniform $Q_b$")
-    # The alpha grid now starts at 0 so the Saito-reanalysis green square
-    # at alpha_15 = 0.7 sits inside the panel (not at the data boundary).
-    axA.set_xlim(alphas[0], alphas[-1])
+    axA.set_xlim(0, alphas[-1])
     axA.set_ylim(alphas[0], alphas[-1])
 
     # (no in-axes legend — shared legend below the figure)
@@ -342,7 +341,7 @@ def fig_robustness(d, out_path):
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$H$  (cm)" if ax is axB else "",
                  title=label)
-        ax.set_ylim(h_grid[0], h_grid[-1])
+        ax.set_ylim(0, 10)
 
     # shared colorbar for (b) and (c)
     cbar2 = fig.colorbar(cf_handle, ax=[axB, axC], pad=0.02, fraction=0.04,
