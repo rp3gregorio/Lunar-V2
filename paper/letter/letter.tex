@@ -326,65 +326,49 @@ All fixed parameters are collected in Table~\ref{tab:params}.
 \begin{table}[!htbp]
 \centering
 \scriptsize
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.02}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.03}
 \caption{\textbf{Thermophysical input parameters for both model architectures.}
-Only $K_d$ is varied in the retrieval (\S\ref{sec:methods-kd}); all others fixed.
-Both models use the Hemingway--Robie--Wilson polynomial
-$c_p\!=\!c_0+\ldots+c_4 T^4$ with
-$(c_0\ldots c_4)\!=\!(-3.61,\ 2.74,\ 2.36\!\times\!10^{-3},\
-{-1.23}\!\times\!10^{-5},\ 8.91\!\times\!10^{-9})$
-J\,kg$^{-1}$\,K$^{-n}$.}
+Only $K_d$ is varied in the retrieval (\S\ref{sec:methods-kd}); all others fixed at
+published values.  A15/A17 entries separated by a slash.
+$z_1$: base of M\&S uniform surface layer; $z_2$: base of linear ramp zone.
+Both models share the Hemingway--Robie--Wilson $c_p$ polynomial
+$c_p\!=\!c_0+c_1 T+\ldots+c_4 T^4$,
+$(c_0,\ldots,c_4)\!=\!(-3.61,\;2.74,\;2.36\!\times\!10^{-3},\;
+{-1.23}\!\times\!10^{-5},\;8.91\!\times\!10^{-9})$ J\,kg$^{-1}$\,K$^{-n}$
+\citep{hemingway1973}.}
 \label{tab:params}
-
-\noindent
-\begin{minipage}[t]{0.49\linewidth}
-\centering
-\textit{\Hayne\ smooth-exponential (used in retrieval)}\\[2pt]
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}lll@{\hspace{8pt}}lll@{}}
 \toprule
+\multicolumn{3}{l}{\textit{\Hayne\ smooth-exponential (used in retrieval) \citep{hayne2017}}} &
+\multicolumn{3}{l}{\textit{Mart\'inez \& Siegler (2021) 3-layer \citep{martinez2021}}} \\
+\cmidrule(r){1-3}\cmidrule(l){4-6}
+Symbol & Value & Unit &
 Symbol & Value & Unit \\
 \midrule
-$K_s$               & $7.4\!\times\!10^{-4}$ & W\,m$^{-1}$\,K$^{-1}$ \\
-$K_d^\mathrm{ref}$  & $3.4\!\times\!10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ \\
-$H$                 & 0.06                   & m \\
-$\chi$              & 2.7                    & --- \\
-$T_\mathrm{ref}$    & 350                    & K \\
-$\rho_s / \rho_d$   & 1100 / 1800            & kg\,m$^{-3}$ \\
-\bottomrule
-\end{tabular}
-\\[-4pt]
-{\tiny All values: \citet{hayne2017}}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.49\linewidth}
-\centering
-\textit{\citet{martinez2021} 3-layer (comparison baseline)}\\[2pt]
-\begin{tabular}{@{}lll@{}}
-\toprule
-Symbol & Value & Unit \\
+$K_s$              & $7.4\!\times\!10^{-4}$ & W\,m$^{-1}$\,K$^{-1}$ &
+$K_s^\mathrm{disc}$& $1.0\!\times\!10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ \\
+$K_d^\mathrm{ref}$ & $3.4\!\times\!10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ &
+$K_d^\mathrm{disc}$& $6.3\!\times\!10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ \\
+$H$                & 0.06 & m &
+$z_1/z_2$          & 0.07\,/\,0.20 & m \\
+$\chi$             & 2.7  & --- &
+$\rho_\mathrm{max}$& 1800 & kg\,m$^{-3}$ \\
+$T_\mathrm{ref}$   & 350  & K  & & & \\
+$\rho_s/\rho_d$    & 1100\,/\,1800 & kg\,m$^{-3}$ & & & \\
 \midrule
-$K_s^\mathrm{disc}$  & $1.0\!\times\!10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ \\
-$K_d^\mathrm{disc}$  & $6.3\!\times\!10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ \\
-$z_1 / z_2$          & 0.07 / 0.20            & m \\
-$\rho_\mathrm{max}$  & 1800                   & kg\,m$^{-3}$ \\
-\bottomrule
-\end{tabular}
-\\[-4pt]
-{\tiny ($z_1$: surface-layer base; $z_2$: ramp-zone base)}
-\end{minipage}
-
-\vspace{4pt}
-\textit{Site-specific measured quantities (both models; A15 / A17 where different)}\\[2pt]
-\begin{tabular}{@{}p{3.8cm}ccll@{}}
-\toprule
-Parameter & Symbol & Value & Unit & Source \\
+\multicolumn{6}{l}{\textit{Site-specific measured quantities (both models)}} \\
 \midrule
-Latitude         & $\phi$        & $26.1^\circ$N / $20.2^\circ$N & ---         & ALSEP gazetteer \\
-Bond albedo      & $A$           & 0.131 / 0.137     & ---                   & \citet{vasavada2012} \\
-Emissivity       & $\varepsilon$ & 0.95              & ---                   & \citet{bandfield2015} \\
-Basal heat flux  & $Q_b$         & 21 / 15           & mW\,m$^{-2}$          & \citet{langseth1976,nagihara2018} \\
-Solar constant   & $S_0$         & 1361              & W\,m$^{-2}$           & \citet{kopp2011} \\
+\multicolumn{2}{l}{Latitude $\phi$ (A15\,/\,A17)}  & $26.1^\circ$N\,/\,$20.2^\circ$N &
+\multicolumn{2}{l}{---}                            & ALSEP gazetteer \\
+\multicolumn{2}{l}{Bond albedo $A$ (A15\,/\,A17)}  & 0.131\,/\,0.137 &
+\multicolumn{2}{l}{---}                            & \citet{vasavada2012} \\
+\multicolumn{2}{l}{Emissivity $\varepsilon$}        & 0.95 &
+\multicolumn{2}{l}{---}                            & \citet{bandfield2015} \\
+\multicolumn{2}{l}{Basal heat flux $Q_b$ (A15\,/\,A17)} & 21\,/\,15 &
+\multicolumn{2}{l}{mW\,m$^{-2}$}                  & \citet{langseth1976,nagihara2018} \\
+\multicolumn{2}{l}{Solar constant $S_0$}            & 1361 &
+\multicolumn{2}{l}{W\,m$^{-2}$}                   & \citet{kopp2011} \\
 \bottomrule
 \end{tabular}
 \end{table}
