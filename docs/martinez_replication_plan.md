@@ -1,8 +1,8 @@
 # Phase 2 — Martinez & Siegler (2021) Replication Plan
 
-> **Status:** Consolidation complete. Phase 2 is now a single directory.
+> **Status:** Tier 1 complete — 9 of 11 paper figures replicated.
 > **Branch:** `claude/cleanup-repo-organization-EcS3U`
-> **Last updated:** 2026-05-10
+> **Last updated:** 2026-05-11
 
 ## What Phase 2 is
 
@@ -17,29 +17,34 @@ Phase 2 is **one thing** with two halves:
 
 ```
 .scratch/lunar1Dheat/           # upstream MATLAB code (gitignored; Zenodo DOI 10.5281/zenodo.12586656)
-│   ├── Global/                 # → our notebooks/phase2/01_global.ipynb
-│   ├── Craters/                # → our notebooks/phase2/02_craters.ipynb
-│   └── PSRShoemaker/           # → our notebooks/phase2/03_psr_shoemaker.ipynb
+│   ├── Global/                 # → our scripts/phase2/global/ + phase2.ipynb §1-7
+│   ├── Craters/                # → our scripts/phase2/craters/ + phase2.ipynb crater section
+│   └── PSRShoemaker/           # → our scripts/phase2/psr_shoemaker/ + phase2.ipynb PSR section
 
 data/upstream/martinez2021/     # committed data products (small files, cited)
 │   └── shoemakerIllumination.mat  # 697-sample ray-traced illumination (14 KB)
 
 scripts/phase2/
 │   ├── global/
-│   │   ├── fig1_K_vs_T.py              # Fig 1: K(T) overlay Hayne vs M&S
-│   │   └── fig2_diurnal_45N.py         # Fig 2: 45°N diurnal vs Diviner T7
-│   ├── craters/                        # (parametric bowl-crater; populated when needed)
+│   │   ├── fig1_K_vs_T.py              # K(T) overlay Hayne vs M&S, 8 densities
+│   │   ├── fig2_diurnal_45N.py         # 45°N diurnal vs Diviner T7
+│   │   ├── fig4_equator_reference.py   # 0° 4-panel sanity check
+│   │   ├── fig5_multilat_diurnal.py    # 4-site nighttime T_s vs Diviner
+│   │   ├── fig6_multilat_gradient.py   # 4-site midnight T(z)
+│   │   ├── fig7_latitude_sweep.py      # T_mean vs lat + Apollo markers (parallel)
+│   │   ├── download_lola_dem.py        # PGDA LOLA DEM downloader
+│   │   └── fig_southpolar_dem_map.py   # South polar DEM map
+│   ├── craters/
+│   │   └── fig89_crater_sweep.py       # D=5,8,16 × lat 75-89.9° (Figs 8 + 9)
 │   └── psr_shoemaker/
-│       ├── fig3_diurnal.py             # Fig 3: Shoemaker T_s(t) vs daveTemp
-│       └── figs45_subsurface.py        # Figs 4 & 5: T(z), ΔT(z)
+│       ├── fig3_diurnal.py             # Shoemaker T_s(t) — real .mat input
+│       └── figs45_subsurface.py        # T(z) + ΔT(z) profiles
 
 notebooks/phase2/
-│   ├── 01_global.ipynb                 # Figs 1, 2 — run in <1 s (cached) or ~3 min (RERUN)
-│   ├── 02_craters.ipynb                # crater_floor_insolation demo + horizon tracer API
-│   └── 03_psr_shoemaker.ipynb          # Figs 3, 4, 5 — real upstream illumination data
+│   └── phase2.ipynb                    # single merged notebook with all outputs embedded
 
 lunar/illumination.py
-    + crater_floor_insolation()         # port of upstream insolationcrater.m (8-line formula)
+    + crater_floor_insolation()         # port of upstream insolationcrater.m
     + load_shoemaker_illumination()     # reads shoemakerIllumination.mat → dict
 ```
 
@@ -62,13 +67,24 @@ lunar/illumination.py
 
 ## Figure status
 
-| Fig | Subject | Script | Status |
-| --- | --- | --- | --- |
-| 1 | K(T, ρ) overlay, 6 densities | `global/fig1_K_vs_T.py` | ✅ Complete |
-| 2 | 45°N diurnal vs Diviner T7 | `global/fig2_diurnal_45N.py` | ✅ Complete (Vasavada albedo, top-only spinup) |
-| 3 | Shoemaker surface T(t) | `psr_shoemaker/fig3_diurnal.py` | ✅ Complete (real upstream illumination data) |
-| 4 | Shoemaker T(z) profile | `psr_shoemaker/figs45_subsurface.py` | ✅ Complete |
-| 5 | ΔT vs depth (1-D proxy) | `psr_shoemaker/figs45_subsurface.py` | ✅ Complete |
+> "Our Fig N" indexes our file naming (`output/figures/phase2_figN_*`).
+> "Paper Fig N" maps to Martinez & Siegler (2021) JGR's 11-figure list.
+
+| Our Fig | Paper Fig | Subject | Script | Notes |
+| --- | --- | --- | --- | --- |
+| 1 | 3 | K(T, ρ) overlay, 8 densities | `global/fig1_K_vs_T.py` | mislabeled |
+| 2 | 5a | 45°N diurnal vs Diviner T7 | `global/fig2_diurnal_45N.py` | Vasavada albedo + top-only spinup |
+| 3 | 10 | Shoemaker surface T(t) | `psr_shoemaker/fig3_diurnal.py` | real upstream `.mat` (697-day run) |
+| 4 | 11 | Shoemaker T(z) profile | `psr_shoemaker/figs45_subsurface.py` | daveTemp BC |
+| 5 | — | ΔT vs depth at Shoemaker | `psr_shoemaker/figs45_subsurface.py` | 1-D proxy of paper Fig 9 |
+| 4(eq) | 4 | 0° equator 4-panel reference | `global/fig4_equator_reference.py` | NEW (2026-05-11) |
+| 5(ml) | 5 | Nighttime T_s at 4 latitudes | `global/fig5_multilat_diurnal.py` | NEW |
+| 6(ml) | 6 | Midnight T(z) at 4 latitudes | `global/fig6_multilat_gradient.py` | NEW |
+| 7 | 7 | T_mean vs latitude + Apollo | `global/fig7_latitude_sweep.py` | NEW (headline) |
+| 8 | 8 | Crater min/max T, D=5,8,16 | `craters/fig89_crater_sweep.py` | NEW |
+| 9 | 9 | Crater ΔT(z), D=5,8,16, z=1m, 2m | `craters/fig89_crater_sweep.py` | NEW |
+
+**Score: 9 of 11 paper figures replicated** (missing paper Figs 1 + 2 only).
 
 ## Key fixes applied vs previous state
 

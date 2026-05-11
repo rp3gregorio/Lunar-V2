@@ -17,9 +17,9 @@ polar-stereographic projection (Moon 2015 sphere, R=1737.4 km).
 
 Usage
 -----
-    python scripts/phase2/global/download_lola_dem.py            # 80MPP (recommended)
-    python scripts/phase2/global/download_lola_dem.py --mpp 40   # 40m/pixel
-    python scripts/phase2/global/download_lola_dem.py --mpp 20   # 20m/pixel (LARGE)
+    python3 scripts/phase2/global/download_lola_dem.py            # 80MPP (recommended)
+    python3 scripts/phase2/global/download_lola_dem.py --mpp 40   # 40m/pixel
+    python3 scripts/phase2/global/download_lola_dem.py --mpp 20   # 20m/pixel (LARGE)
 
 The file lands at ``data/lola/LDEM_80S_<MPP>MPP_ADJ.TIF``.
 

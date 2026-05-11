@@ -1,60 +1,51 @@
 # Phase 2 — action plan after reading the full Martinez & Siegler 2021 paper
 
-> Last updated: 2026-05-10. Branch: `claude/cleanup-repo-organization-EcS3U`
+> Last updated: 2026-05-11. Branch: `claude/cleanup-repo-organization-EcS3U`
 
 ## What the paper actually contains (11 figures)
 
-| # | Subject | Replicated? | Comment |
+| # | Subject | Replicated? | Script |
 | --- | --- | --- | --- |
-| 1 | K(T) at ρ=1300, 3 models (Woods-Robinson, Hayne, Vasavada top-layer) | ❌ | Trivial to add — just plot 3 curves |
-| 2 | NU-LHT-2M lab data, scaled ρ=1100→1800 | ❌ | Need Zhong et al. 2016 lab data |
-| 3 | Hayne vs M&S K(T,ρ), 8 densities | ✅ | Built (mislabeled as "fig1" — same plot) |
-| 4 | 0° equator: 4-panel (T_s diurnal, T_z, ΔT_s, ΔT_z) | ❌ | Easy: re-run solver at 0° |
-| 5 | Nighttime at 4 lats: 45°H, 70°H, 30°M, 60°M vs Diviner | ⚠️ 1 of 4 | Have 45°H; need 70°H, 30°M, 60°M |
-| 6 | T(z) gradients at same 4 lats | ❌ | Drops out of Fig 5 runs |
-| 7 | T_mean vs latitude, highlands AND mare, with Apollo 15/17 | ❌ | **Headline figure** — need lat sweep |
-| 8 | Crater min/max T, D=5,8,16, 75°-89.9° | ❌ | Use `crater_floor_insolation()` already in `lunar/illumination.py` |
-| 9 | Crater ΔT subsurface, D=5,8,16, at 1m and 2m | ❌ | Same sweep as Fig 8 |
-| 10 | Shoemaker T_s vs Diviner ch9 | ✅ | Built |
-| 11 | Shoemaker T(z) | ✅ | Built |
+| 1 | K(T) at ρ=1300, 3 models (Woods-Robinson, Hayne, Vasavada top-layer) | ❌ | Trivial — 3-curve plot at fixed ρ |
+| 2 | NU-LHT-2M lab data, scaled ρ=1100→1800 | ❌ | Needs Zhong et al. 2016 lab data |
+| 3 | Hayne vs M&S K(T,ρ), 8 densities | ✅ | `global/fig1_K_vs_T.py` (mislabeled fig1, same plot) |
+| 4 | 0° equator: 4-panel (T_s diurnal, T_z, ΔT_s, ΔT_z) | ✅ | `global/fig4_equator_reference.py` |
+| 5 | Nighttime at 4 lats: 45°H, 70°H, 30°M, 60°M vs Diviner | ✅ | `global/fig5_multilat_diurnal.py` |
+| 6 | T(z) gradients at same 4 lats | ✅ | `global/fig6_multilat_gradient.py` |
+| 7 | T_mean vs latitude, highlands AND mare, with Apollo 15/17 | ✅ | `global/fig7_latitude_sweep.py` |
+| 8 | Crater min/max T, D=5,8,16, 75°-89.9° | ✅ | `craters/fig89_crater_sweep.py` |
+| 9 | Crater ΔT subsurface, D=5,8,16, at 1m and 2m | ✅ | `craters/fig89_crater_sweep.py` |
+| 10 | Shoemaker T_s vs Diviner ch9 | ✅ | `psr_shoemaker/fig3_diurnal.py` |
+| 11 | Shoemaker T(z) | ✅ | `psr_shoemaker/figs45_subsurface.py` |
 
-**Score: 3 of 11 fully replicated, 1 partial.**
+**Score: 9 of 11 fully replicated.** Remaining: paper-Fig 1 (3-model
+K(T) overlay at fixed ρ=1300; trivial extension of `fig1_K_vs_T.py`) and
+paper-Fig 2 (Zhong 2016 NU-LHT lab data — needs external download).
 
 ---
 
 ## Priority list — what to build next, in order
 
-### Tier 1: high-leverage, no new data needed (this week)
+### Tier 1: high-leverage, no new data needed — ✅ ALL BUILT (2026-05-11)
 
-1. **Fig 7 — latitude sweep (the global punchline)**.
-   Loop solver over latitude 0° → 80° in 5° steps, both K models, both
-   highlands and mare. Plot mean surface T and mean T at z=1m vs latitude,
-   with Apollo 15/17 markers.
-   - Runtime: ~15 min/latitude × 16 lats × 2 K models = ~8 hours.
-     Easy to parallelize: 1 hr on a quad-core if we use multiprocessing.
-   - Implementation: new script `scripts/phase2/global/fig7_latitude_sweep.py`.
-   - Required data: only Diviner GCP (already downloaded) + LOLA 1064-nm
-     albedo map (see Tier 2 #1 below — for now use the per-latitude default
-     from the paper: 0.07 mare, 0.12 highlands).
+1. ✅ **Fig 7 — latitude sweep** → `scripts/phase2/global/fig7_latitude_sweep.py`
+   - 0-80° in 5° steps, both K models, highlands + mare
+   - Apollo 15/17 HFE markers overlaid; ProcessPoolExecutor parallelism
+   - Run: `python3 scripts/phase2/global/fig7_latitude_sweep.py`
 
-2. **Figs 8 & 9 — crater sweep**. Loop over D=5, 8, 16 and lat 75-89.9°
-   in 1° steps. Use `crater_floor_insolation()` (already ported).
-   - Runtime: ~10 min/case × 3 D × 16 lats × 2 K models = ~16 hr.
-     Use coarser timestepping for shadowed cases — the input doesn't
-     change minute-to-minute. Realistic: 2-3 hours.
-   - Implementation: new script `scripts/phase2/craters/fig89_crater_sweep.py`.
+2. ✅ **Figs 8 & 9 — crater sweep** → `scripts/phase2/craters/fig89_crater_sweep.py`
+   - D = 5, 8, 16; lat 75°-89.9° in 1° steps
+   - Uses `crater_floor_insolation()` from `lunar/illumination.py`
+   - Run: `python3 scripts/phase2/craters/fig89_crater_sweep.py`
 
-3. **Fig 4 — 0° equator reference**. The cleanest sanity check that
-   our two K models reproduce the published agreement at low latitude.
-   - Runtime: ~3 min total (just one location, one K-model pair).
-   - Implementation: new script `scripts/phase2/global/fig4_equator_reference.py`.
+3. ✅ **Fig 4 — 0° equator reference** → `scripts/phase2/global/fig4_equator_reference.py`
+   - 4-panel: T_s diurnal, T(z) noon/midnight, ΔT_s(LT), ΔT(z)
+   - Run: `python3 scripts/phase2/global/fig4_equator_reference.py`
 
-4. **Fig 5 four-panel + Fig 6 gradients**. Run Fig 2's pipeline at the
-   four published latitudes and stack into a 2×2 panel. Fig 6 falls out
-   of the same converged solver runs.
-   - Runtime: 4× Fig 2 ~= 12 min total.
-   - Implementation: extend existing `fig2_diurnal_45N.py` into
-     `fig5_multilat_diurnal.py` + `fig6_multilat_gradient.py`.
+4. ✅ **Figs 5 + 6 — multi-latitude** → split into two scripts
+   - `scripts/phase2/global/fig5_multilat_diurnal.py` — nighttime T_s at 4 sites
+   - `scripts/phase2/global/fig6_multilat_gradient.py` — midnight T(z) at same sites
+   - Diviner T7 overlay per panel; graceful fallback when a band isn't on disk
 
 ### Tier 2: needs data downloads (you do these)
 
@@ -73,7 +64,7 @@
    - Optional — Fig 2 is the least scientifically important of the 11.
 
 3. **LOLA south-polar DEM** (PGDA Product 90). Already automated:
-   `python scripts/phase2/global/download_lola_dem.py` (80MPP, 225 MB).
+   `python3 scripts/phase2/global/download_lola_dem.py` (80MPP, 225 MB).
    - Needed for: south-polar DEM map demo, future per-pixel illumination,
      PSR catalog.
    - Run this whenever you want the DEM map.
@@ -103,20 +94,22 @@
 
 ---
 
-## What's needed *from you* before tier-1 work can run
+## What's needed *from you* now
 
-In rough order of urgency:
+1. **Run the Tier-1 sweeps on your Mac.** All scripts exist and are
+   parallelised with ProcessPoolExecutor. Wall-clock estimates:
+   - `python3 scripts/phase2/global/fig7_latitude_sweep.py` — ~22 min on
+     M-series Mac (17 lats × 2 K × 2 terrains, 68 calls, pool size = CPU).
+   - `python3 scripts/phase2/craters/fig89_crater_sweep.py` — ~1-3 h.
+   - `python3 scripts/phase2/global/fig4_equator_reference.py` — ~3 min.
+   - `python3 scripts/phase2/global/fig5_multilat_diurnal.py` — ~10 min.
+   - `python3 scripts/phase2/global/fig6_multilat_gradient.py` — ~10 min.
 
-1. **Pick a runtime budget.** Tier 1 #1 (Fig 7) is the punchline but takes
-   ~1-8 hours wall time even on a multi-core machine. Tell me how long you
-   want to spend.
+2. **(Optional) Download missing Diviner bands** for the multi-latitude
+   reference overlays. `python3 scripts/download_diviner_gcp.py --all-bands`.
+   Scripts gracefully skip any band not on disk.
 
-2. **Confirm whether the Diviner GCP data on your Mac is sufficient.**
-   I have the polar 80-90 S band downloaded. Fig 7 needs the 0-90 N + S
-   bands. Re-run `python scripts/download_diviner_gcp.py --all-bands` if
-   you haven't.
-
-3. **Decide on the global model scope.** Three options:
+3. **Decide on the global model scope (Tier 3).** Three options:
    - **A. Flat-terrain only** — solver per pixel, no horizon/shadow. Fast
      (~hours), captures M&S K-model effect at all latitudes. Misses PSRs.
    - **B. Flat-terrain + Shoemaker-style PSR overrides.** Use the upstream
@@ -126,27 +119,35 @@ In rough order of urgency:
 
 4. **(Optional) Tell me which target journal.** If GRL/JGR Planets, the
    figures need polish (axis labels, font sizes, legend placement, units)
-   that's already partly done with the new `phase2_plotting.py` style; if
-   thesis-only, less polish needed.
+   already substantially done with `phase2_plotting.py`.
 
 ---
 
-## What I'm doing in this session (already on the branch)
+## Session log
 
-- ✅ Read the full M&S 2021 JGR paper.
-- ✅ Built `lunar/phase2_plotting.py`: unified style + `legend_below()`
-  helper that places legends in a separate box below the axes.
-- ✅ Re-styled the 5 existing scripts (Figs 1, 2, 3, 4, 5) to use the new
-  helper. Legend never overlaps data.
-- ✅ Added `crater_floor_insolation()` and `load_shoemaker_illumination()`
-  to `lunar/illumination.py` for Tier-1 work.
-- ✅ Added `download_lola_dem.py` (80 / 40 / 20 MPP options) and
-  `fig_southpolar_dem_map.py` for Tier-2 #3 / Tier-3 work.
-- ✅ Wrote this action plan.
+**2026-05-11 (Tier-1 completion):**
+- Built fig4_equator_reference.py, fig5_multilat_diurnal.py,
+  fig6_multilat_gradient.py, fig7_latitude_sweep.py (with multiprocessing),
+  and fig89_crater_sweep.py.
+- Fixed `_REPO_ROOT = parents[2]` bug → `parents[3]` in all phase2 scripts
+  (previously caused silent writes to `scripts/output/figures/`).
+- Updated fig3 to use real upstream shoemakerIllumination.mat (697-day run).
+- Merged 01_global/02_craters/03_psr_shoemaker into one phase2.ipynb with
+  all outputs embedded.
+- All `python` invocations in docs/scripts switched to `python3` for Mac
+  (zsh) compatibility.
+
+**2026-05-10 (foundation):**
+- Read full M&S 2021 JGR paper.
+- Built `lunar/phase2_plotting.py` (unified style + `legend_below()`).
+- Re-styled the 5 existing scripts (Figs 1, 2, 3, 4, 5).
+- Added `crater_floor_insolation()` and `load_shoemaker_illumination()`
+  to `lunar/illumination.py`.
+- Added `download_lola_dem.py` and `fig_southpolar_dem_map.py`.
 
 ## Status summary
 
-**Complete:** 3 of 11 paper figures + foundation work for the rest.
-**Blocking on you:** scope decision (3.A/B/C above), runtime budget.
-**Blocking on data:** Zhong 2016 lab data (non-critical), LOLA albedo
-(non-critical for tier 1), full Diviner GCP set (run downloader).
+**Complete:** 9 of 11 paper figures replicated.
+**Remaining:** paper-Fig 1 (3-K-model overlay at fixed ρ=1300; trivial)
+and paper-Fig 2 (Zhong 2016 NU-LHT lab data, needs external download).
+**Blocking on you:** run the Tier-1 sweeps; Tier-3 scope decision.

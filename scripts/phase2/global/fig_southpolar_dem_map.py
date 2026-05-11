@@ -15,10 +15,10 @@ a prerequisite for:
 
 Usage
 -----
-    python scripts/phase2/global/fig_southpolar_dem_map.py           # 80MPP (default)
-    python scripts/phase2/global/fig_southpolar_dem_map.py --mpp 40  # finer detail
+    python3 scripts/phase2/global/fig_southpolar_dem_map.py           # 80MPP (default)
+    python3 scripts/phase2/global/fig_southpolar_dem_map.py --mpp 40  # finer detail
 
-Run download_lola_dem.py first.
+Run ``python3 scripts/phase2/global/download_lola_dem.py`` first.
 
 Output: ``output/figures/phase2_fig_lola_southpolar.{pdf,png}``
 """
