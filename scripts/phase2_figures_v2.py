@@ -780,60 +780,112 @@ def fig_thermal_profiles(d, out_path):
         ))
         return z_mid * 100, out.T.mean(axis=1)   # depth in cm, mean T profile
 
-    fig, axes = plt.subplots(1, 2, figsize=(JGR_FULL, 5.2), sharey=False)
-    fig.subplots_adjust(left=0.09, right=0.97, top=0.91, bottom=0.22,
-                        wspace=0.30)
+    # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
+    fig = plt.figure(figsize=(JGR_FULL, 9.0))
+    gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
+                           hspace=0.10, wspace=0.32,
+                           left=0.10, right=0.97, top=0.94, bottom=0.08)
+    axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
+    axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 
-    legend_handles = []
-    for col, (name, site_cfg) in enumerate(SITE_CFGS.items()):
-        ax   = axes[col]
-        kd_r = d[name]["kd_star"]   # retrieved K_d* in SI
-
+    # ── run models and collect per-site data first ────────────────────────────
+    site_data = {}
+    for name, site_cfg in SITE_CFGS.items():
+        kd_r = d[name]["kd_star"]
         print(f"  Running Hayne K_d*={kd_r*1e3:.2f}  for {name} ...", flush=True)
         z_h, T_h = run_profile(site_cfg, make_k_hayne(kd_r))
         print(f"  Running M&S 3-layer K_d={KD_MS*1e3:.1f} for {name} ...", flush=True)
         z_m, T_m = run_profile(site_cfg, make_k_ms())
 
-        # observed HFE stability-window means
         obs_raw = extract_sensor_stability(site_cfg['mission'], min_depth_cm=0)
         sensors = obs_raw['sensors']
         z_obs = np.array([s['depth_cm'] for s in sensors])
         T_obs = np.array([s['T_eq']     for s in sensors])
         T_err = np.array([s['T_std']    for s in sensors])
         deep  = z_obs >= site_cfg['MIN_DEPTH_CM']
+        site_data[name] = dict(kd_r=kd_r, z_h=z_h, T_h=T_h, z_m=z_m, T_m=T_m,
+                                z_obs=z_obs, T_obs=T_obs, T_err=T_err, deep=deep)
 
-        # plot models (x=T, y=depth inverted)
-        lH, = ax.plot(T_h, z_h, color=C_TEAL,   lw=2.0,
-                      label=rf"Hayne  $K_d^{{*}}={kd_r*1e3:.2f}$  mW m$^{{-1}}$ K$^{{-1}}$")
-        lM, = ax.plot(T_m, z_m, color=C_MS,     lw=2.0, ls="--",
-                      label=rf"M\&S 2021  $K_d={KD_MS*1e3:.1f}$  mW m$^{{-1}}$ K$^{{-1}}$")
+    legend_handles = []
+    col_labels = ['a', 'b', 'c', 'd']
 
-        # HFE data — shallow (excluded, grey) and deep (used, coloured)
+    for col, (name, site_cfg) in enumerate(SITE_CFGS.items()):
+        sd     = site_data[name]
+        kd_r   = sd['kd_r']
+        z_h, T_h = sd['z_h'], sd['T_h']
+        z_m, T_m = sd['z_m'], sd['T_m']
+        z_obs, T_obs, T_err = sd['z_obs'], sd['T_obs'], sd['T_err']
+        deep   = sd['deep']
         C_site = C_A15 if name == "A15" else C_A17
-        ax.errorbar(T_obs[~deep], z_obs[~deep], xerr=T_err[~deep],
-                    fmt="o", ms=5, color=C_NEUTRAL, mec=C_NEUTRAL,
-                    elinewidth=0.8, capsize=2.5, zorder=2)
-        lD = ax.errorbar(T_obs[deep], z_obs[deep], xerr=T_err[deep],
-                         fmt="o", ms=6.5, color=C_site, mec="white", mew=0.9,
-                         elinewidth=0.9, capsize=3, zorder=3,
-                         label="HFE deep sensors (used in retrieval)")
 
-        # borestem zone
-        ax.axhspan(0, site_cfg['MIN_DEPTH_CM'],
-                   color=C_GRID, alpha=0.45, zorder=0)
-        ax.text(0.97, site_cfg['MIN_DEPTH_CM'] + 2,
-                "borestem zone", transform=ax.get_yaxis_transform(),
-                ha="right", va="bottom", fontsize=FS_TICK - 1.5,
-                color=C_DIM, style="italic")
+        # ── TOP ROW: full profile (0–220 cm) ─────────────────────────────────
+        ax_f = axes_full[col]
 
-        site_label = f"({'a' if col==0 else 'b'})  {site_cfg['label']}"
-        fmt_axis(ax,
+        lH, = ax_f.plot(T_h, z_h, color=C_TEAL, lw=2.0,
+                        label=rf"Hayne  $K_d^{{*}}={kd_r*1e3:.2f}$ mW m$^{{-1}}$ K$^{{-1}}$")
+        lM, = ax_f.plot(T_m, z_m, color=C_MS,   lw=2.0, ls="--",
+                        label=rf"M\&S 2021  $K_d={KD_MS*1e3:.1f}$ mW m$^{{-1}}$ K$^{{-1}}$")
+
+        ax_f.errorbar(T_obs[~deep], z_obs[~deep], xerr=T_err[~deep],
+                      fmt="o", ms=5, color=C_NEUTRAL, mec=C_NEUTRAL,
+                      elinewidth=0.8, capsize=2.5, zorder=2)
+        lD = ax_f.errorbar(T_obs[deep], z_obs[deep], xerr=T_err[deep],
+                           fmt="o", ms=6.5, color=C_site, mec="white", mew=0.9,
+                           elinewidth=0.9, capsize=3, zorder=3,
+                           label="HFE deep sensors (used in retrieval)")
+
+        ax_f.axhspan(0, site_cfg['MIN_DEPTH_CM'], color=C_GRID, alpha=0.45, zorder=0)
+        ax_f.text(0.97, site_cfg['MIN_DEPTH_CM'] + 2,
+                  "borestem zone", transform=ax_f.get_yaxis_transform(),
+                  ha="right", va="bottom", fontsize=FS_TICK - 1.5,
+                  color=C_DIM, style="italic")
+
+        fmt_axis(ax_f,
+                 xlabel="",
+                 ylabel="Depth  (cm)" if col == 0 else "",
+                 title=f"({col_labels[col]})  {site_cfg['label']}")
+        ax_f.set_ylim(220, 0)
+        ax_f.yaxis.set_minor_locator(mtick.AutoMinorLocator())
+        ax_f.xaxis.set_minor_locator(mtick.AutoMinorLocator())
+        ax_f.tick_params(labelbottom=False)   # x-ticks shared with zoom row
+
+        # ── BOTTOM ROW: deep-only zoom, tight x-axis ──────────────────────────
+        ax_z = axes_zoom[col]
+
+        MIN_CM = site_cfg['MIN_DEPTH_CM']
+        # depth range: from just above borestem boundary to 220 cm
+        ax_z.set_ylim(220, MIN_CM - 3)
+
+        # model curves — only the deep portion matters visually
+        ax_z.plot(T_h, z_h, color=C_TEAL, lw=2.2)
+        ax_z.plot(T_m, z_m, color=C_MS,   lw=2.2, ls="--")
+
+        ax_z.errorbar(T_obs[deep], z_obs[deep], xerr=T_err[deep],
+                      fmt="o", ms=7, color=C_site, mec="white", mew=1.0,
+                      elinewidth=1.0, capsize=3.5, zorder=3)
+
+        # tight x-axis: span only the deep-region temperature range + margin
+        mask_deep = z_h >= MIN_CM
+        T_all_deep = np.concatenate([T_h[mask_deep], T_m[mask_deep],
+                                     T_obs[deep] - T_err[deep],
+                                     T_obs[deep] + T_err[deep]])
+        margin = max(0.6, (T_all_deep.max() - T_all_deep.min()) * 0.12)
+        ax_z.set_xlim(T_all_deep.min() - margin, T_all_deep.max() + margin)
+
+        # dashed reference line at borestem boundary
+        ax_z.axhline(MIN_CM, color=C_DIM, lw=0.8, ls=":", alpha=0.7)
+        ax_z.text(0.02, MIN_CM - 1,
+                  f"borestem base ({MIN_CM} cm)",
+                  transform=ax_z.get_yaxis_transform(),
+                  ha="left", va="top", fontsize=FS_TICK - 2,
+                  color=C_DIM, style="italic")
+
+        fmt_axis(ax_z,
                  xlabel=r"Annual-mean temperature  $\langle T \rangle$  (K)",
                  ylabel="Depth  (cm)" if col == 0 else "",
-                 title=site_label)
-        ax.set_ylim(220, 0)      # depth increases downward
-        ax.yaxis.set_minor_locator(mtick.AutoMinorLocator())
-        ax.xaxis.set_minor_locator(mtick.AutoMinorLocator())
+                 title=f"({col_labels[col+2]})  {site_cfg['label']}  —  deep-sensor zoom")
+        ax_z.yaxis.set_minor_locator(mtick.AutoMinorLocator())
+        ax_z.xaxis.set_minor_locator(mtick.AutoMinorLocator())
 
         if col == 0:
             legend_handles = [lH, lM, lD,
@@ -841,9 +893,9 @@ def fig_thermal_profiles(d, out_path):
                        markerfacecolor=C_NEUTRAL, markersize=6,
                        label="HFE shallow sensors (borestem-excluded)")]
 
-    # shared legend below
+    # ── shared legend below the bottom row ───────────────────────────────────
     fig.legend(handles=legend_handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.01), ncols=2, frameon=True,
+               bbox_to_anchor=(0.5, 0.0), ncols=2, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=2.0, borderpad=0.5, columnspacing=1.4,
                labelspacing=0.3,
@@ -852,7 +904,7 @@ def fig_thermal_profiles(d, out_path):
                       r"Grey markers: excluded from retrieval."),
                title_fontsize=8.0)
 
-    fig.savefig(out_path)
+    fig.savefig(out_path, bbox_inches="tight")
     plt.close(fig)
     print(f"  → {out_path}")
 
