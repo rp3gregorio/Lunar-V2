@@ -258,7 +258,7 @@ def fig_robustness(d, out_path):
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.95],
                           width_ratios=[1.0, 1.0],
                           hspace=0.55, wspace=0.32,
-                          left=0.09, right=0.92, top=0.94, bottom=0.20)
+                          left=0.09, right=0.92, top=0.82, bottom=0.08)
     axA = fig.add_subplot(gs[0, :])      # full-width Q_b heatmap
     axB = fig.add_subplot(gs[1, 0])
     axC = fig.add_subplot(gs[1, 1])
@@ -335,41 +335,90 @@ def fig_robustness(d, out_path):
     # (no in-axes legend — shared legend below the figure)
 
     # ── (b)(c) joint K_d × H per site ───────────────────────────────────────
+    # The pipeline computes only H ∈ [4, 6, 8] cm (3 pts). We extrapolate
+    # the RMSE surface to H ∈ [0, 10] cm using a 2-D quadratic fit to the
+    # 3×3 computed grid — physically sound because RMSE is convex near its
+    # minimum.  The computed boundary is marked with a faint dotted box.
+    from numpy.linalg import lstsq as _lstsq
+
+    def _extend_rmse(kd_grid_mw, h_grid_cm, rmse2d, rmse_min,
+                     h_lo=0.2, h_hi=10.0, n_fine=70):
+        """Return (kd_fine, h_fine, rmse_fine) on an extended grid."""
+        KD2, HH2 = np.meshgrid(kd_grid_mw, h_grid_cm)
+        A_mat = np.column_stack([
+            np.ones(9), KD2.ravel(), HH2.ravel(),
+            KD2.ravel()**2, KD2.ravel()*HH2.ravel(), HH2.ravel()**2,
+        ])
+        coeffs, _, _, _ = _lstsq(A_mat, rmse2d.ravel(), rcond=None)
+        kd_fine = np.linspace(kd_grid_mw[0], kd_grid_mw[-1], n_fine)
+        h_fine  = np.linspace(h_lo, h_hi, n_fine)
+        KDF, HHF = np.meshgrid(kd_fine, h_fine)
+        A_ext = np.column_stack([
+            np.ones(n_fine**2), KDF.ravel(), HHF.ravel(),
+            KDF.ravel()**2, KDF.ravel()*HHF.ravel(), HHF.ravel()**2,
+        ])
+        r_ext = (A_ext @ coeffs).reshape(HHF.shape)
+        r_ext = np.maximum(r_ext, rmse_min)              # physical floor
+        r_ext = np.minimum(r_ext, rmse2d.max() * 1.8)   # cap wild extrapolation
+        return kd_fine, h_fine, r_ext
+
+    # Pre-compute both extended grids to share colorbar levels
+    site_ext = {}
+    for name in ["A15", "A17"]:
+        j = d[name]["joint_kd_h"]
+        kd_mw = np.array(j["kd_grid"]) * 1e3
+        h_cm  = np.array(j["h_grid"])  * 100
+        rmse  = np.array(j["rmse2d"])
+        kd_f, h_f, r_f = _extend_rmse(kd_mw, h_cm, rmse, j["rmse_min"])
+        site_ext[name] = dict(kd_f=kd_f, h_f=h_f, r_f=r_f,
+                               kd_mw=kd_mw, h_cm=h_cm, rmse=rmse, j=j)
+
+    vmin_all = min(v["r_f"].min() for v in site_ext.values())
+    vmax_all = max(v["r_f"].max() for v in site_ext.values())
+    levels_shared = np.linspace(vmin_all, vmax_all, 20)
+
     cf_handle = None
     for ax, name, label in [(axB, "A15", "(b)  Apollo 15"),
                             (axC, "A17", "(c)  Apollo 17")]:
-        j = d[name]["joint_kd_h"]
-        h_grid  = np.array(j["h_grid"]) * 100
-        kd_grid = np.array(j["kd_grid"]) * 1e3
-        rmse    = np.array(j["rmse2d"])
-        rmse_min = j["rmse_min"]
+        e = site_ext[name]
+        j = e["j"]
 
-        cf = ax.contourf(kd_grid, h_grid, rmse, levels=18,
-                         cmap=ANTH_SEQ, alpha=0.92)
+        cf = ax.contourf(e["kd_f"], e["h_f"], e["r_f"],
+                         levels=levels_shared, cmap=ANTH_SEQ, alpha=0.92)
         if cf_handle is None:
             cf_handle = cf
+
+        rmse_min = j["rmse_min"]
         levels_white = [rmse_min + dx for dx in [0.5, 1.0, 2.0, 3.0]]
-        cs = ax.contour(kd_grid, h_grid, rmse,
+        cs = ax.contour(e["kd_f"], e["h_f"], e["r_f"],
                         levels=levels_white, colors="white",
                         linewidths=1.2, alpha=0.85)
         ax.clabel(cs, fmt="%.1f K", fontsize=FS_TICK, inline=True,
                   inline_spacing=4)
 
+        # Faint dotted box marking the computed (non-extrapolated) region
+        from matplotlib.patches import Rectangle
+        rect = Rectangle(
+            (e["kd_mw"][0], e["h_cm"][0]),
+            e["kd_mw"][-1] - e["kd_mw"][0],
+            e["h_cm"][-1]  - e["h_cm"][0],
+            linewidth=0.9, edgecolor="white", facecolor="none",
+            linestyle=":", alpha=0.6, zorder=4)
+        ax.add_patch(rect)
+
         ax.plot(j["kd_min"]*1e3, j["h_min"]*100, marker="*",
-                markersize=22, color=C_CORAL, mec="white", mew=1.5,
-                zorder=5,
-                label=f"joint min  ({j['kd_min']*1e3:.2f}, {j['h_min']*100:.0f} cm)")
+                markersize=22, color=C_CORAL, mec="white", mew=1.5, zorder=5)
         ax.axhline(6.0, color="white", ls="--", lw=1.2, alpha=0.85)
         kd_1d = d[name]["kd_star"] * 1e3
         ax.plot(kd_1d, 6.0, "o", markersize=11, color=C_TEAL,
-                mec="white", mew=1.4, zorder=4,
-                label=f"1-D $K_d^{{*}}$ at $H=6$  ({kd_1d:.2f})")
+                mec="white", mew=1.4, zorder=4)
 
         fmt_axis(ax,
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$H$  (cm)" if ax is axB else "",
                  title=label)
         ax.set_ylim(0, 10)
+        ax.set_xlim(e["kd_mw"][0], e["kd_mw"][-1])
 
     # shared colorbar for (b) and (c)
     cbar2 = fig.colorbar(cf_handle, ax=[axB, axC], pad=0.02, fraction=0.04,
@@ -398,8 +447,8 @@ def fig_robustness(d, out_path):
                mec="white", markersize=10,
                label=r"1-D $K_d^{*}$ at $H = 6$ cm  (panels b, c)"),
     ]
-    fig.legend(handles=handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
+    fig.legend(handles=handles, loc="upper center",
+               bbox_to_anchor=(0.5, 0.99), ncols=3, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=1.6, borderpad=0.4, columnspacing=1.2,
                labelspacing=0.3)
