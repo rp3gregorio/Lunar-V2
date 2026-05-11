@@ -707,6 +707,157 @@ def fig_posterior(out_path):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# FIGURE — Thermal profile comparison (Hayne retrieved vs M&S 3-layer)
+# ══════════════════════════════════════════════════════════════════════════════
+def fig_thermal_profiles(d, out_path):
+    """Side-by-side depth–temperature profiles: Hayne (K_d retrieved) vs
+    M&S 2021 3-layer (published K_d = 6.3), compared against HFE data,
+    at both Apollo sites.  Runs the forward model from scratch."""
+    import sys; sys.path.insert(0, str(pathlib.Path(__file__).parents[1]))
+    from copy import deepcopy
+    from lunar.grid import make_geometric_grid
+    from lunar.solver import PixelInputs, solve_pixel
+    from lunar.properties import conductivity_hayne, specific_heat
+    from lunar.constants import (K_SURFACE, H_PARAMETER, CHI_RADIATIVE,
+                                  T_REFERENCE, LUNATION_SECONDS)
+    from lunar.apollo_helpers import extract_sensor_stability
+
+    # ── forward-model settings (match pipeline) ───────────────────────────
+    GRID   = dict(z_max=5.0, dz0=0.002, growth=0.08)
+    DT     = 3600.0
+    N_LUN  = 30
+    TOL    = 0.01
+    T_LUN  = LUNATION_SECONDS
+    S0_    = 1361.0
+    CHI    = CHI_RADIATIVE
+    T_REF  = T_REFERENCE
+
+    SITE_CFGS = {
+        'A15': dict(label='Apollo 15', mission='a15', lat=26.13,
+                    albedo=0.131, emissivity=0.95, Q_BASAL=0.021,
+                    T_MEAN_EFF=252.0, MIN_DEPTH_CM=80),
+        'A17': dict(label='Apollo 17', mission='a17', lat=20.19,
+                    albedo=0.137, emissivity=0.95, Q_BASAL=0.015,
+                    T_MEAN_EFF=255.0, MIN_DEPTH_CM=80),
+    }
+    # M&S 2021 3-layer piecewise-K parameters (published)
+    KS_MS, KD_MS = 1.0e-3, 6.3e-3
+    Z1_MS, Z2_MS = 0.07, 0.20   # surface-layer base, ramp-zone base
+
+    def make_k_hayne(kd):
+        def k(T, z):
+            return conductivity_hayne(T, z, Ks=K_SURFACE, Kd=kd,
+                                      H=H_PARAMETER, chi=CHI)
+        return k
+
+    def make_k_ms(kd=KD_MS):
+        def k(T, z):
+            # piecewise-linear base conductivity
+            k_base = np.where(
+                z <= Z1_MS, KS_MS,
+                np.where(z <= Z2_MS,
+                         KS_MS + (kd - KS_MS) * (z - Z1_MS) / (Z2_MS - Z1_MS),
+                         kd))
+            return k_base * (1.0 + CHI * (T / T_REF) ** 3)
+        return k
+
+    def run_profile(site_cfg, k_func):
+        grid  = make_geometric_grid(**GRID)
+        z_mid = grid.z_mid
+        N_t   = int(T_LUN / DT) + 1
+        t_s   = np.linspace(0.0, T_LUN, N_t)
+        cos_l = np.cos(np.deg2rad(site_cfg['lat']))
+        insol = S0_ * cos_l * np.maximum(0.0, np.cos(2*np.pi * t_s / T_LUN))
+        K_init = k_func(np.full_like(z_mid, site_cfg['T_MEAN_EFF']), z_mid)
+        T_init = (site_cfg['T_MEAN_EFF']
+                  + site_cfg['Q_BASAL'] * np.cumsum(grid.dz / K_init))
+        out = solve_pixel(PixelInputs(
+            grid=grid, t=t_s, bc_mode='radiative',
+            insolation=insol, albedo=site_cfg['albedo'],
+            emissivity=site_cfg['emissivity'], Q_b=site_cfg['Q_BASAL'],
+            T_init=T_init, n_lunations_spinup=N_LUN, spinup_tol_K=TOL,
+            K_func=k_func, cp_func=lambda T: specific_heat(T, model='hayne'),
+        ))
+        return z_mid * 100, out.T.mean(axis=1)   # depth in cm, mean T profile
+
+    fig, axes = plt.subplots(1, 2, figsize=(JGR_FULL, 5.2), sharey=False)
+    fig.subplots_adjust(left=0.09, right=0.97, top=0.91, bottom=0.22,
+                        wspace=0.30)
+
+    legend_handles = []
+    for col, (name, site_cfg) in enumerate(SITE_CFGS.items()):
+        ax   = axes[col]
+        kd_r = d[name]["kd_star"]   # retrieved K_d* in SI
+
+        print(f"  Running Hayne K_d*={kd_r*1e3:.2f}  for {name} ...", flush=True)
+        z_h, T_h = run_profile(site_cfg, make_k_hayne(kd_r))
+        print(f"  Running M&S 3-layer K_d={KD_MS*1e3:.1f} for {name} ...", flush=True)
+        z_m, T_m = run_profile(site_cfg, make_k_ms())
+
+        # observed HFE stability-window means
+        obs_raw = extract_sensor_stability(site_cfg['mission'], min_depth_cm=0)
+        sensors = obs_raw['sensors']
+        z_obs = np.array([s['depth_cm'] for s in sensors])
+        T_obs = np.array([s['T_eq']     for s in sensors])
+        T_err = np.array([s['T_std']    for s in sensors])
+        deep  = z_obs >= site_cfg['MIN_DEPTH_CM']
+
+        # plot models (x=T, y=depth inverted)
+        lH, = ax.plot(T_h, z_h, color=C_TEAL,   lw=2.0,
+                      label=rf"Hayne  $K_d^{{*}}={kd_r*1e3:.2f}$  mW m$^{{-1}}$ K$^{{-1}}$")
+        lM, = ax.plot(T_m, z_m, color=C_MS,     lw=2.0, ls="--",
+                      label=rf"M\&S 2021  $K_d={KD_MS*1e3:.1f}$  mW m$^{{-1}}$ K$^{{-1}}$")
+
+        # HFE data — shallow (excluded, grey) and deep (used, coloured)
+        C_site = C_A15 if name == "A15" else C_A17
+        ax.errorbar(T_obs[~deep], z_obs[~deep], xerr=T_err[~deep],
+                    fmt="o", ms=5, color=C_NEUTRAL, mec=C_NEUTRAL,
+                    elinewidth=0.8, capsize=2.5, zorder=2)
+        lD = ax.errorbar(T_obs[deep], z_obs[deep], xerr=T_err[deep],
+                         fmt="o", ms=6.5, color=C_site, mec="white", mew=0.9,
+                         elinewidth=0.9, capsize=3, zorder=3,
+                         label="HFE deep sensors (used in retrieval)")
+
+        # borestem zone
+        ax.axhspan(0, site_cfg['MIN_DEPTH_CM'],
+                   color=C_GRID, alpha=0.45, zorder=0)
+        ax.text(0.97, site_cfg['MIN_DEPTH_CM'] + 2,
+                "borestem zone", transform=ax.get_yaxis_transform(),
+                ha="right", va="bottom", fontsize=FS_TICK - 1.5,
+                color=C_DIM, style="italic")
+
+        site_label = f"({'a' if col==0 else 'b'})  {site_cfg['label']}"
+        fmt_axis(ax,
+                 xlabel=r"Annual-mean temperature  $\langle T \rangle$  (K)",
+                 ylabel="Depth  (cm)" if col == 0 else "",
+                 title=site_label)
+        ax.set_ylim(220, 0)      # depth increases downward
+        ax.yaxis.set_minor_locator(mtick.AutoMinorLocator())
+        ax.xaxis.set_minor_locator(mtick.AutoMinorLocator())
+
+        if col == 0:
+            legend_handles = [lH, lM, lD,
+                Line2D([0],[0], marker="o", color="none",
+                       markerfacecolor=C_NEUTRAL, markersize=6,
+                       label="HFE shallow sensors (borestem-excluded)")]
+
+    # shared legend below
+    fig.legend(handles=legend_handles, loc="lower center",
+               bbox_to_anchor=(0.5, 0.01), ncols=2, frameon=True,
+               edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
+               handlelength=2.0, borderpad=0.5, columnspacing=1.4,
+               labelspacing=0.3,
+               title=(r"Model curves use per-site retrieved $K_d^{*}$ (Hayne shape) "
+                      r"and published $K_d$ (M\&S 3-layer).  "
+                      r"Grey markers: excluded from retrieval."),
+               title_fontsize=8.0)
+
+    fig.savefig(out_path)
+    plt.close(fig)
+    print(f"  → {out_path}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Main
 # ══════════════════════════════════════════════════════════════════════════════
 def main():
