@@ -37,7 +37,10 @@ from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
-PGDA_BASE = "https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/POLE_LDEM"
+# Real PGDA base for the south-polar 80S LDEM tiles. Verified 2026-05-11
+# against `curl -sIL ...80S_80MPP_ADJ.TIF` (200, image/tiff, ~189 MB).
+# Earlier path (`LOLA_5mpp/POLE_LDEM`) returns an HTML error page silently.
+PGDA_BASE = "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp"
 
 URLS = {
     80: f"{PGDA_BASE}/LDEM_80S_80MPP_ADJ.TIF",
