@@ -123,9 +123,10 @@ ANTH_SEQ = LinearSegmentedColormap.from_list(
 )
 
 # Output paths
-RESULTS = pathlib.Path("/Users/rp3gregorio/Lunar-V2/output/phase2_results.json")
-LETTER_FIGS   = pathlib.Path("/Users/rp3gregorio/Lunar-V2/paper/letter/figures")
-APPENDIX_FIGS = pathlib.Path("/Users/rp3gregorio/Lunar-V2/paper/appendix/figures")
+_ROOT         = pathlib.Path(__file__).parents[2]   # Lunar-V2/
+RESULTS       = _ROOT / "output" / "phase2_results.json"
+LETTER_FIGS   = _ROOT / "paper" / "letter"     / "figures"
+APPENDIX_FIGS = _ROOT / "paper" / "appendix"   / "figures"
 
 
 def fmt_axis(ax, *, xlabel="", ylabel="", title=""):
@@ -647,11 +648,11 @@ def fig_posterior(out_path):
     else recompute from json."""
     # We'll regenerate the posterior from scratch using the K_d sweep curves,
     # because the json doesn't store the (kdv, qbv, P) arrays.
-    import sys; sys.path.insert(0, "/Users/rp3gregorio/Lunar-V2")
+    import sys; sys.path.insert(0, str(_ROOT))
     d = json.loads(RESULTS.read_text())
 
     # Reload the pipeline's posterior method
-    from scripts.phase2_pipeline_fast import kd_qb_posterior
+    from scripts.pipeline.phase2_pipeline_fast import kd_qb_posterior
 
     QB_PUB = {"A15": 0.021, "A17": 0.015}
     QB_PRIOR = {"A15": (0.018, 0.005), "A17": (0.013, 0.004)}
@@ -762,7 +763,7 @@ def fig_thermal_profiles(d, out_path):
     """Side-by-side depth–temperature profiles: Hayne (K_d retrieved) vs
     M&S 2021 3-layer (published K_d = 6.3), compared against HFE data,
     at both Apollo sites.  Runs the forward model from scratch."""
-    import sys; sys.path.insert(0, str(pathlib.Path(__file__).parents[1]))
+    import sys; sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
     from copy import deepcopy
     from lunar.grid import make_geometric_grid
     from lunar.solver import PixelInputs, solve_pixel
