@@ -264,9 +264,11 @@ def main():
     results = {}
 
     # ── A1: extended K_d grids ────────────────────────────────────────────
+    # Sized so the bootstrap upper-tail percentiles sit inside the swept
+    # range rather than reaching the grid edge via parabolic extrapolation.
     kd_grids = {
-        'A15': np.linspace(1.0e-3, 12.0e-3, 24),
-        'A17': np.linspace(3.0e-3, 25.0e-3, 30),     # extended to 25 mW/m/K
+        'A15': np.linspace(1.0e-3, 15.0e-3, 28),
+        'A17': np.linspace(3.0e-3, 25.0e-3, 30),
     }
     cache = {}
     for name, cfg in SITES.items():

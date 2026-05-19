@@ -312,9 +312,13 @@ def main():
     results = {}
 
     # ── Site-specific K_d sweeps (carry per-sensor residuals) ────────────────
+    # Grids extended so bootstrap upper tails sit within the swept range
+    # (A15 boot CI ~3.9-11.7, A17 ~10.2-21.6).  Point-estimate K_d* is
+    # invariant to grid extent; only the bootstrap upper tail moves from
+    # parabolic-extrapolation into directly-evaluated range.
     kd_grids = {
-        'A15': np.linspace(1.5e-3, 9.0e-3, 20),
-        'A17': np.linspace(3.0e-3, 18.0e-3, 24),
+        'A15': np.linspace(1.5e-3, 15.0e-3, 28),
+        'A17': np.linspace(3.0e-3, 25.0e-3, 32),
     }
 
     cache = {}
