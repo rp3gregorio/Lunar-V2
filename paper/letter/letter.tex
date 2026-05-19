@@ -94,9 +94,9 @@ propagation has previously been reported. Here we use the restored
 1971--1977 Apollo Heat-Flow Experiment (HFE) record at Apollo~15
 and~17 to perform a single-parameter retrieval of $K_d$ within the
 \citet{hayne2017} regolith functional form, integrating the 1-D heat
-equation under SPICE/DE440 surface forcing with shallow sensors
-excluded \emph{a priori} via the modelled diurnal-amplitude depth
-profile. The deep-sensor RMSE is minimised at
+equation under ephemeris-driven solar forcing (JPL DE440) with shallow
+sensors excluded \emph{a priori} via the modelled diurnal-amplitude
+depth profile. The deep-sensor RMSE is minimised at
 $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ ($N=7$, RMSE $0.91$\,K) and
 $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$ ($N=16$,
 RMSE $0.30$\,K); reported uncertainties are asymmetric $1\sigma$
@@ -207,11 +207,11 @@ per-site \emph{measurement} of $K_d$:
         was implicitly tuned by the choice of which sensors to
         keep.
 \end{enumerate}
-An accurate SPICE/DE440 surface-forcing chain underlies all three
-contributions; it removes the $\sim\!1$ lunar-hour drift inherent
-in sinusoidal local-solar-time approximations and is required for
-the phase-folded diurnal-amplitude profile that defines the
-borestem cut (\S\ref{sec:results-amp}). The
+An ephemeris-accurate solar-forcing chain (JPL DE440 lunar and solar
+positions) underlies all three contributions; it removes the
+$\sim\!1$ lunar-hour drift inherent in sinusoidal local-solar-time
+approximations and is required for the phase-folded diurnal-amplitude
+profile that defines the borestem cut (\S\ref{sec:results-amp}). The
 remaining sections describe the data and methods
 (\S\ref{sec:methods}), the per-site retrieval and its robustness
 (\S\ref{sec:results}), the implications and caveats
@@ -231,12 +231,14 @@ within-window standard deviation. Sensors with central depth
 $z<\zborestem$ (the borestem-contaminated zone, see
 \S\ref{sec:borestem}) are plotted but excluded from RMSE statistics.
 
-\subsection{Surface solar geometry and TOA forcing}
+\subsection{Surface solar geometry and incident insolation}
 We propagate every Apollo Unix timestamp through SPICE
-\citep{acton1996,acton2018} with the JPL DE440 ephemeris and the
-\texttt{MOON\_ME} body-fixed frame, with light-time + stellar-aberration
-correction, and obtain the solar zenith angle $\theta_\odot(t)$ at
-each site. The TOA insolation incident on the local horizontal is
+\citep{acton1996,acton2018} using the JPL DE440 planetary ephemeris and
+the IAU-defined mean-Earth/polar-axis lunar body-fixed reference frame,
+with light-time and stellar-aberration corrections applied, and obtain
+the solar zenith angle $\theta_\odot(t)$ at each site. Because the Moon
+has no atmosphere, the solar irradiance incident on the local horizontal
+at the surface is simply
 \begin{equation}
 F_\odot(t) = \max\bigl(0,\ S_0\cos\theta_\odot(t)\bigr),
 \label{eq:insolation}
@@ -497,7 +499,7 @@ The mean profile in Fig.~\ref{fig:meanT} constrains only the
 time-averaged subsurface temperature; the amplitude of the diurnal
 wave provides an independent test of the frequency-domain response
 of the model. We define the per-sensor diurnal amplitude as the
-half-range of the SPICE-LST-folded median temperature and plot it
+half-range of the local-solar-time-folded median temperature and plot it
 against depth in Fig.~\ref{fig:amplitude}. Above
 $z\!=\!\zborestem$ the observed amplitudes lie an order of magnitude
 or more above the modelled regolith attenuation curve, consistent
@@ -517,8 +519,9 @@ Per-sensor phase-folded diurnal cycles for every Apollo HFE sensor
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/apollo_amplitude_vs_depth.pdf}
-\caption{\textbf{Diurnal amplitude (half-range of the SPICE-LST-folded
-median temperature) versus sensor depth at both Apollo sites.} Black
+\caption{\textbf{Diurnal amplitude (half-range of the
+local-solar-time-folded median temperature) versus sensor depth at both
+Apollo sites.} Black
 markers $=$ observed; navy curve $=$ \Hayne\ reference; grey curve
 $=$ 3-layer alternative. The shaded band marks the borestem zone
 ($z<\SI{80}{\centi\meter}$); above it the observed amplitude exceeds
@@ -1024,9 +1027,10 @@ flux $Q_b$.
 Two methodological choices unique to this work make the result
 defensible: an \emph{a priori} borestem cut at
 $z = \zborestem$ derived from the modelled diurnal-amplitude depth
-profile rather than from temperature residuals, and a SPICE/DE440
-surface-forcing chain that removes the lunar-hour-scale drift
-inherent in sinusoidal local-solar-time approximations. Both are
+profile rather than from temperature residuals, and an
+ephemeris-driven solar forcing (JPL DE440 lunar and solar positions)
+that removes the lunar-hour-scale drift inherent in sinusoidal
+local-solar-time approximations. Both are
 applied identically at A15 and A17.
 
 The implication is that the deep lunar regolith conductivity differs
@@ -1076,7 +1080,7 @@ from the supplementary material of \citet{nagihara2018}. The Diviner
 Lunar Radiometer brightness-temperature products are available from
 the NASA Planetary Data System Geosciences Node
 (\url{https://pds-geosciences.wustl.edu}). The 1-D Crank--Nicolson
-solver, the SPICE/DE440 surface-forcing chain, the $K_d$-sweep
+solver, the JPL-DE440-driven surface-forcing chain, the $K_d$-sweep
 harness, the validation notebook, and the LaTeX sources for this
 manuscript and the supporting information are archived at
 \url{https://github.com/rp3gregorio/Lunar-V2}; a Zenodo-archived
