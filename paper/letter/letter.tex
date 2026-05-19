@@ -275,7 +275,7 @@ impose a constant geothermal flux,
 The PDE is discretised on a geometric grid
 ($\Delta z_0=\SI{2}{\milli\meter}$, growth ratio $1.08$) and integrated
 with a Crank--Nicolson scheme at $\Delta t = \SI{1}{\hour}$, spun up
-for 30 lunations to $\max|\Delta T|<\SI{5e-2}{\kelvin}$ (Fig.~S6).
+for 30 lunations to $\max|\Delta T|<\SI{5e-2}{\kelvin}$.
 The \Hayne\ thermophysical inputs are adopted exactly as given in
 the published Appendix~A:
 \begin{align}
@@ -303,8 +303,6 @@ from the canonical \citet{langseth1976,nagihara2018} reductions ---
 acknowledging the \citet{saito2007,nagihara2018} reanalyses argue
 the original Langseth A15 value is biased high by $\sim\!30\%$,
 which we explore in the sensitivity sweep (\S\ref{sec:robustness}).
-A provenance check of the four parameterised inputs against the
-published \Hayne\ figures is reproduced in the Supporting Information.
 All fixed parameters are collected in Table~\ref{tab:params}.
 
 \begin{table}[!htbp]
@@ -555,8 +553,9 @@ radiative coefficient $\chi$ over the full
 \Hayne / \Vas\ disagreement, and the choice of specific-heat
 parameterisation (Hemingway--Robie--Wilson polynomial vs
 \citealt{biele2022} rational fit) --- shifts the deep-sensor RMSE
-by $<\SI{0.5}{\kelvin}$ at both sites (Fig.~S2 in the Supporting Information
-in the SI). $K_d$ is treated separately as the controlled retrieval
+by $<\SI{0.5}{\kelvin}$ at both sites; the component-by-component
+$K_d^{*}$ error budget is tabulated in Table~\ref{tab:errorbudget}.
+$K_d$ is treated separately as the controlled retrieval
 parameter in \S\ref{sec:results-kd}.
 
 \subsection{Per-site $K_d$ retrieval}\label{sec:results-kd}
@@ -596,11 +595,45 @@ sensor-placement depth uncertainty
 curve-fit error at the bootstrap minimum; the other \Hayne\
 parameters ($K_s$, $H$, $\chi$, $\rho$, $c_p$) are held at their published
 values, and the effect of varying them within their published ranges
-is bounded at the $<\SI{0.5}{\kelvin}$ deep-RMSE level
-(\S\ref{sec:robustness}; component-by-component error budget in the SI). Both retrievals reject the
+is tabulated as a per-component error budget in
+Table~\ref{tab:errorbudget}. Both retrievals reject the
 global value
 $K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
-\citet{hayne2017} at the 95\% level. The inter-site contrast is
+\citet{hayne2017} at the 95\% level.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{\textbf{Per-component error budget for the retrieved
+$K_d^{*}$.} Each row is the propagated $1\sigma$ shift in $K_d^{*}$
+from varying one input within its published uncertainty, evaluated
+at the bootstrap median. $\sigma_\mathrm{stat}$ is the half-range of
+the bootstrap 16--84 percentile band (sensor-set composition plus
+$\pm 2.5$\,cm depth jitter). $\sigma_{Q_b}$ is the 30\% Saito--Nagihara
+basal-flux envelope mapped through the steady-state $K_d/Q_b$ degeneracy.
+$\sigma_\chi$ is the analytical chain-rule 15\% shift from a 30\%
+perturbation of the radiative coefficient $\chi$. $\sigma_H$ is the
+half-range of the per-$H$ $K_d^{*}$ across the joint 8$\times$8
+$K_d$--$H$ sweep ($H=3$--14\,cm; data-driven, not a fixed percentage).
+$\sigma_{K_s}$ and $\sigma_\rho$ are 2\% and 0.5\% perturbations,
+respectively (lab-scale-constrained). All values in mW\,m$^{-1}$\,K$^{-1}$.}
+\label{tab:errorbudget}
+\begin{tabular}{lrr}
+\toprule
+Component & $\sigma$ (A15) & $\sigma$ (A17) \\
+\midrule
+$\sigma_\mathrm{stat}$ (sensor composition + 2.5 cm depth jitter) & 0.83 & 4.44 \\
+$\sigma_{Q_b}$  (Saito--Nagihara $\pm 30\%$)                       & 1.47 & 3.45 \\
+$\sigma_\chi$   (radiative $\chi\,\pm 30\%$, $\Delta K_d/K_d\!\approx\!15\%$) & 0.73 & 1.73 \\
+$\sigma_H$      (data-driven, joint $K_d$--$H$ sweep)              & 0.21 & 0.45 \\
+$\sigma_{K_s}$  ($K_s\,\pm 2\%$)                                    & 0.10 & 0.23 \\
+$\sigma_\rho$   ($\rho\,\pm 0.5\%$)                                 & 0.02 & 0.06 \\
+\midrule
+\textbf{Total (quadrature sum)}                                     & \textbf{1.85} & \textbf{5.91} \\
+Bootstrap median $K_d^{*}$                                          & 4.88 & 11.51 \\
+\bottomrule
+\end{tabular}
+\end{table} The inter-site contrast is
 robust under per-site rescaling of the assumed basal heat flux
 $Q_b$ across the published reanalysis envelope: as shown in
 Fig.~\ref{fig:robustness}(a), the contrast remains significant at
@@ -630,8 +663,8 @@ temperature to within $|\Delta|=0.31$ and $0.16\,\si{\kelvin}$,
 respectively.
 
 A complementary Bayesian credible interval that propagates the
-prior uncertainty on $Q_b$ through the inversion is shown in
-the joint $(K_d, Q_b)$ posterior figure in the SI (Fig.~S11). The marginal MCMC
+prior uncertainty on $Q_b$ through the inversion is shown by the
+joint $(K_d, Q_b)$ posteriors of Fig.~\ref{fig:posterior-compare}. The marginal MCMC
 posterior medians are
 $K_{d,\mathrm{A15}}=3.9$ and $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$
 (contrast median $+9.2$); they sit below and above their bootstrap counterparts because the
@@ -728,34 +761,30 @@ slightly warmer than the Diviner composite across the full cycle,
 with the largest discrepancy on the night side, consistent with the
 well-documented anisothermal-footprint and sub-pixel rock-population
 effects \citep{bandfield2015,hayne2017} and does not affect the
-deep-gradient retrieval.  Per-site night-only residuals are tabulated
-in the Supporting Information.}
+deep-gradient retrieval.}
 \label{fig:diviner}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
-\caption{\textbf{Direct two-site comparison of the MCMC posteriors.}
-(a)~The Apollo~15 (teal) and Apollo~17 (coral) marginal $P(K_d\,|\,
-\mathrm{data})$ are overlaid on the same axes; filled curves are
-Gaussian-KDE estimates of the posterior, vertical lines mark
-medians, and the short bars at the foot of each curve span the 16--84
-percentile range. The annotated probability is computed by drawing
-paired samples from the two marginals (the two sites' data are
-independent), and quantifies how strongly the data discriminate
-$K_d^{\rm A17}$ from $K_d^{\rm A15}$. (b)~Posterior distribution of
-the inter-site contrast
-$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$, formed from the
-same paired draws. The 66\% (darker) and 95\% (lighter) credible
-intervals are shaded; the dashed line at $\Delta K_d = 0$ shows the
-null hypothesis of a uniform deep conductivity. The bulk of the
-posterior mass lies above zero (with the 95\% credible interval
-just touching zero at the lower bound, reflecting the widening that
-follows when the $K_d/Q_b$ degeneracy is treated explicitly),
-providing a distribution-level statement of the inter-site contrast
-that complements the bootstrap-based contrast in
-Fig.~\ref{fig:bootstrap}.}
+\caption{\textbf{Joint $(K_d, Q_b)$ posteriors and marginal
+distributions at each Apollo site, with the Saito--Nagihara $Q_b$ prior
+propagated.} (a),(b)~Joint posterior density on the $(K_d, Q_b)$ plane
+at Apollo~15 and Apollo~17, evaluated over the full prior-supported
+$Q_b$ range so that the contour distribution fills the panel.
+White contours mark the 5\%, 32\%, and 68\% mass levels; the coral
+star is the posterior mode; thin dotted white rays trace the
+iso-ratio degeneracy lines $Q_b/K_d = \mathrm{const}$ along which
+the steady-state likelihood is invariant. (c),(d)~Marginal posteriors
+$P(K_d\,|\,\mathrm{data})$ (teal solid, bottom axis) and
+$P(Q_b\,|\,\mathrm{data})$ (coral dashed, top axis, rescaled to the
+$P(K_d)$ peak). The marginal posterior medians are
+$K_{d,\mathrm{A15}}=3.9$ and $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$,
+giving a paired-draw contrast probability
+$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$. The
+distribution-level inter-site contrast complements the bootstrap-based
+contrast in Fig.~\ref{fig:bootstrap}.}
 \label{fig:posterior-compare}
 \end{figure}
 
@@ -780,16 +809,16 @@ for inter-site equality. Both per-site retrievals reject the global
 value $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
 \citet{hayne2017} at the 95\% level. A complementary Bayesian MCMC
 analysis confirms the picture: the full joint
-$(K_d, Q_b)$ posteriors at each site (Fig.~S11 in the SI) trace
-the iso-ratio degeneracy ridge $Q_b/K_d=\mathrm{const}$ in the
+$(K_d, Q_b)$ posteriors at each site (Fig.~\ref{fig:posterior-compare}a,b)
+trace the iso-ratio degeneracy ridge $Q_b/K_d=\mathrm{const}$ in the
 two-dimensional plane, while the marginal $P(K_d)$ collapses to
-two well-localised distributions in $K_d$. Plotted side-by-side
-(Fig.~\ref{fig:posterior-compare}a) the two marginals are clearly
-separated, with $P(K_d^{\rm A17} > K_d^{\rm A15}) \approx 96\%$;
-and the posterior of the contrast
-$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$
-(Fig.~\ref{fig:posterior-compare}b) places the bulk of its mass
-above zero, with the 95\% credible interval just touching zero at
+two well-localised distributions in $K_d$
+(Fig.~\ref{fig:posterior-compare}c,d), with
+$P(K_d^{\rm A17} > K_d^{\rm A15}) \approx 96\%$ by paired-draw Monte
+Carlo on the marginals.
+The paired-draw contrast distribution
+$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$ has its bulk
+above zero, with a 95\% credible interval that just touches zero at
 the lower bound --- a Bayesian counterpart to the bootstrap
 contrast that is honest about the residual uncertainty introduced
 by the $K_d/Q_b$ degeneracy. Because the inputs that differ
@@ -809,7 +838,7 @@ state: the deep gradient is $|\partial_z T|=Q_b/K(T_d)$, and any
 multiplicative rescaling $(K_d,Q_b)\to(\alpha K_d,\alpha Q_b)$
 leaves the equilibrium profile invariant in the conduction-dominated
 limit. This degeneracy is visible directly in the joint posteriors
-(Fig.~S11 in the SI) as the dotted iso-ratio rays
+(Fig.~\ref{fig:posterior-compare}a,b) as the dotted iso-ratio rays
 $Q_b/K_d = \mathrm{const}$ along which the likelihood is flat, and
 explicitly tested in the $K_d^{*}$-contrast heatmap of
 Fig.~\ref{fig:robustness}a. The absolute A17 retrieval is consequently conditioned on the
@@ -866,7 +895,7 @@ Across the full $Q_b$ debate
 (Fig.~\ref{fig:robustness}a), the \Hayne / \Vas\ disagreement on
 $\chi$, and the choice of $c_p(T)$ parameterisation, the deep RMSE
 shifts by $<\SI{0.5}{\kelvin}$ at both sites
-(Fig.~S2 in the Supporting Information). The corresponding shift in the
+(Table~\ref{tab:errorbudget}). The corresponding shift in the
 retrieved $K_d^{*}$ is small compared to the per-site contrast:
 $Q_b$ rescales the absolute value (per the degeneracy above), $\chi$
 enters $K(T,z)$ only through the radiative multiplier and produces
@@ -896,7 +925,7 @@ Direct laboratory measurements on Apollo regolith samples in vacuum
 chambers --- e.g.\ \citet{cremers1971,horai1981,hemingway1973} ---
 yield thermal conductivities of order
 $0.7$--$\SI{2.0e-3}{\watt\per\meter\per\kelvin}$ at relevant lunar
-temperatures (cross-scale comparison reproduced in the SI). The retrieved in-situ
+temperatures. The retrieved in-situ
 values reported here are factors of $\sim\!3$ (A15) and $\sim\!7$
 (A17) larger. The discrepancy is not unexpected: laboratory
 measurements are made on disturbed, evacuated, mm-scale samples and
