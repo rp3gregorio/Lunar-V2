@@ -589,7 +589,15 @@ that just touches zero at its lower bound (Fig.~\ref{fig:bootstrap};
 $p\approx 0.05$ for the null of inter-site equality with the extended A15 sweep grid).
 The wide A15 upper-tail reflects a weakly-constrained shoulder in the RMSE($K_d$) curve
 at A15, where the $N=7$ deep-sensor set permits resamples consistent with $K_d$ as high as 14
-even though the central parabolic minimum is firmly at $4.86$. Both retrievals reject the
+even though the central parabolic minimum is firmly at $4.86$. The
+reported $1\sigma$ intervals propagate sensor-set composition,
+sensor-placement depth uncertainty
+($\pm \SI{2.5}{\centi\meter}$, \citealt{nagihara2018}) and the parabolic
+curve-fit error at the bootstrap minimum; the other \Hayne\
+parameters ($K_s$, $H$, $\chi$, $\rho$, $c_p$) are held at their published
+values, and the effect of varying them within their published ranges
+is bounded at the $<\SI{0.5}{\kelvin}$ deep-RMSE level
+(\S\ref{sec:robustness}; component-by-component error budget in the SI). Both retrievals reject the
 global value
 $K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
 \citet{hayne2017} at the 95\% level. The inter-site contrast is
@@ -1107,33 +1115,33 @@ without which this work would not have been possible.
 \renewcommand{\arraystretch}{1.0}
 
 \noindent\textit{Symbols.}\par\smallskip\noindent
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}p{0.10\linewidth}p{0.40\linewidth}p{0.28\linewidth}p{0.16\linewidth}@{}}
 \toprule
-\textbf{Symbol} & \textbf{Definition} & \textbf{Value / units} \\
+\textbf{Symbol} & \textbf{Definition} & \textbf{Value / units} & \textbf{Source} \\
 \midrule
-$K_d$              & deep regolith thermal conductivity (retrieved)        & 4.86, 11.23 mW\,m$^{-1}$\,K$^{-1}$ \\
-$K_s$              & surface regolith thermal conductivity                  & $7.4\times10^{-4}$ W\,m$^{-1}$\,K$^{-1}$ \\
-$H$                & e-folding depth of $K(z)$ transition                  & 0.06 m \\
-$\chi$             & radiative conductivity multiplier coefficient         & 2.7 \\
-$T_\mathrm{ref}$   & normalisation temperature for radiative term          & 350 K \\
-$\rho_s,\rho_d$    & surface / deep regolith bulk density                  & 1100, 1800 kg\,m$^{-3}$ \\
-$c_p(T)$           & specific heat (4th-order polynomial in $T$)           & J\,kg$^{-1}$\,K$^{-1}$ \\
-$Q_b$              & basal heat flux                                       & 21 (A15), 15 (A17) mW\,m$^{-2}$ \\
-$S_0$              & solar constant (irradiance at 1 AU)                   & 1361 W\,m$^{-2}$ \\
-$A$, $\varepsilon$ & broadband Bond albedo, emissivity                     & site-specific;\ 0.95 \\
-$\sigma$           & Stefan--Boltzmann constant                            & $5.6704\!\times\!10^{-8}$ W\,m$^{-2}$\,K$^{-4}$ \\
-$\theta_\odot(t)$  & solar zenith angle at site                            & rad \\
-$F_\odot(t)$       & incident solar irradiance at surface                  & W\,m$^{-2}$ \\
-$T(z,t),\,T_s$     & subsurface and skin ($z\!=\!0$) temperature           & K \\
-$z$                & depth coordinate (positive downward)                  & m \\
-$\zborestem$       & borestem-exclusion depth (\emph{a priori} cut)        & 80 cm \\
-$\delta$           & diurnal thermal skin depth                            & $\sim$3--5 cm \\
-$z_\mathrm{stable}$ & cold-trap ice-stability depth                         & m \\
-$\Delta K_d$       & inter-site contrast $K_d^{\rm A17}\!-\!K_d^{\rm A15}$ & 6.63 mW\,m$^{-1}$\,K$^{-1}$ \\
-RMSE               & deep-sensor root-mean-square residual                 & K \\
-$N$                & number of deep sensors                                & 7 (A15), 16 (A17) \\
-$N_\mathrm{boot}$  & non-parametric bootstrap resamples                    & 1500 \\
-$p$                & bootstrap proportion below null contrast              & 0.05 \\
+$K_d$              & deep regolith thermal conductivity (retrieved)        & 4.86, 11.23 mW\,m$^{-1}$\,K$^{-1}$         & this work \\
+$K_s$              & surface regolith thermal conductivity                  & $7.4\times10^{-4}$ W\,m$^{-1}$\,K$^{-1}$  & \citet{hayne2017} \\
+$H$                & e-folding depth of $K(z)$ transition                  & 0.06 m                                       & \citet{hayne2017} \\
+$\chi$             & radiative conductivity multiplier coefficient         & 2.7                                          & \citet{hayne2017} \\
+$T_\mathrm{ref}$   & normalisation temperature for radiative term          & 350 K                                        & \citet{hayne2017} \\
+$\rho_s,\rho_d$    & surface / deep regolith bulk density                  & 1100, 1800 kg\,m$^{-3}$                      & \citet{hayne2017} \\
+$c_p(T)$           & specific heat (4th-order polynomial in $T$)           & J\,kg$^{-1}$\,K$^{-1}$                       & \citet{hemingway1973,hayne2017} \\
+$Q_b$              & basal heat flux                                       & 21 (A15), 15 (A17) mW\,m$^{-2}$              & \citet{langseth1976,nagihara2018} \\
+$S_0$              & solar constant (irradiance at 1 AU)                   & 1361 W\,m$^{-2}$                             & \citet{kopp2011} \\
+$A$, $\varepsilon$ & broadband Bond albedo, emissivity                     & site-specific;\ 0.95                         & \citet{vasavada2012,bandfield2015} \\
+$\sigma$           & Stefan--Boltzmann constant                            & $5.6704\!\times\!10^{-8}$ W\,m$^{-2}$\,K$^{-4}$ & CODATA 2018 \\
+$\theta_\odot(t)$  & solar zenith angle at site                            & rad                                          & SPICE/DE440 \\
+$F_\odot(t)$       & incident solar irradiance at surface                  & W\,m$^{-2}$                                  & this work, eq.~\ref{eq:insolation} \\
+$T(z,t),\,T_s$     & subsurface and skin ($z\!=\!0$) temperature           & K                                            & this work \\
+$z$                & depth coordinate (positive downward)                  & m                                            & --- \\
+$\zborestem$       & borestem-exclusion depth (\emph{a priori} cut)        & 80 cm                                        & this work, §\ref{sec:borestem} \\
+$\delta$           & diurnal thermal skin depth                            & $\sim$3--5 cm                                & \citet{hayne2017} \\
+$z_\mathrm{stable}$ & cold-trap ice-stability depth                         & m                                            & \citet{schorghofer2005} \\
+$\Delta K_d$       & inter-site contrast $K_d^{\rm A17}\!-\!K_d^{\rm A15}$ & 6.63 mW\,m$^{-1}$\,K$^{-1}$                  & this work \\
+RMSE               & deep-sensor root-mean-square residual                 & K                                            & this work \\
+$N$                & number of deep sensors                                & 7 (A15), 16 (A17)                            & \citet{nagihara2018} \\
+$N_\mathrm{boot}$  & non-parametric bootstrap resamples                    & 1500                                         & \citet{efron1993} \\
+$p$                & bootstrap proportion below null contrast              & 0.05                                         & this work \\
 \bottomrule
 \end{tabular}
 
