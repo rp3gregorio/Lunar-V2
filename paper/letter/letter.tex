@@ -770,7 +770,8 @@ inter-site contrast $\Delta K_d^{*}$ (Fig.~\ref{fig:bootstrap}b) has
 its 95\% CI lower bound just touching zero, giving $p\approx 0.05$
 for inter-site equality. Both per-site retrievals reject the global
 value $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
-\citet{hayne2017} at the 95\% level. A complementary Bayesian MCMC analysis. The full joint
+\citet{hayne2017} at the 95\% level. A complementary Bayesian MCMC
+analysis confirms the picture: the full joint
 $(K_d, Q_b)$ posteriors at each site (Fig.~S11 in the SI) trace
 the iso-ratio degeneracy ridge $Q_b/K_d=\mathrm{const}$ in the
 two-dimensional plane, while the marginal $P(K_d)$ collapses to
@@ -788,8 +789,8 @@ between the two retrievals are restricted to latitude, albedo, basal
 heat flux, and the in-situ deep temperatures themselves, the
 disagreement cannot be absorbed into the \Hayne\ shape parameters,
 the radiative multiplier, the heat-capacity parameterisation, or the
-surface-forcing chain --- all of which are identical at A15 and A17
-in the present pipeline. The result is therefore most naturally
+solar-forcing computation --- all of which are identical at A15 and
+A17 in our treatment. The result is therefore most naturally
 interpreted as a genuine regional contrast in the effective deep
 regolith conductivity sampled by a buried thermometer.
 
@@ -1080,9 +1081,10 @@ from the supplementary material of \citet{nagihara2018}. The Diviner
 Lunar Radiometer brightness-temperature products are available from
 the NASA Planetary Data System Geosciences Node
 (\url{https://pds-geosciences.wustl.edu}). The 1-D Crank--Nicolson
-solver, the JPL-DE440-driven surface-forcing chain, the $K_d$-sweep
-harness, the validation notebook, and the LaTeX sources for this
-manuscript and the supporting information are archived at
+heat solver, the ephemeris-driven solar-forcing routines, the $K_d$
+retrieval and bootstrap code, the validation diagnostics, and the
+LaTeX sources for this manuscript and the supporting information are
+archived at
 \url{https://github.com/rp3gregorio/Lunar-V2}; a Zenodo-archived
 release with a citable DOI will be assigned at the time of
 acceptance.
@@ -1096,6 +1098,90 @@ and the \citet{nagihara2018} team for restoring the
 1975--1977 portion of the 1971--1977 record from the original tapes
 (the 1971--1975 portion was retained from the original PI processing),
 without which this work would not have been possible.
+
+% =====================================================================
+\section*{Nomenclature}
+\label{sec:nomenclature}
+{\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.0}
+
+\noindent\textit{Symbols.}\par\smallskip\noindent
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Definition} & \textbf{Value / units} \\
+\midrule
+$K_d$              & deep regolith thermal conductivity (retrieved)        & 4.86, 11.23 mW\,m$^{-1}$\,K$^{-1}$ \\
+$K_s$              & surface regolith thermal conductivity                  & $7.4\times10^{-4}$ W\,m$^{-1}$\,K$^{-1}$ \\
+$H$                & e-folding depth of $K(z)$ transition                  & 0.06 m \\
+$\chi$             & radiative conductivity multiplier coefficient         & 2.7 \\
+$T_\mathrm{ref}$   & normalisation temperature for radiative term          & 350 K \\
+$\rho_s,\rho_d$    & surface / deep regolith bulk density                  & 1100, 1800 kg\,m$^{-3}$ \\
+$c_p(T)$           & specific heat (4th-order polynomial in $T$)           & J\,kg$^{-1}$\,K$^{-1}$ \\
+$Q_b$              & basal heat flux                                       & 21 (A15), 15 (A17) mW\,m$^{-2}$ \\
+$S_0$              & solar constant (irradiance at 1 AU)                   & 1361 W\,m$^{-2}$ \\
+$A$, $\varepsilon$ & broadband Bond albedo, emissivity                     & site-specific;\ 0.95 \\
+$\sigma$           & Stefan--Boltzmann constant                            & $5.6704\!\times\!10^{-8}$ W\,m$^{-2}$\,K$^{-4}$ \\
+$\theta_\odot(t)$  & solar zenith angle at site                            & rad \\
+$F_\odot(t)$       & incident solar irradiance at surface                  & W\,m$^{-2}$ \\
+$T(z,t),\,T_s$     & subsurface and skin ($z\!=\!0$) temperature           & K \\
+$z$                & depth coordinate (positive downward)                  & m \\
+$\zborestem$       & borestem-exclusion depth (\emph{a priori} cut)        & 80 cm \\
+$\delta$           & diurnal thermal skin depth                            & $\sim$3--5 cm \\
+$z_\mathrm{stable}$ & cold-trap ice-stability depth                         & m \\
+$\Delta K_d$       & inter-site contrast $K_d^{\rm A17}\!-\!K_d^{\rm A15}$ & 6.63 mW\,m$^{-1}$\,K$^{-1}$ \\
+RMSE               & deep-sensor root-mean-square residual                 & K \\
+$N$                & number of deep sensors                                & 7 (A15), 16 (A17) \\
+$N_\mathrm{boot}$  & non-parametric bootstrap resamples                    & 1500 \\
+$p$                & bootstrap proportion below null contrast              & 0.05 \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\begin{minipage}[t]{0.49\linewidth}
+\textit{Subscripts.}\par\smallskip
+\begin{tabular}{@{}ll@{}}
+\toprule
+$s$            & surface (regolith, skin) \\
+$d$            & deep regolith \\
+$b$            & basal (lower BC) \\
+$\mathrm{ref}$ & reference (normalisation) \\
+$\odot$        & solar \\
+$\mathrm{eq}$  & stability-window equilibrium \\
+$\mathrm{boot}$ & bootstrap quantity \\
+\bottomrule
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\linewidth}
+\textit{Superscripts.}\par\smallskip
+\begin{tabular}{@{}ll@{}}
+\toprule
+$^{*}$            & best-fit / retrieved (e.g.\ $K_d^{*}$) \\
+$^{\rm A15,A17}$  & per-site qualifier \\
+$^{\rm disc}$     & \citet{martinez2021} 3-layer discrete value \\
+$^{\rm ref}$      & published reference value \\
+$^{\rm HFE}$      & Apollo HFE-measured \\
+$\langle\cdot\rangle$ & time-average over stability window \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\medskip
+\noindent\textit{Acronyms.}\par\smallskip\noindent
+\begin{tabular}{@{}ll@{}}
+\toprule
+HFE          & Heat-Flow Experiment (Apollo~15 and~17 buried thermometers) \\
+TG / TR      & gradient-bridge / ring-bridge sensor (HFE sensor types) \\
+LST          & local solar time \\
+Diviner GCP  & Diviner Lunar Radiometer Global Cumulative Product \\
+MCMC         & Markov-chain Monte Carlo \\
+BCa          & bias-corrected accelerated bootstrap \\
+SPICE        & NASA ancillary information system for planetary geometry \\
+DE440        & JPL planetary and lunar ephemeris release 440 \\
+SI           & Supporting Information \\
+\bottomrule
+\end{tabular}
+}
 
 \bibliography{references}
 
