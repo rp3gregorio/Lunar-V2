@@ -97,13 +97,15 @@ and~17 to perform a single-parameter retrieval of $K_d$ within the
 equation under SPICE/DE440 surface forcing with shallow sensors
 excluded \emph{a priori} via the modelled diurnal-amplitude depth
 profile. The deep-sensor RMSE is minimised at
-$K_{d,\mathrm{A15}}^{*}=4.86$ ($N=7$, RMSE $0.91$\,K) and
-$K_{d,\mathrm{A17}}^{*}=11.23$\,mW\,m$^{-1}$\,K$^{-1}$ ($N=16$,
-RMSE $0.30$\,K). A non-parametric bootstrap ($N_\mathrm{boot}=1500$,
-with $\pm 2.5$\,cm sensor-placement jitter \citep{nagihara2018} propagated through each resample)
-gives 95\% CIs of $[3.94,14.36]$ and $[10.18,21.62]$\,mW\,m$^{-1}$\,K$^{-1}$
-and a contrast $\Delta K_d^{*}=6.6$ (95\% CI $[-3.2,16.6]$,
-$p\approx 0.05$; the A15 upper-tail reflects a weakly-constrained shoulder). A complementary MCMC
+$K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ ($N=7$, RMSE $0.91$\,K) and
+$K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$ ($N=16$,
+RMSE $0.30$\,K); reported uncertainties are asymmetric $1\sigma$
+intervals from a non-parametric bootstrap ($N_\mathrm{boot}=1500$,
+with $\pm 2.5$\,cm sensor-placement jitter \citep{nagihara2018}
+propagated per resample). The 95\% CIs are $[3.94,14.36]$ and
+$[10.18,21.62]$\,mW\,m$^{-1}$\,K$^{-1}$ and the inter-site contrast
+is $\Delta K_d^{*}=6.6^{+7.4}_{-1.3}\,(1\sigma)$, 95\% CI $[-3.2,16.6]$,
+$p\approx 0.05$. A complementary MCMC
 treatment with a published $Q_b$ prior gives
 $P(K_d^{\rm A17} > K_d^{\rm A15}) \approx 96\%$. The contrast is
 invariant under global rescaling of the basal heat flux and is
@@ -144,9 +146,9 @@ at least as large as the inter-site disagreement we report here.
 \begin{itemize}\itemsep2pt
   \item The Apollo~15 and~17 deep-sensor records require deep
         regolith conductivities of
-        $K_{d,\mathrm{A15}}^{*}=4.86$ and
-        $K_{d,\mathrm{A17}}^{*}=11.23$\,mW\,m$^{-1}$\,K$^{-1}$
-        (bootstrap 95\% CIs $[3.94,14.36]$ and $[10.18,21.62]$).
+        $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ and
+        $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
+        ($1\sigma$ bootstrap; 95\% CIs $[3.94,14.36]$ and $[10.18,21.62]$).
   \item Inter-site difference is significant at $p\approx 0.05$ (bootstrap);
         MCMC gives $P(K_{d,\mathrm{A17}}>K_{d,\mathrm{A15}})\approx 96\%$.
   \item The contrast is invariant under global $Q_b$ rescaling; absolute
@@ -559,11 +561,12 @@ Fig.~\ref{fig:kdsweep} shows the deep-sensor RMSE
 (eq.~\ref{eq:rmse-kd}) as a function of $K_d$ at each landing site,
 with the \Hayne\ functional form (eqs.~\ref{eq:K}--\ref{eq:cp})
 otherwise unchanged. Both curves have a clean, well-resolved minimum
-within the swept range. The parabolic point estimates and 95\%
-non-parametric bootstrap confidence intervals are
+within the swept range. The parabolic point estimates with asymmetric
+$1\sigma$ bootstrap uncertainties (and 95\% intervals in square brackets)
+are
 \[
-K_{d,\mathrm{A15}}^{*}=4.86\,[3.94,\,14.36]\,\si{\milli\watt\per\meter\per\kelvin},\qquad
-K_{d,\mathrm{A17}}^{*}=11.23\,[10.18,\,21.62]\,\si{\milli\watt\per\meter\per\kelvin},
+K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}\,[3.94,\,14.36]\,\si{\milli\watt\per\meter\per\kelvin},\qquad
+K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}\,[10.18,\,21.62]\,\si{\milli\watt\per\meter\per\kelvin},
 \]
 with corresponding deep-sensor RMSE\,$=0.91$\,K ($N=7$) and
 $0.30$\,K ($N=16$) respectively (Fig.~\ref{fig:bootstrap}). The
@@ -576,9 +579,10 @@ identified lever between the \Hayne\ form and the in-situ HFE
 record once the borestem zone is excluded.
 
 The inter-site contrast (bootstrap-median of $K_{d,\mathrm{A17}}^{*}-K_{d,\mathrm{A15}}^{*}$) is
-$\Delta K_d^{*} \approx 6.6\,\si{\milli\watt\per\meter\per\kelvin}$
-with a 95\% bootstrap confidence interval $[-3.2,\,16.6]\,\si{\milli\watt\per\meter\per\kelvin}$
-that includes zero only at its lower tail (Fig.~\ref{fig:bootstrap};
+$\Delta K_d^{*} = 6.63^{+7.43}_{-1.25}\,\si{\milli\watt\per\meter\per\kelvin}$
+($1\sigma$, asymmetric) with a 95\% bootstrap confidence interval
+$[-3.2,\,16.6]\,\si{\milli\watt\per\meter\per\kelvin}$
+that just touches zero at its lower bound (Fig.~\ref{fig:bootstrap};
 $p\approx 0.05$ for the null of inter-site equality with the extended A15 sweep grid).
 The wide A15 upper-tail reflects a weakly-constrained shoulder in the RMSE($K_d$) curve
 at A15, where the $N=7$ deep-sensor set permits resamples consistent with $K_d$ as high as 14
