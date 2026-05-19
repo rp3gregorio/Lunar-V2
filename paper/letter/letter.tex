@@ -230,6 +230,27 @@ $T_\mathrm{eq}=\langle T(z)\rangle_{\Delta t}$ together with its
 within-window standard deviation. Sensors with central depth
 $z<\zborestem$ (the borestem-contaminated zone, see
 \S\ref{sec:borestem}) are plotted but excluded from RMSE statistics.
+Figure~\ref{fig:timeline} shows the full per-probe temperature record at
+each site, with the documented disturbance intervals shaded
+\citep{nagihara2018}, the selected stability windows marked, and the
+fitted long-term drift $d\langle T\rangle/dt$ reported per sensor.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_apollo_timeline.pdf}
+\caption{\textbf{Per-probe stability-window timeline at Apollo~15 and~17.}
+Raw HFE temperature traces (top sub-panel per probe) with the
+documented disturbance intervals \citep{nagihara2018} shaded coral and
+the multi-lunation stability windows used in this work outlined and
+labelled with their OLS-fit drift in $\si{\milli\kelvin}\,\si{\per\day}$.
+Lower sub-panel per probe: per-sensor stability-window Gantt strip
+colour-coded by sensor depth (sequential teal--coral scale on the
+shared colour bar). Sensor rows are ordered by depth (shallowest at
+top). The window-mean equilibrium temperatures listed at right-edge
+of each row are the $T_\mathrm{eq}$ values used in the deep-sensor
+RMSE (eq.~\ref{eq:rmse-kd}).}
+\label{fig:timeline}
+\end{figure}
 
 \subsection{Surface solar geometry and incident insolation}
 We propagate every Apollo Unix timestamp through SPICE
