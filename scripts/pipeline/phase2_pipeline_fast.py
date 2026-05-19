@@ -191,20 +191,28 @@ def joint_kd_h_grid(site_cfg, kd_grid, h_grid):
 
 def kd_qb_posterior(R, kd_grid, qb_published,
                     qb_prior_mean, qb_prior_sigma,
-                    n_kd=200, n_qb=200, sigma_data=0.5):
+                    n_kd=200, n_qb=200, sigma_data=0.5,
+                    kd_range=None, qb_range=None):
     """Joint (K_d, Q_b) posterior using a degeneracy-aware surrogate.
     Under (K_d, Q_b) -> (alpha K_d, alpha Q_b) the equilibrium deep
     profile is invariant, so the likelihood is invariant on iso-ratio
     rays Q_b/K_d = const. The RMSE at (K_d, Q_b) therefore equals the
     published-Q_b RMSE evaluated at K_eff = K_d * (Q_b_published / Q_b).
     No extra surface-scale factor is applied (the radiative BC is
-    insensitive to Q_b at first order)."""
+    insensitive to Q_b at first order).
+
+    ``kd_range`` and ``qb_range`` may be passed to extend the grid so
+    the figure has no blank areas at the axis limits.  Default is the
+    K_d sweep range and Q_b prior_mean ± 4 σ.
+    """
     rmse = np.sqrt((R**2).mean(axis=0))
     from scipy.interpolate import CubicSpline
     cs = CubicSpline(kd_grid, rmse, extrapolate=True)
-    kd_range = (kd_grid[0], kd_grid[-1])
-    qb_range = (max(0.5*qb_prior_mean, qb_prior_mean - 4*qb_prior_sigma),
-                qb_prior_mean + 4*qb_prior_sigma)
+    if kd_range is None:
+        kd_range = (kd_grid[0], kd_grid[-1])
+    if qb_range is None:
+        qb_range = (max(0.5*qb_prior_mean, qb_prior_mean - 4*qb_prior_sigma),
+                    qb_prior_mean + 4*qb_prior_sigma)
     kdv = np.linspace(*kd_range, n_kd)
     qbv = np.linspace(*qb_range, n_qb)
     KK, QQ = np.meshgrid(kdv, qbv)

@@ -174,17 +174,17 @@ def main():
     from phase2_figures_v2 import JGR_FULL, FS_LEGEND, FS_TICK, C_GRID, C_DIM   # type: ignore
 
     out = {}
-    # Two-row × two-col layout:
-    #   row 1 = full diurnal cycle
-    #   row 2 = night-side only (LST < 6 or LST >= 18) — avoids the
-    #           sub-pixel anisothermal-bias regime that dominates the
-    #           daytime residual.
-    fig, axes = plt.subplots(2, 2, figsize=(JGR_FULL, 7.6),
-                             gridspec_kw={"wspace": 0.30, "hspace": 0.55})
-    fig.subplots_adjust(left=0.10, right=0.97, top=0.93, bottom=0.16)
+    # Single-row × two-col layout: full diurnal cycle at each site.
+    # The full-cycle RMSE is reported; per-site night-only RMSE is still
+    # written to phase_a4_results.json for the SI but is not plotted here.
+    fig, axes_row = plt.subplots(1, 2, figsize=(JGR_FULL, 4.2),
+                                 gridspec_kw={"wspace": 0.30})
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.90, bottom=0.24)
+    # Keep the 2-D indexing for minimal downstream change
+    import numpy as _np
+    axes = _np.array([[axes_row[0], axes_row[1]]])
 
-    panel_lbl = {("A15", 0): "(a)", ("A17", 0): "(b)",
-                 ("A15", 1): "(c)", ("A17", 1): "(d)"}
+    panel_lbl = {("A15", 0): "(a)", ("A17", 0): "(b)"}
 
     for col, name in enumerate(["A15", "A17"]):
         cfg = SITES[name]
@@ -239,23 +239,9 @@ def main():
                           edgecolor=C_GRID, lw=0.6))
         ax.set_xlim(0, 24)
 
-        # ── row 1: night-side only ─────────────────────────────────────────
-        ax = axes[1, col]
-        # shade day-side as visual cue
-        ax.axvspan(6, 18, color="0.92", alpha=0.7, zorder=0)
-        ax.plot(lst_div[night], T_div[night], "o", markersize=4.5,
-                color=col_site, alpha=0.6, mec="white", mew=0.4)
-        ax.plot(lst_mod, T_mod, "-", color=col_site, lw=2.0, alpha=0.85)
-        fmt_axis(ax, xlabel="Local solar time (h)",
-                 ylabel="Surface T (K)" if col == 0 else "",
-                 title=f"{panel_lbl[(name, 1)]}  {name} — night-side only")
-        ax.text(1.0, 360,
-                f"RMSE {rmse_night:.1f} K\nbias {bias_night:+.1f} K",
-                ha="left", va="top", fontsize=FS_TICK, color=C_DIM,
-                linespacing=1.3,
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                          edgecolor=C_GRID, lw=0.6))
-        ax.set_xlim(0, 24)
+    # (night-only row removed by user request 2026-05-19; numerical
+    #  night-only RMSE/bias are still written to phase_a4_results.json
+    #  for the Supporting Information.)
 
     # ── shared legend below ──────────────────────────────────────────────────
     from matplotlib.lines import Line2D

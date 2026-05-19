@@ -666,12 +666,15 @@ def fig_posterior(out_path):
                           left=0.07, right=0.93, top=0.93, bottom=0.10)
     axes = [[fig.add_subplot(gs[r, c]) for c in (0, 1)] for r in (0, 1)]
 
+    # Per-site explicit grid extents — chosen so the joint posterior is
+    # evaluated across the FULL plot box (no blank top/bottom strips).
+    KD_EXTENT_MW = {"A15": (1.5, 9.0), "A17": (3.0, 18.0)}
+    QB_EXTENT_MW = {"A15": (1.0, 36.0), "A17": (1.0, 30.0)}
+
     for col, name in enumerate(["A15", "A17"]):
         rmse = np.array(d[name]["rmse_curve"])
-        if name == "A15":
-            kd_grid = np.linspace(1.5e-3, 9.0e-3, len(rmse))
-        else:
-            kd_grid = np.linspace(3.0e-3, 18.0e-3, len(rmse))
+        kd_lo_mW, kd_hi_mW = KD_EXTENT_MW[name]
+        kd_grid = np.linspace(kd_lo_mW*1e-3, kd_hi_mW*1e-3, len(rmse))
         # Synthetic R: zero-mean residuals scaled to give the right RMSE
         # (this is just to plug into kd_qb_posterior which only needs the
         # diagonal RMSE shape and N).
@@ -680,10 +683,13 @@ def fig_posterior(out_path):
         # Distribute the squared residual evenly so RMSE matches
         for k, rm in enumerate(rmse):
             R[:, k] = rm   # all identical → RMSE = rm
+        qb_lo_mW, qb_hi_mW = QB_EXTENT_MW[name]
         kdv, qbv, P = kd_qb_posterior(
             R, kd_grid, qb_published=QB_PUB[name],
             qb_prior_mean=QB_PRIOR[name][0],
-            qb_prior_sigma=QB_PRIOR[name][1])
+            qb_prior_sigma=QB_PRIOR[name][1],
+            kd_range=(kd_lo_mW*1e-3, kd_hi_mW*1e-3),
+            qb_range=(qb_lo_mW*1e-3, qb_hi_mW*1e-3))
         kdv_mW = kdv * 1e3
         qbv_mW = qbv * 1e3
 
@@ -710,6 +716,10 @@ def fig_posterior(out_path):
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$Q_b$  (mW m$^{-2}$)",
                  title=f"({chr(ord('a')+col)})  {name} joint posterior")
+        # Lock axis limits to the computed grid extent so the contourf
+        # fills the entire panel — no blank strips above/below.
+        ax.set_xlim(kdv_mW[0], kdv_mW[-1])
+        ax.set_ylim(qbv_mW[0], qbv_mW[-1])
         # legend inside top-right: just one mode marker
         ax.legend(handles=[Line2D([0], [0], marker="*", color="none",
                                   markerfacecolor=C_CORAL, mec="white",
