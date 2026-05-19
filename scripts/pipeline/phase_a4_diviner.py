@@ -177,9 +177,11 @@ def main():
     # Single-row × two-col layout: full diurnal cycle at each site.
     # The full-cycle RMSE is reported; per-site night-only RMSE is still
     # written to phase_a4_results.json for the SI but is not plotted here.
-    fig, axes_row = plt.subplots(1, 2, figsize=(JGR_FULL, 4.2),
+    # Slightly squatter than 4.2 in tall to leave headroom on the page
+    # where this figure now sits next to Fig 9 (joint posteriors).
+    fig, axes_row = plt.subplots(1, 2, figsize=(JGR_FULL, 3.4),
                                  gridspec_kw={"wspace": 0.30})
-    fig.subplots_adjust(left=0.10, right=0.97, top=0.90, bottom=0.24)
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.88, bottom=0.26)
     # Keep the 2-D indexing for minimal downstream change
     import numpy as _np
     axes = _np.array([[axes_row[0], axes_row[1]]])
@@ -223,6 +225,10 @@ def main():
 
         # ── row 0: full diurnal ─────────────────────────────────────────────
         ax = axes[0, col]
+        # Night-side shading (LST < 6 or LST >= 18) — visual cue that the
+        # daytime plateau and the night-floor are separately interpretable.
+        ax.axvspan(0,  6, color="0.92", alpha=0.55, zorder=0)
+        ax.axvspan(18, 24, color="0.92", alpha=0.55, zorder=0)
         ax.plot(lst_div, T_div, "o", markersize=4.5, color=col_site,
                 alpha=0.55, mec="white", mew=0.4)
         ax.plot(lst_mod, T_mod, "-", color=col_site, lw=2.0)

@@ -767,46 +767,31 @@ trade-off with $H$.}
 \label{fig:robustness}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_diviner_closure.pdf}
-\caption{\textbf{Surface-temperature closure against the Diviner Lunar
-Radiometer Global Cumulative Product.} Modelled surface temperature
-(solid lines) at Apollo~15 (teal) and Apollo~17 (coral), run with the
-per-site retrieved $K_d^{*}$, overlaid on the Diviner
-\citet{williams2017diviner} diurnal brightness-temperature composite
-(markers).  Terminator timing, daytime plateau width, and night-time
-floor are faithfully reproduced at both sites (full-cycle RMSE
-$12.4$\,K and $17.5$\,K at A15 and A17 respectively); the model runs
-slightly warmer than the Diviner composite across the full cycle,
-with the largest discrepancy on the night side, consistent with the
-well-documented anisothermal-footprint and sub-pixel rock-population
-effects \citep{bandfield2015,hayne2017} and does not affect the
-deep-gradient retrieval.}
+\caption{\textbf{Surface-T closure against the Diviner Lunar Radiometer
+GCP.} Modelled surface T (solid) at A15 (teal) and A17 (coral) with
+per-site $K_d^{*}$, vs.\ Diviner \citep{williams2017diviner} diurnal
+composite (markers); shaded bands = night (LST $<6$ or $\geq18$\,h).
+Full-cycle RMSE $12.4$ and $17.5$\,K. The model is slightly warmer
+than Diviner across the cycle, with the largest discrepancy on the
+night side, consistent with anisothermal-footprint and sub-pixel
+rock-population effects \citep{bandfield2015,hayne2017}.}
 \label{fig:diviner}
-\end{figure}
+\vspace{1.0em}
 
-\begin{figure}[!htbp]
-\centering
+\refstepcounter{figure}\label{fig:posterior-compare}
 \includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
-\caption{\textbf{Joint $(K_d, Q_b)$ posteriors and marginal
-distributions at each Apollo site, with the Saito--Nagihara $Q_b$ prior
-propagated.} (a),(b)~Joint posterior density on the $(K_d, Q_b)$ plane
-at Apollo~15 and Apollo~17, evaluated over the full prior-supported
-$Q_b$ range so that the contour distribution fills the panel.
-White contours mark the 5\%, 32\%, and 68\% mass levels; the coral
-star is the posterior mode; thin dotted white rays trace the
-iso-ratio degeneracy lines $Q_b/K_d = \mathrm{const}$ along which
-the steady-state likelihood is invariant. (c),(d)~Marginal posteriors
-$P(K_d\,|\,\mathrm{data})$ (teal solid, bottom axis) and
-$P(Q_b\,|\,\mathrm{data})$ (coral dashed, top axis, rescaled to the
-$P(K_d)$ peak). The marginal posterior medians are
-$K_{d,\mathrm{A15}}=3.9$ and $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$,
-giving a paired-draw contrast probability
-$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$. The
-distribution-level inter-site contrast complements the bootstrap-based
-contrast in Fig.~\ref{fig:bootstrap}.}
-\label{fig:posterior-compare}
+\caption*{\textbf{Figure \thefigure.} \textbf{Joint $(K_d, Q_b)$ posteriors
+and marginals with the Saito--Nagihara $Q_b$ prior.} (a),(b) Joint
+posterior on the $(K_d, Q_b)$
+plane; white contours = 5/32/68\% mass levels, coral star = mode,
+dotted rays = iso-ratio degeneracy $Q_b/K_d=\mathrm{const}$.
+(c),(d) Marginals $P(K_d)$ (teal, bottom axis) and $P(Q_b)$ (coral
+dashed, top axis, rescaled). Medians:
+$K_{d,\mathrm{A15}}=3.9$, $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$;
+$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
 \end{figure}
 
 % =====================================================================
