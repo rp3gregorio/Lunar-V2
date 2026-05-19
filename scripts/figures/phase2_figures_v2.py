@@ -240,7 +240,7 @@ def fig_bootstrap(d, out_path):
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=1.6, borderpad=0.4, columnspacing=1.2,
                labelspacing=0.3,
-               title="Bootstrap distributions  ($N_{\\rm boot} = 2000$, sensor-placement uncertainty propagated)",
+               title=f"Bootstrap distributions  ($N_{{\\rm boot}} = {len(boot15)}$)",
                title_fontsize=9.0)
 
     fig.savefig(out_path)

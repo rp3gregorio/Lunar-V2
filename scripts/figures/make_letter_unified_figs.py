@@ -61,7 +61,7 @@ SITES = {
                 T_MEAN_EFF=250.0, MIN_DEPTH_CM=80, mission="a15"),
     "A17": dict(label="Apollo 17", lat=20.19, lon=30.77,
                 albedo=0.137, emissivity=0.95, Q_BASAL=0.015,
-                T_MEAN_EFF=255.0, MIN_DEPTH_CM=80, mission="a17"),
+                T_MEAN_EFF=256.5, MIN_DEPTH_CM=80, mission="a17"),
 }
 
 LETTER_FIGS = pathlib.Path("/Users/rp3gregorio/Lunar-V2/paper/letter/figures")
