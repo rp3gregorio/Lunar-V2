@@ -192,7 +192,7 @@ When we run the experiment, the two Apollo sites give very different
 answers:
 
 \begin{itemize}\itemsep2pt
-  \item Apollo~15 prefers $K_d \approx 4.85$~mW/(m\,K).
+  \item Apollo~15 prefers $K_d \approx 4.86$~mW/(m\,K).
   \item Apollo~17 prefers $K_d \approx 11.23$~mW/(m\,K).
 \end{itemize}
 
@@ -401,7 +401,7 @@ the central claim of the letter.
 % --------------------------------------------------------------------
 \section{What is a confidence interval?}
 
-A point estimate like ``$K_d^{*} = 4.88$'' is incomplete. We need a
+A point estimate like ``$K_d^{*} = 4.86$'' is incomplete. We need a
 \emph{range} that captures how well the data constrain the value.
 There are several ways to compute such a range; the one that
 appears most often in this paper is called the \emph{bootstrap
@@ -414,24 +414,29 @@ on which sensors are included. To estimate ``how much would $K_d^{*}$
 move if we'd happened to have a slightly different set of seven
 sensors,'' we randomly resample seven sensors \emph{with
 replacement} from the seven we have (so some sensors appear twice
-and some are missed). For each resample we recompute $K_d^{*}$. We
-do this 2000 times. The collection of 2000 $K_d^{*}$ values is the
-\emph{bootstrap distribution}. The middle 95\% of that distribution
-is the 95\% bootstrap confidence interval. The whole procedure is
-just a way to ask the data: ``how stable is your answer under
-small changes in which sensors I happened to look at?''
+and some are missed), and additionally jitter each sensor's depth
+by a small random amount ($\pm 2.5$~cm, the documented
+sensor-placement uncertainty). For each resample we recompute
+$K_d^{*}$. We do this 1500 times. The collection of 1500 $K_d^{*}$
+values is the \emph{bootstrap distribution}. The middle 95\% of that
+distribution is the 95\% bootstrap confidence interval. The whole
+procedure is just a way to ask the data: ``how stable is your answer
+under small changes in which sensors I happened to look at, and in
+exactly how deep each one sat?''
 \end{aside}
 
 \begin{aside}[$p$-value, in plain language]
 A $p$-value answers the question ``if the data really showed no
 inter-site difference, how often would I get a difference at least
 as large as the one I observed?'' For our two-site contrast we
-generate 2000 bootstrap samples of the difference; if exactly $k$
-of them are negative or zero, $p \approx k/2000$. We report
-$p \approx 0.013$, meaning that roughly 1 in 80 random resamples
+generate 1500 bootstrap samples of the difference; if exactly $k$
+of them are negative or zero, $p \approx k/1500$. We report
+$p \approx 0.05$, meaning that roughly 1 in 20 random resamples
 of the data would mimic the inter-site difference by chance alone.
-Conventionally a result with $p < 0.05$ is called ``statistically
-significant.''
+Conventionally a result with $p \le 0.05$ is called ``statistically
+significant'' --- so our contrast sits right at that conventional
+threshold, which is why we are careful to call it suggestive rather
+than definitive.
 \end{aside}
 
 % --------------------------------------------------------------------
@@ -470,7 +475,7 @@ The posterior is what's left after both forces have acted.
 \end{aside}
 
 % --------------------------------------------------------------------
-\section{What is MCMC, and why \texttt{emcee}?}
+\section{What is MCMC, and how do we sample the posterior?}
 
 Computing the posterior on a fine 2-D grid is in principle
 straightforward but in practice expensive: each grid point needs
@@ -492,14 +497,14 @@ proportion to the posterior density there --- that is, it
 running in parallel explore the space faster.
 \end{aside}
 
-\begin{aside}[The \texttt{emcee} sampler]
-\texttt{emcee} \citep{foreman_mackey2013emcee} is the
-\emph{affine-invariant ensemble} variant: 32 walkers run together
-and propose moves based on the current positions of the other
-walkers in the ensemble. This handles correlated parameters (such
-as our diagonally-correlated $K_d$/$Q_b$ pair) much better than a
-single-walker scheme. We run for 4000 steps per walker; the
-first 1000 are discarded as ``burn-in'' (the walkers haven't yet
+\begin{aside}[The ensemble sampler we use]
+We use the \emph{affine-invariant ensemble} MCMC sampler of
+\citet{foreman_mackey2013emcee}: 32 walkers run together and propose
+moves based on the current positions of the other walkers in the
+ensemble. This handles correlated parameters (such as our
+diagonally-correlated $K_d$/$Q_b$ pair) much better than a
+single-walker scheme. We run for 4000 steps per walker; the first
+1000 are discarded as ``burn-in'' (the walkers have not yet
 forgotten their random starting points). The remaining
 $32 \times 3000 \approx 10^5$ samples are what define the posterior
 in Fig.~\ref{fig:posterior}.
@@ -591,6 +596,265 @@ moves.
         physically representing the heat coming up from the lunar
         interior.
 \end{description}
+
+% =====================================================================
+\chapter{The whole model in one read-through}\label{ch:walkthrough}
+
+The previous two chapters told you \emph{what} the study did and
+defined the vocabulary. This chapter walks the entire model from
+start to finish in one continuous narrative, so that by the end you
+can picture every step and know which later chapter to open for the
+mathematical detail. Read it slowly once; everything here is
+expanded with equations in Chapters~\ref{ch:moon}--\ref{ch:numerics}.
+
+\section{The one question the model answers}
+
+Strip the study to its core and it asks a single question:
+
+\begin{quote}
+\emph{Given the temperatures that the Apollo thermometers actually
+recorded below ground, what value of the deep regolith thermal
+conductivity $K_d$ makes a physics-based model reproduce those
+temperatures best?}
+\end{quote}
+
+Everything else --- the heat equation, the solar geometry, the
+bootstrap, the Bayesian posterior --- exists only to answer that one
+question well and to attach an honest uncertainty to the answer.
+
+\begin{aside}[Why $K_d$ and not something else?]
+The Moon's near-surface is a layered insulator: a fluffy, very-low-
+conductivity skin in the top few centimetres, grading into denser,
+more conductive material with depth. The deep value $K_d$ is the
+single number that controls how steeply temperature rises with depth
+once you are below that transition. It sets the subsurface
+equilibrium temperature, and therefore the depth at which polar ice
+is stable and the heat budget of any buried instrument. It is the
+quantity worth measuring.
+\end{aside}
+
+\section{Step 1 --- The forward model: from sunlight to a temperature profile}
+
+A \emph{forward model} takes physical inputs and predicts an
+observable. Ours takes (i) the position of the Sun over time, (ii) a
+description of how the regolith conducts and stores heat, and (iii)
+the heat leaking up from the deep interior, and predicts the
+temperature at every depth and every moment.
+
+The engine is the \emph{one-dimensional heat equation}
+(Chapter~\ref{ch:pde}). ``One-dimensional'' means we track
+temperature only as a function of depth $z$ and time $t$, ignoring
+horizontal variation --- a good approximation because the Apollo
+sites are flat and the relevant physics is vertical. The equation is
+a statement of energy conservation: the rate at which a thin slab of
+regolith heats up equals the difference between the heat flowing in
+from above and the heat flowing out below.
+
+Two things must be supplied at the boundaries of the modelled
+column:
+
+\begin{description}
+\item[At the surface ($z=0$):] the regolith is in radiative balance.
+  It absorbs sunlight, re-emits thermal infrared according to the
+  Stefan--Boltzmann law, and exchanges conductive heat with the
+  layer just beneath. The Sun's contribution is computed from real
+  ephemeris geometry (\S\ref{sec:lst}) rather than an idealised
+  sine wave, because the true local-solar-time drift over a lunation
+  matters at the precision we need.
+\item[At the bottom ($z=z_\mathrm{max}=5$\,m):] a fixed heat flux
+  $Q_b$ flows upward out of the deep interior. This is the
+  \emph{geothermal} or \emph{basal} flux. Imposing a flux (not a
+  fixed temperature) is what lets the model produce a realistic
+  deep temperature gradient.
+\end{description}
+
+\begin{aside}[Why the bottom boundary is a flux, not a temperature]
+If we fixed the bottom temperature, we would be assuming the answer
+we are trying to measure. Fixing the upward heat \emph{flux}
+instead lets the temperature gradient emerge from the physics:
+steeper if the regolith conducts poorly, gentler if it conducts
+well. That gradient is exactly the signal $K_d$ controls.
+\end{aside}
+
+\section{Step 2 --- The regolith recipe: what the parameters mean}
+
+The forward model needs to know, at every depth and temperature,
+three material properties: thermal conductivity $K$, bulk density
+$\rho$, and specific heat $c_p$. We adopt the functional forms of
+\citet{hayne2017}, derived from orbital infrared observations. The
+key one is the conductivity:
+\[
+K(T,z) = \underbrace{\Big[K_s + (K_d-K_s)\big(1-e^{-z/H}\big)\Big]}
+         _{\text{structural part: depends on depth}}
+       \times
+         \underbrace{\Big[1 + \chi\,(T/T_\mathrm{ref})^3\Big]}
+         _{\text{radiative part: depends on temperature}}.
+\]
+Read it left to right. The structural bracket says conductivity
+climbs smoothly from a surface value $K_s$ to a deep value $K_d$,
+with the transition happening over an e-folding depth $H\approx 6$\,cm
+--- so by $\sim\!20$\,cm the regolith has essentially reached $K_d$.
+The radiative bracket adds a temperature-dependent boost: at the
+microscopic scale, heat also crosses the gaps between grains by
+infrared radiation, and that pathway strengthens as $T^3$. The
+coefficient $\chi$ sets how strong that boost is.
+
+\begin{description}
+\item[$K_s$] --- surface conductivity, $\approx 7.4\times10^{-4}$\,W\,m$^{-1}$\,K$^{-1}$.
+  The fluffy top skin; an extremely good insulator.
+\item[$K_d$] --- deep conductivity. \emph{This is what we retrieve.}
+\item[$H$] --- e-folding depth of the $K_s\!\to\!K_d$ transition,
+  $\approx 6$\,cm.
+\item[$\chi$] --- radiative-boost coefficient, $\approx 2.7$.
+\item[$T_\mathrm{ref}$] --- the temperature at which the radiative
+  term is normalised, $350$\,K.
+\item[$\rho(z)$] --- density, rising from $\sim\!1100$ to
+  $\sim\!1800$\,kg\,m$^{-3}$ with depth as overburden compacts the
+  regolith.
+\item[$c_p(T)$] --- specific heat, a polynomial in temperature.
+\end{description}
+
+The crucial design choice of this study: we hold \emph{every one of
+these except $K_d$} fixed at its published value. The retrieval has
+exactly one free knob. That is what makes the result interpretable
+--- if the model fits better, it is because $K_d$ moved, not because
+five parameters were quietly co-tuned.
+
+\begin{aside}[Why fix everything but $K_d$?]
+A model with many free parameters can fit almost anything, which
+makes a good fit meaningless. By freezing the entire \citet{hayne2017}
+recipe and varying only $K_d$, we ask a sharp, falsifiable question:
+\emph{is there a single $K_d$ that reconciles the model with each
+site's data?} If the answer differs between sites, that difference
+cannot have been manufactured by tuning --- there was nothing else
+to tune.
+\end{aside}
+
+\section{Step 3 --- Solving the equation on a computer}
+
+The heat equation cannot be solved with pen and paper for a
+realistic regolith, so we solve it numerically (Chapter~\ref{ch:numerics}).
+Three ideas matter:
+
+\begin{description}
+\item[Geometric depth grid.] We chop the 5\,m column into layers
+  that are very thin near the surface (millimetres, where
+  temperature changes fast) and progressively thicker with depth
+  (where it changes slowly). A uniform grid would either waste
+  effort at depth or under-resolve the surface.
+\item[Crank--Nicolson time stepping.] This is a stable, accurate
+  recipe for advancing temperature one time step at a time. It
+  averages the ``explicit'' and ``implicit'' updates, which keeps it
+  from blowing up even at large time steps.
+\item[Spin-up.] We do not know the true starting temperature
+  profile, so we start from a rough guess and run the model through
+  many lunar days until it forgets that guess and settles into a
+  repeating annual cycle. We run 30 lunations and check that the
+  temperature change between successive cycles has fallen below
+  $5\times10^{-2}$\,K --- at that point the profile is converged.
+\end{description}
+
+\section{Step 4 --- Comparing model to data: the stability window}
+
+The Apollo thermometers ran from 1971 to 1977, but the record is
+not uniformly usable: there were instrument outages, a long
+post-emplacement transient while drilling heat dissipated, and
+power-conservation gaps (all visible in Fig.~1 of the Letter). For
+each sensor we therefore select a \emph{stability window}: a
+multi-lunation stretch where the long-term temperature drift is
+negligible, so the window-mean temperature is a clean estimate of
+the true equilibrium value $T_\mathrm{eq}$.
+
+We also exclude every sensor shallower than 80\,cm --- the
+\emph{borestem cut} (\S\ref{sec:borestem-diag}). The fibreglass
+tube the thermometers sit in conducts heat along its own length,
+short-circuiting the shallow regolith signal. The cut is decided
+\emph{before} looking at the model fit, from an independent
+diagnostic (the diurnal-amplitude profile), so it cannot bias the
+retrieval.
+
+\section{Step 5 --- The retrieval: finding the best $K_d$}
+
+Now the actual measurement. For each site we run the forward model
+many times, sweeping $K_d$ across a wide grid (1.5--15\,mW\,m$^{-1}$\,K$^{-1}$
+at A15, 3--25 at A17). For each $K_d$ we compute the
+root-mean-square error (RMSE) between the modelled deep-sensor
+temperatures and the observed $T_\mathrm{eq}$ values. Plotting RMSE
+against $K_d$ gives a curve with a clear minimum (Letter Fig.~5);
+the $K_d$ at that minimum is the retrieved value, $K_d^{*}$.
+
+\begin{key}[The headline result]
+The two sites need different conductivities:
+$K_d^{*}\approx4.86$\,mW\,m$^{-1}$\,K$^{-1}$ at Apollo~15 and
+$\approx11.23$ at Apollo~17 --- a factor of $\sim\!2.3$ apart.
+\end{key}
+
+\section{Step 6 --- How sure are we? Two uncertainty treatments}
+
+A best-fit number without an uncertainty is not a measurement.
+We attach uncertainty two complementary ways.
+
+\paragraph{The bootstrap.} We ask: \emph{how much would $K_d^{*}$
+move if we had happened to sample a slightly different set of
+sensors, sitting at slightly different depths?} We resample the
+deep-sensor set with replacement, jitter each depth by the
+documented $\pm2.5$\,cm placement uncertainty, and recompute
+$K_d^{*}$ --- 1500 times. The spread of those 1500 values is the
+bootstrap confidence interval (Letter Fig.~6). It answers ``how
+stable is the answer against the data we happened to collect?''
+
+\paragraph{The Bayesian posterior.} The basal flux $Q_b$ is itself
+uncertain. Because the steady-state temperature gradient depends
+only on the \emph{ratio} $Q_b/K_d$, a single borehole cannot
+separate the two --- the \emph{$K_d/Q_b$ degeneracy}
+(\S\ref{sec:posterior}). The Bayesian treatment confronts this
+head-on: it puts a prior on $Q_b$ from the published reanalyses and
+maps out the joint probability of every $(K_d, Q_b)$ pair using
+MCMC. The result is a posterior that is honestly wider than the
+bootstrap interval, because it now also carries the $Q_b$
+uncertainty.
+
+\begin{aside}[Why two methods and not one?]
+They answer different questions. The bootstrap treats $Q_b$ as a
+fixed input and reports the uncertainty from the data sample alone.
+The Bayesian posterior treats $Q_b$ as itself uncertain. Reporting
+both is honest: it shows the reader exactly which part of the
+uncertainty comes from the sensors and which from the basal-flux
+debate. Reassuringly, the \emph{inter-site contrast} survives in
+both treatments, because rescaling $Q_b$ moves both sites together
+and cannot erase the difference between them.
+\end{aside}
+
+\section{Step 7 --- Checking the answer against data it never saw}
+
+A fit can look good and still be wrong. We test the retrieved
+$K_d^{*}$ on three independent pieces of evidence it was not fitted
+to:
+
+\begin{enumerate}
+\item \textbf{Diviner surface closure} --- the model run at the
+  retrieved $K_d^{*}$ reproduces the orbital Diviner surface-
+  temperature curve (terminator timing, plateau, night floor).
+\item \textbf{Sensor-type cross-prediction} --- fit $K_d$ using only
+  one type of thermometer, predict the other type; the prediction
+  holds.
+\item \textbf{Leave-one-deepest-out} --- drop the deepest sensor,
+  refit, and check it predicts the held-out temperature.
+\end{enumerate}
+
+All three pass, which is what lets us trust the retrieval rather
+than just report it.
+
+\section{Where to go from here}
+
+You now have the whole arc. The remaining chapters supply the
+detail: Chapter~\ref{ch:moon} on lunar surface temperatures and the
+thermal skin depth; Chapter~\ref{ch:pde} on the heat equation and
+boundary conditions; Chapter~\ref{ch:hayne} on the
+\citet{hayne2017} parameterisation and the two landing sites;
+Chapter~\ref{ch:numerics} on the solver; Chapters~\ref{ch:validation}--\ref{ch:crosschecks}
+on the validation and cross-checks; and Chapter~\ref{ch:repro} on
+reproducing every number from the code.
 
 % =====================================================================
 \chapter{The Moon as a Thermal System}\label{ch:moon}
@@ -795,8 +1059,13 @@ K\,\partial_z T\big|_{z=0} \;=\; 0,
 where $A$ is the broadband Bond albedo (\Vas), $\varepsilon$ is the
 broadband emissivity ($\approx 0.95$, \citealt{bandfield2015}),
 $\sigma$ is the Stefan--Boltzmann constant, $T_s\equiv T(z=0,t)$ is
-the skin temperature, and $F_\odot(t)$ is the instantaneous TOA
-insolation given by (\ref{eq:insolation-rep}) below.
+the skin temperature, and $F_\odot(t)$ is the instantaneous solar
+irradiance incident on the surface, given by
+(\ref{eq:insolation-rep}) below. (On an airless body there is no
+atmosphere to attenuate sunlight, so the irradiance reaching the
+ground equals the irradiance at the top of the column --- there is
+no separate ``top-of-atmosphere'' value as there would be on
+Earth.)
 
 \paragraph{Bottom boundary --- imposed geothermal flux.}
 At $z=z_\mathrm{max}=\SI{5}{\meter}$ we impose a constant geothermal
@@ -1078,15 +1347,15 @@ the second contour encloses 68\% ("$2\sigma$"); the outer encloses
 95\%.
 \end{aside}
 
-\begin{aside}[MCMC and the role of \texttt{emcee}]
+\begin{aside}[MCMC: how we sample the posterior]
 Computing the posterior on a fine grid would require evaluating the
 likelihood at every $(K_d, Q_b)$ point, which is too expensive when
 the grid is large. \emph{Markov-Chain Monte Carlo} (MCMC) instead
 draws \emph{samples} from the posterior, with each sample more
 likely to land in high-probability regions than in low-probability
 regions. Many samples together approximate the full posterior shape.
-We use the affine-invariant ensemble sampler
-\texttt{emcee} \citep{foreman_mackey2013emcee}, which runs 32
+We use the affine-invariant ensemble sampler of
+\citet{foreman_mackey2013emcee}, which runs 32
 ``walkers'' in parallel and exchanges information between them. The
 walkers explore the parameter space for 4000 steps; the first 1000
 are discarded as ``burn-in'' (the walkers haven't yet found the
@@ -1141,8 +1410,8 @@ $Q_b\sim\mathcal{N}(\SI{13}{\milli\watt\per\meter\squared}, \SI{4}{\milli\watt\p
 within $[10^{-3},\,30\times 10^{-3}]$\,\si{\watt\per\meter\per\kelvin}.
 
 The posterior is sampled with the affine-invariant
-ensemble sampler \texttt{emcee}
-\citep{foreman_mackey2013emcee}: 32 walkers, 4000 steps, the first
+ensemble MCMC sampler of \citet{foreman_mackey2013emcee}: 32
+walkers, 4000 steps, the first
 1000 steps discarded as burn-in. Convergence is assessed by the
 integrated autocorrelation length, which is $\sim 50$\,steps per
 walker at both sites, giving $> 1000$ effectively-independent
@@ -1175,7 +1444,7 @@ $K_d/Q_b$ degeneracy ridge constrains both sites identically.
 \centering
 \includegraphics[width=\linewidth]{figures/fig_kd_qb_posterior.pdf}
 \caption{\textbf{SI Fig.~S11 --- Bayesian joint $(K_d, Q_b)$ posterior
-from \texttt{emcee} MCMC at the two Apollo sites.} Panels (a)--(b):
+from MCMC at the two Apollo sites.} Panels (a)--(b):
 joint posterior densities; the red star is the posterior median,
 white contours enclose the inner 5\%, 32\%, and 68\% probability
 regions, and the dotted grey lines are iso-ratio rays
@@ -1699,8 +1968,8 @@ same latitude and within $\pm 1^\circ$ of the site longitude.
 The model reproduces the Diviner diurnal shape --- terminator
 timing, plateau width, and night-time floor --- to high fidelity at
 both sites. The full-cycle RMSE between model and Diviner brightness
-temperature is $12.5$\,K at A15 and $17.5$\,K at A17, with a model
-warm-bias of $+5.0$ and $+9.1$\,K respectively
+temperature is $12.4$\,K at A15 and $17.5$\,K at A17, with a model
+warm-bias of $+4.9$ and $+9.1$\,K respectively
 (Fig.~\ref{fig:diviner-SI}, panels a--b). The day-side component of
 the residual is consistent with the well-documented anisothermal
 footprint effect \citep{bandfield2015,hayne2017}: the GCP grid pixel
