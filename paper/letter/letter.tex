@@ -604,6 +604,18 @@ $\le 0.03$\,K at both sites, indicating that $K_d$ is the principal
 identified lever between the \Hayne\ form and the in-situ HFE
 record once the borestem zone is excluded.
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig5_kd_sweep.pdf}
+\caption{\textbf{Per-site $K_d$ retrieval under the \Hayne\ functional
+form.} Deep-sensor RMSE vs $K_d$, with the other \Hayne\ parameters held
+at their published values. Filled markers: swept grid; solid curve:
+parabolic refinement near the minimum; shaded band: bootstrap 95\% CI.
+Dashed vertical: \citet{hayne2017} global $K_d=3.4$; dotted:
+\citet{martinez2021} $K_d=6.3$.}
+\label{fig:kdsweep}
+\end{figure}
+
 The inter-site contrast (bootstrap-median of $K_{d,\mathrm{A17}}^{*}-K_{d,\mathrm{A15}}^{*}$) is
 $\Delta K_d^{*} = 6.63^{+7.43}_{-1.25}\,\si{\milli\watt\per\meter\per\kelvin}$
 ($1\sigma$, asymmetric) with a 95\% bootstrap confidence interval
@@ -624,6 +636,19 @@ Table~\ref{tab:errorbudget}. Both retrievals reject the
 global value
 $K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
 \citet{hayne2017} at the 95\% level.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_bootstrap.pdf}
+\caption{\textbf{Bootstrap distributions
+($N_\mathrm{boot}=1500$, deep-sensor resampling with $\pm 2.5$\,cm
+depth jitter).} (a)~Per-site $K_d^{*}$ histograms with 95\% CIs in the
+legend; dashed vertical at the \citet{hayne2017} global value. (b)~
+Inter-site contrast $\Delta K_d^{*}\!=\!K_d^{\rm A17}\!-\!K_d^{\rm A15}$;
+95\% CI shaded, lower bound just touching zero
+($p\!\approx\!0.05$).}
+\label{fig:bootstrap}
+\end{figure}
 
 \begin{table}[!htbp]
 \centering
@@ -707,31 +732,6 @@ identically.
 We discuss the implications of these uncertainties and the
 $K_d/Q_b$ degeneracy of single-borehole inversions in
 \S\ref{sec:disc-kd}.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig5_kd_sweep.pdf}
-\caption{\textbf{Per-site $K_d$ retrieval under the \Hayne\ functional
-form.} Deep-sensor RMSE vs $K_d$, with the other \Hayne\ parameters held
-at their published values. Filled markers: swept grid; solid curve:
-parabolic refinement near the minimum; shaded band: bootstrap 95\% CI.
-Dashed vertical: \citet{hayne2017} global $K_d=3.4$; dotted:
-\citet{martinez2021} $K_d=6.3$.}
-\label{fig:kdsweep}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_bootstrap.pdf}
-\caption{\textbf{Bootstrap distributions
-($N_\mathrm{boot}=1500$, deep-sensor resampling with $\pm 2.5$\,cm
-depth jitter).} (a)~Per-site $K_d^{*}$ histograms with 95\% CIs in the
-legend; dashed vertical at the \citet{hayne2017} global value. (b)~
-Inter-site contrast $\Delta K_d^{*}\!=\!K_d^{\rm A17}\!-\!K_d^{\rm A15}$;
-95\% CI shaded, lower bound just touching zero
-($p\!\approx\!0.05$).}
-\label{fig:bootstrap}
-\end{figure}
 
 \begin{figure}[!htbp]
 \centering
