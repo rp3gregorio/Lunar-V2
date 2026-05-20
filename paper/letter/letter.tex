@@ -239,22 +239,24 @@ fitted long-term drift $d\langle T\rangle/dt$ reported per sensor.
 \centering
 \includegraphics[width=\linewidth]{figures/fig_apollo_timeline.pdf}
 \caption{\textbf{Per-probe stability-window timeline at Apollo~15 and~17.}
-Raw HFE temperature traces (top sub-panel per probe) with documented
-disturbance intervals shown as translucent coral bands annotated by
-the physical event they correspond to: \emph{drilling /
-emplacement transient} (residual heat released into the regolith over
-the first $\sim\!60$ days as the borestem and probe came into thermal
-equilibrium with the surrounding regolith;
-\citealt{langseth1976,nagihara2018});
-\emph{probe-1 heater experiment} at A15 (an axial calibration heater
-pulsed in the gradient-bridge ring); \emph{power-system anomaly} at
-A15 (TG-bridge data drop-out coincident with a reference-resistor
-switch); \emph{tape-recorder glitch} at A17 (digitizer drop-outs in
-the restored \citealt{nagihara2018} record); and a brief A17
-\emph{cable disturbance} (Probe-2 cable fault). The bands are kept
-deliberately faint so the underlying traces remain readable; the
-selected stability windows are outlined and labelled with their
-OLS-fit long-term drift in $\si{\milli\kelvin}\,\si{\per\day}$.
+Raw HFE temperature traces (top sub-panel per probe) with the regions
+where no data were collected --- verified directly against the per-sensor
+$t$ arrays of the restored \citet{nagihara2018} record --- shown as
+translucent coral bands annotated with the physical cause.
+The \emph{drilling / emplacement transient} (first $\sim\!60$\,d at A15,
+$\sim\!71$\,d at A17) is the residual heat released by the borestem and
+probe coming into thermal equilibrium with the regolith
+\citep{langseth1976,nagihara2018}; this interval contains samples but is
+excluded \emph{a priori} because the signal is not at radiative
+equilibrium. The remaining bands mark actual data gaps caused by ALSEP
+power-conservation periods (A15 day 193--228, A17 days 444--461 and
+610--637) and major instrument outages: A15 day 1108--1171 ($\sim\!63$\,d)
+and 1246--1340 ($\sim\!95$\,d, end of mission); A17 day 715--840
+($\sim\!125$\,d), a Probe-2 dropout at 930--1174 ($\sim\!244$\,d), and
+the end-of-mission Probe-2 dropout at 1342--1595 ($\sim\!253$\,d). The
+bands are kept deliberately faint so the underlying traces remain
+readable; the selected stability windows are outlined and labelled with
+their OLS-fit long-term drift in $\si{\milli\kelvin}\,\si{\per\day}$.
 Lower sub-panel per probe: per-sensor stability-window Gantt strip
 colour-coded by sensor depth (sequential teal--coral scale on the
 shared colour bar). Sensor rows are ordered by depth (shallowest at
