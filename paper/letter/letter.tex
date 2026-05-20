@@ -239,35 +239,19 @@ fitted long-term drift $d\langle T\rangle/dt$ reported per sensor.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_apollo_timeline.pdf}
-\caption{\textbf{Per-probe stability-window timeline at Apollo~15 and~17.}
-Raw HFE temperature traces (top sub-panel per probe) with the regions
-where no data were collected --- verified directly against the per-sensor
-$t$ arrays of the restored \citet{nagihara2018} record --- shown as
-translucent coral bands annotated with the physical cause.
-The \emph{drilling / emplacement transient} (first $\sim\!60$\,d at A15,
-$\sim\!71$\,d at A17) is the residual heat released by the borestem and
-probe coming into thermal equilibrium with the regolith
-\citep{langseth1976,nagihara2018}; this interval contains samples but is
-excluded \emph{a priori} because the signal is not at radiative
-equilibrium. The remaining bands mark actual data gaps caused by ALSEP
-power-conservation periods (A15 day 193--228, A17 days 444--461 and
-610--637) and major instrument outages: A15 day 1108--1171 ($\sim\!63$\,d)
-and 1246--1340 ($\sim\!95$\,d, end of mission); A17 day 715--840
-($\sim\!125$\,d), a Probe-2 dropout at 930--1174 ($\sim\!244$\,d), and
-the end-of-mission Probe-2 dropout at 1342--1595 ($\sim\!253$\,d). The
-bands are kept deliberately faint so the underlying traces remain
-readable; the selected stability windows are outlined and labelled with
-their OLS-fit long-term drift in $\si{\milli\kelvin}\,\si{\per\day}$.
-Lower sub-panel per probe: per-sensor stability-window Gantt strip
-colour-coded by sensor depth (sequential teal--coral scale on the
-shared colour bar). Each bar is broken wherever a documented outage
-falls inside the sensor's nominal window, so that the visible coloured
-segments span only those days that actually contributed to the
-window-mean $T_\mathrm{eq}$ (the pale beige background shows the
-full record for context). Sensor rows are ordered by depth (shallowest
-at top); the window-mean equilibrium temperatures listed at right edge
-are the $T_\mathrm{eq}$ values used in the deep-sensor RMSE
-(eq.~\ref{eq:rmse-kd}).}
+\caption{\textbf{Per-probe stability-window timeline at Apollo~15
+and~17 (4 probes, 4 panels).} Top sub-panel per probe: raw HFE traces
+with translucent coral bands marking the documented data-quality
+events (drilling/emplacement transient; ALSEP power-conservation
+gaps; major and end-of-mission outages; verified against the
+per-sensor $t$ arrays of \citealt{nagihara2018}). Stability windows
+selected for the retrieval are outlined and labelled with the OLS-fit
+drift on the deepest sensor in $\si{\milli\kelvin}\,\si{\per\day}$.
+Bottom sub-panel per probe: per-sensor Gantt strip colour-coded by
+depth; each bar is broken at outages so the coloured segments span
+only days that contributed to $T_\mathrm{eq}$ (pale beige background:
+full record). Window-mean $T_\mathrm{eq}$ values at right edge are
+the inputs to the deep-sensor RMSE (eq.~\ref{eq:rmse-kd}).}
 \label{fig:timeline}
 \end{figure}
 
@@ -724,65 +708,42 @@ We discuss the implications of these uncertainties and the
 $K_d/Q_b$ degeneracy of single-borehole inversions in
 \S\ref{sec:disc-kd}.
 
-\begin{figure}[!htbp]
+\begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/fig5_kd_sweep.pdf}
-\caption{\textbf{Per-site $K_d$ retrieval under the \Hayne\
-functional form.} Deep-sensor RMSE (eq.~\ref{eq:rmse-kd}) as a
-function of $K_d$, with $K_s$, $H$, $\chi$, $T_\mathrm{ref}$,
-$\rho(z)$ and $c_p(T)$ all held at their published values. Filled
-markers are the swept grid; the solid curve is the parabolic
-refinement through the three values bracketing the minimum; and the
-shaded band is the bootstrap 95\% confidence envelope. The vertical
-dashed line marks the published \citet{hayne2017} value
-(\SI{3.4}{\milli\watt\per\meter\per\kelvin}); the dotted line marks the
-\citet{martinez2021} 3-layer deep value
-(\SI{6.3}{\milli\watt\per\meter\per\kelvin}). The two landing-site
-optima differ by approximately
-$6.6\,\si{\milli\watt\per\meter\per\kelvin}$, with the inter-site
-contrast significant at $p\approx 0.05$ (Fig.~\ref{fig:bootstrap}).}
+\caption{\textbf{Per-site $K_d$ retrieval under the \Hayne\ functional
+form.} Deep-sensor RMSE vs $K_d$, with the other \Hayne\ parameters held
+at their published values. Filled markers: swept grid; solid curve:
+parabolic refinement near the minimum; shaded band: bootstrap 95\% CI.
+Dashed vertical: \citet{hayne2017} global $K_d=3.4$; dotted:
+\citet{martinez2021} $K_d=6.3$.}
 \label{fig:kdsweep}
-\end{figure}
+\vspace{0.8em}
 
-\begin{figure}[!htbp]
-\centering
+\refstepcounter{figure}\label{fig:bootstrap}
 \includegraphics[width=\linewidth]{figures/fig_bootstrap.pdf}
-\caption{\textbf{Non-parametric bootstrap distributions for the
-per-site $K_d^{*}$ retrievals and their inter-site contrast.}
-(a)~Bootstrap histograms of $K_d^{*}$ from $N_\mathrm{boot}=1500$
-resamples of the deep-sensor set at each site (with replacement and
-with the published $\pm 2.5$\,cm sensor-placement uncertainty
-propagated as a Gaussian depth jitter per resample). The 95\% confidence intervals are listed in the
-legend. The vertical dashed line marks the published global value
-$K_d=3.4\,\si{\milli\watt\per\meter\per\kelvin}$.
-(b)~Distribution of the inter-site contrast $\Delta K_d^{*}=
-K_{d,\mathrm{A17}}^{*}-K_{d,\mathrm{A15}}^{*}$, with the 95\%
-bootstrap CI shaded. The CI lower bound just touches zero,
-giving $p\approx 0.05$ for the null of inter-site equality.}
-\label{fig:bootstrap}
+\caption*{\textbf{Figure \thefigure.} \textbf{Bootstrap distributions
+($N_\mathrm{boot}=1500$, deep-sensor resampling with $\pm 2.5$\,cm
+depth jitter).} (a)~Per-site $K_d^{*}$ histograms with 95\% CIs in the
+legend; dashed vertical at the \citet{hayne2017} global value. (b)~
+Inter-site contrast $\Delta K_d^{*}\!=\!K_d^{\rm A17}\!-\!K_d^{\rm A15}$;
+95\% CI shaded, lower bound just touching zero
+($p\!\approx\!0.05$).}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_robustness.pdf}
 \caption{\textbf{Robustness of the per-site $K_d^{*}$ contrast.}
-(a)~Inter-site contrast $\Delta K_d^{*}$ as a function of
-independent per-site rescaling factors $\alpha_{15}, \alpha_{17}$ on
-the published basal heat fluxes; the white diagonal marks global
-rescaling, under which the contrast is exactly invariant. Dashed
-contours give the bootstrap-normalised significance ($\sigma$). The
-black circle marks the nominal $Q_b$ at both sites and the green
-square marks the \citet{saito2007,nagihara2018} reanalysis at
-A15. The contrast remains significant at $\geq\!4\sigma$ across the
-full $\pm 30\%$ reanalysis envelope. (b)--(c)~Two-parameter joint
-fit of $K_d$ and the e-folding depth $H$ at each site; white
-contours are at the labelled RMSE values above the joint minimum.
-The red star marks the joint minimum; the teal circle marks the
-1-parameter $K_d^{*}$ retrieval at the canonical
-$H=\SI{6}{\centi\meter}$. The two minima coincide to within the
-0.5\,K RMSE contour, indicating that $K_d$ is the dominant
-identified lever and that the retrieval is not a degenerate
-trade-off with $H$.}
+(a)~Contrast $\Delta K_d^{*}$ as a function of per-site $Q_b$ rescaling
+factors $\alpha_{15},\alpha_{17}$. White diagonal: global rescaling
+(contrast invariant). Dashed contours: bootstrap-$\sigma$ significance.
+Black circle: nominal $Q_b$; green square: \citet{saito2007} A15
+reanalysis. (b),(c)~Joint $(K_d, H)$ RMSE surface at each site; red
+star is joint minimum, teal circle is the 1-parameter retrieval at
+$H=\SI{6}{\centi\meter}$. The two coincide within the
+$\SI{0.5}{\kelvin}$ contour: $H$ is poorly identified, $K_d$
+dominates.}
 \label{fig:robustness}
 \end{figure}
 
@@ -906,68 +867,38 @@ establish a global pattern, but they do show that the
 single-number assumption is inconsistent with both in-situ records
 simultaneously.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
-\caption{\textbf{Implication for polar volatile cold-trap depth.}
-\textbf{(a)}~Indicative cold-trap depth $z_\mathrm{stable}$ (left axis,
-metres) at which buried water ice is thermally stable on geological
-timescales (a \citealt{schorghofer2005}-style estimate at fixed polar
-surface temperature $T_\mathrm{surf}\!=\!\SI{80}{\kelvin}$ and basal heat
-flux $Q_b\!=\!\SI{12}{\milli\watt\per\meter\squared}$), as a function of
-$K_d$. The curve is obtained by forward-integrating $dT/dz=Q_b/K(T,z)$
-through the full \citet{hayne2017} regolith conductivity profile
-(depth-dependent $K(z)$ with $H\!=\!\SI{6}{\centi\meter}$ plus the
-radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$) until $T$ reaches
-the ice-stability threshold $T_\mathrm{stable}\!=\!\SI{110}{\kelvin}$.
-The twinned right axis recasts the same depth as the column-integrated
-heat-flow drop $\Delta T = Q_b\,z_\mathrm{stable}$ (mK), the physical
-quantity that the column actually buys you against the
-$T_\mathrm{stable}\!-\!T_\mathrm{surf}\!=\!\SI{30}{\kelvin}$ surface-to-stable
-temperature jump. \textbf{(b)}~Dimensionless ratio
-$\eta(K_d)\!=\!z_\mathrm{stable}(K_d)/[(T_\mathrm{stable}-T_\mathrm{surf})\,K_d/Q_b]$,
-the cold-trap depth normalised by its analytic deep-limit prediction
-(constant-$K$ Fourier formula, dashed line at $\eta=1$). $\eta$ sits
-at $\sim\!1.04$--$1.05$ over the swept range, quantifying the small
-($\sim\!4$--$5\%$) extra thermal resistance contributed by the
-shallow $K_s$ layer and the radiative term, neither of which is
-captured by the constant-$K$ approximation. The near-flatness of
-$\eta(K_d)$ confirms empirically the $z\!\propto\!K_d^{1.00}$
-scaling. The factor-of-$\sim\!3$ change in $K_d$ between the global
-\citet{hayne2017} value and the A17 retrieval translates into a
-factor-of-$\sim\!3$ change in $z_\mathrm{stable}$.}
-\label{fig:cold-trap}
-\end{figure}
-
 \paragraph{Same model, opposite residuals at the two sites.}
 With the per-site $K_d^{*}$, the Hayne profile reproduces the deep
-gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}). With
-the single \citet{martinez2021} value
-$K_d^{\mathrm{disc}}=6.3\,\si{\milli\watt\per\meter\per\kelvin}$, the
-predicted gradient is too shallow at A15 (over-shoots the observed
-deep temperatures by $\sim\!0.8\,\si{\kelvin}$) and too steep at A17
-(under-shoots by $\sim\!1.6\,\si{\kelvin}$). These opposite-signed
-residuals are the direct visual signature of the inter-site contrast:
-no single global $K_d$ satisfies both records at once.
+gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}); the
+single \citet{martinez2021} value
+$K_d^{\mathrm{disc}}=6.3\,\si{\milli\watt\per\meter\per\kelvin}$
+over-shoots A15 by $\sim\!0.8\,\si{\kelvin}$ and under-shoots A17 by
+$\sim\!1.6\,\si{\kelvin}$ --- opposite-signed residuals that no
+single global $K_d$ can eliminate simultaneously.
 
-\begin{figure}[!htbp]
+\begin{figure}[p]
 \centering
+\includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
+\caption{\textbf{Polar cold-trap depth vs.\ $K_d$ (Schorghofer-2005-style
+estimate at $T_\mathrm{surf}=80\,\si{\kelvin}$,
+$Q_b=12\,\si{\milli\watt\per\meter\squared}$).} (a) $z_\mathrm{stable}$
+from forward-integrating $dT/dz=Q_b/K(T,z)$ through the Hayne profile
+until $T=T_\mathrm{stable}=110\,\si{\kelvin}$; right axis recasts the
+same depth as the column heat-flow drop $\Delta T=Q_b\,z$. (b)~Ratio
+$\eta=z_\mathrm{stable}/[(\Delta T)\,K_d/Q_b]$ relative to the
+constant-$K$ Fourier limit; $\eta\!\approx\!1.04$--$1.05$ quantifies
+the shallow-$K_s$ + radiative-term correction.}
+\label{fig:cold-trap}
+\vspace{0.8em}
+
+\refstepcounter{figure}\label{fig:thermal-profiles}
 \includegraphics[width=\linewidth]{figures/fig_thermal_profiles.pdf}
-\caption{\textbf{Annual-mean subsurface temperature profiles: Hayne
-retrieved $K_d^{*}$ vs.\ Mart\'inez \& Siegler (2021) published $K_d$,
-at both sites.} Solid teal: \Hayne\ model run with the per-site
-retrieved conductivity
-($K_{d,\mathrm{A15}}^{*}=4.86$, $K_{d,\mathrm{A17}}^{*}=11.23$\,mW\,m$^{-1}$\,K$^{-1}$).
-Dashed red: M\&S 2021 3-layer profile with its published
-$K_d^{\mathrm{disc}}=6.3$\,mW\,m$^{-1}$\,K$^{-1}$ (fixed at both
-sites). Coloured markers are HFE stability-window means for sensors
-below 80\,cm (deep, used in retrieval); grey markers are the
-borestem-affected shallow sensors (excluded). The Hayne retrieval
-reproduces the deep gradient to near-zero bias at both sites
-(Table~\ref{tab:rmse}); the M\&S profile sits between the two
-retrieved Hayne values and therefore over-predicts the warm A15
-gradient and under-predicts the warm A17 gradient.}
-\label{fig:thermal-profiles}
+\caption*{\textbf{Figure \thefigure.} \textbf{Annual-mean $T(z)$:
+Hayne with per-site $K_d^{*}$ vs.\ \citet{martinez2021} fixed
+$K_d^{\mathrm{disc}}=6.3$.} Solid teal: \Hayne\ at retrieved $K_d^{*}$.
+Dashed red: M\&S 2021. Coloured markers: HFE deep sensors (used in
+retrieval); grey markers: borestem-affected shallow sensors
+(excluded).}
 \end{figure}
 
 % =====================================================================

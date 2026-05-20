@@ -895,10 +895,12 @@ def fig_thermal_profiles(d, out_path):
 
     # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
     # Legend goes ABOVE the plots (top of figure) so it can never overlap axes.
-    fig = plt.figure(figsize=(JGR_FULL, 9.0))
+    # Compact figsize 7.48 x 6.8 in so the figure fits with Fig 10 on the
+    # same page (was 9.0 in tall, which forced it onto a separate page).
+    fig = plt.figure(figsize=(JGR_FULL, 6.8))
     gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
                            hspace=0.10, wspace=0.32,
-                           left=0.10, right=0.97, top=0.84, bottom=0.07)
+                           left=0.10, right=0.97, top=0.84, bottom=0.10)
     axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
     axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 
