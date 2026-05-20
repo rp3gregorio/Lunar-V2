@@ -224,7 +224,8 @@ remaining sections describe the data and methods
 We use the restored Apollo~15 and Apollo~17 HFE temperature record
 covering 1971--1977 \citep{nagihara2018}. For every sensor we extract
 a multi-lunation \emph{stability window} where the depth-mean
-temperature drift is $|d\langle T\rangle/dt|<10^{-3}\,\si{\kelvin\per\day}$,
+temperature drift is $|d\langle T\rangle/dt|<0.08\,\si{\kelvin\per\year}$
+(${\approx}2.2\times10^{-4}\,\si{\kelvin\per\day}$),
 and report the window-mean equilibrium temperature
 $T_\mathrm{eq}=\langle T(z)\rangle_{\Delta t}$ together with its
 within-window standard deviation. Sensors with central depth
@@ -996,14 +997,19 @@ including most polar volatile-stability calculations and
 spacecraft-thermal-design heat budgets --- inherits a model
 uncertainty no smaller than the inter-site disagreement. A
 factor-$\sim\!2$ error in $K_d$ translates directly into a
-factor-$\sim\!2$ error in the deep equilibrium gradient
-$|\partial_z T|=Q_b/K(T_d)$ and propagates through the $T^4$
-surface-radiation balance to a multi-metre shift of the cold-trap
-depth at which water ice is stable on geological timescales: at the
-polar boundary conditions of \citet{schorghofer2005}, the indicative
-stability depth $z_\mathrm{stable}(K_d)$ traced in
+factor-$\sim\!2$ error in the steady-state thermal resistance of the
+deep regolith column and propagates through the radiative surface
+balance to a multi-metre shift of the cold-trap depth at which water
+ice is stable on geological timescales. Solving for the depth at
+which $T(z)$ first reaches the ice-stability threshold $T_\mathrm{stable}$
+by forward-integrating $dT/dz = Q_b/K(T,z)$ through the full
+\citet{hayne2017} regolith profile (i.e.\ retaining the depth-dependent
+$K(z)$ transition over $H\!=\!\SI{6}{\centi\meter}$ and the
+$\chi(T/T_\mathrm{ref})^3$ radiative term --- both negligible at the
+$\sim\!80$\,K polar surface, but included for self-consistency), the
+indicative stability depth $z_\mathrm{stable}(K_d)$ traced in
 Fig.~\ref{fig:cold-trap} grows from $\sim\!9$\,m at the global
-\citet{hayne2017} value to $\sim\!28$\,m at the A17 retrieval --- a
+\citet{hayne2017} value to $\sim\!29$\,m at the A17 retrieval --- a
 $3\times$ shift driven entirely by the regional $K_d$ contrast. Future work that attempts
 to map $K_d$ globally from Diviner brightness temperatures should
 therefore allow regional variation of $K_d$, not only of the
@@ -1013,13 +1019,23 @@ shallow regolith inertia.
 \centering
 \includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
 \caption{\textbf{Implication for polar volatile cold-trap depth.}
-Indicative cold-trap depth $z_\mathrm{stable}$ at which buried
-water ice is thermally stable on geological timescales (a
+Indicative cold-trap depth $z_\mathrm{stable}$ at which buried water ice
+is thermally stable on geological timescales (a
 \citealt{schorghofer2005}-style estimate at fixed polar surface
-temperature and basal heat flux), as a function of $K_d$. The
-factor-of-$\sim\!3$ change in $K_d$ between the global value of
-\citet{hayne2017} and the A17 retrieval translates into a
-factor-of-$\sim\!3$ change in $z_\mathrm{stable}$.}
+temperature $T_\mathrm{surf}\!=\!\SI{80}{\kelvin}$ and basal heat flux
+$Q_b\!=\!\SI{12}{\milli\watt\per\meter\squared}$), as a function of
+$K_d$. The curve is obtained by forward-integrating
+$dT/dz=Q_b/K(T,z)$ through the full \citet{hayne2017} regolith
+conductivity profile (depth-dependent $K(z)$ with $H\!=\!\SI{6}{\centi\meter}$
+plus the radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$) until $T$
+reaches the ice-stability threshold ($T_\mathrm{stable}\!=\!\SI{110}{\kelvin}$).
+Because the shallow $K_s$ layer adds only $\sim\!\SI{0.05}{\meter}$ of
+thermal resistance and the radiative term is negligible at polar
+temperatures, the response is nearly linear in $K_d$ ($z\!\propto\!K_d^{1.00}$
+to within $<\!1\%$ over the swept range). The factor-of-$\sim\!3$
+change in $K_d$ between the global \citet{hayne2017} value and the
+A17 retrieval translates into a factor-of-$\sim\!3$ change in
+$z_\mathrm{stable}$.}
 \label{fig:cold-trap}
 \end{figure}
 

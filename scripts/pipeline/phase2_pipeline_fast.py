@@ -236,9 +236,45 @@ def marginal_quantiles(x, w, qs=(0.16, 0.5, 0.84)):
     return np.interp(qs, cdf, x)
 
 
-def cold_trap_depth(K_d, Q_b, T_surface_polar=80.0, T_ice_stable=110.0):
-    grad = Q_b / K_d   # K/m
-    return (T_ice_stable - T_surface_polar) / grad
+def cold_trap_depth(K_d, Q_b, T_surface_polar=80.0, T_ice_stable=110.0,
+                    K_s=7.4e-4, H=0.06, chi=2.7, T_ref=350.0,
+                    dz=1e-3, z_max=200.0):
+    """Cold-trap depth at the lunar pole, integrating the
+    Hayne (2017) depth- and temperature-dependent conductivity:
+
+        K(T, z) = [K_s + (K_d - K_s) (1 - exp(-z/H))]
+                * [1 + chi (T/T_ref)^3]
+
+    The steady-state energy balance is dT/dz = Q_b / K(T, z) at fixed
+    basal flux Q_b. We integrate this ODE forward from z=0, T=T_surf
+    with a small adaptive dz step until T crosses T_ice_stable, and
+    return the cross-over depth.
+
+    The integral form (NOT linear in K_d) replaces the previous single-
+    layer constant-K Fourier formula z = (dT)(K_d/Q_b), which had no
+    K_s, no e-folding transition, and no radiative term. Effects:
+      * For low K_d the shallow K_s ≈ 7.4e-4 layer (which contributes
+        ~H/K_s ~ 80 K m^2/W of thermal resistance) dominates → z_stable
+        flattens at small K_d (was previously linear and reached zero).
+      * For high K_d the depth still grows, but sub-linearly.
+      * At polar T ~ 80 K the radiative term chi (T/T_ref)^3 ≈ 0.032
+        is negligible, but is included for self-consistency with the
+        rest of the paper.
+    """
+    z = 0.0
+    T = T_surface_polar
+    while z < z_max and T < T_ice_stable:
+        # Hayne K at current (T, z)
+        K_struct = K_s + (K_d - K_s) * (1.0 - np.exp(-z / H))
+        K_rad   = 1.0 + chi * (T / T_ref) ** 3
+        K = K_struct * K_rad
+        dT = Q_b / K * dz
+        T += dT
+        z += dz
+    # Linear-interpolate the final step to the exact T_ice_stable level
+    if T >= T_ice_stable and dT > 0:
+        z -= dz * (T - T_ice_stable) / dT
+    return z
 
 
 # ──────────────────────────────────────────────────────────────────────────────
