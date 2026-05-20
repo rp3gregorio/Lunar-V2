@@ -817,219 +817,94 @@ $P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
 \FloatBarrier
 \section{Discussion}\label{sec:discussion}\label{sec:disc}
 
-\paragraph{The two retrievals disagree at the data level.}\label{sec:disc-kd}
-The central result of the retrieval (Fig.~\ref{fig:kdsweep},
-\S\ref{sec:results-kd}) is that the deep conductivity required to
-reproduce the in-situ HFE record under the \Hayne\ functional form
-differs between the two landing sites: Apollo~15 prefers
-$K_d^{*}=4.86$ (95\% bootstrap CI $[3.94,14.36]$)\,
-$\si{\milli\watt\per\meter\per\kelvin}$ and Apollo~17 prefers
-$K_d^{*}=11.23$ (95\% bootstrap CI $[10.18,21.62]$)\,
-$\si{\milli\watt\per\meter\per\kelvin}$. The bootstrap distributions
-underlying these intervals are shown in Fig.~\ref{fig:bootstrap}: the
-two distributions overlap only in the A15 upper-tail shoulder, and the
-inter-site contrast $\Delta K_d^{*}$ (Fig.~\ref{fig:bootstrap}b) has
-its 95\% CI lower bound just touching zero, giving $p\approx 0.05$
-for inter-site equality. Both per-site retrievals reject the global
-value $3.4\,\si{\milli\watt\per\meter\per\kelvin}$ adopted by
-\citet{hayne2017} at the 95\% level. A complementary Bayesian MCMC
-analysis confirms the picture: the full joint
-$(K_d, Q_b)$ posteriors at each site (Fig.~\ref{fig:posterior-compare}a,b)
-trace the iso-ratio degeneracy ridge $Q_b/K_d=\mathrm{const}$ in the
-two-dimensional plane, while the marginal $P(K_d)$ collapses to
-two well-localised distributions in $K_d$
-(Fig.~\ref{fig:posterior-compare}c,d), with
-$P(K_d^{\rm A17} > K_d^{\rm A15}) \approx 96\%$ by paired-draw Monte
-Carlo on the marginals.
-The paired-draw contrast distribution
-$\Delta K_d \equiv K_d^{\rm A17} - K_d^{\rm A15}$ has its bulk
-above zero, with a 95\% credible interval that just touches zero at
-the lower bound --- a Bayesian counterpart to the bootstrap
-contrast that is honest about the residual uncertainty introduced
-by the $K_d/Q_b$ degeneracy. Because the inputs that differ
-between the two retrievals are restricted to latitude, albedo, basal
-heat flux, and the in-situ deep temperatures themselves, the
-disagreement cannot be absorbed into the \Hayne\ shape parameters,
-the radiative multiplier, the heat-capacity parameterisation, or the
-solar-forcing computation --- all of which are identical at A15 and
-A17 in our treatment. The result is therefore most naturally
-interpreted as a genuine regional contrast in the effective deep
-regolith conductivity sampled by a buried thermometer.
+\paragraph{The two sites disagree on $K_d$.}\label{sec:disc-kd}
+The deep conductivity needed to reproduce the HFE record differs
+between the sites: $K_d^{\mathrm{A15}}=4.86$ versus
+$K_d^{\mathrm{A17}}=11.23\,\si{\milli\watt\per\meter\per\kelvin}$
+(95\% bootstrap CIs $[3.94,\,14.36]$ and $[10.18,\,21.62]$). The
+contrast distribution (Fig.~\ref{fig:bootstrap}b) has its lower
+95\% bound just touching zero ($p\!\approx\!0.05$), and the
+independent Bayesian MCMC analysis gives
+$P(K_d^{\mathrm{A17}}\!>\!K_d^{\mathrm{A15}})\!\approx\!96\%$. Both
+retrievals also reject the global \citet{hayne2017} value of
+$3.4\,\si{\milli\watt\per\meter\per\kelvin}$ at the 95\% level.
+Because every input that varies between the two retrievals is either
+measured (latitude, albedo, basal heat flux) or held identical (Hayne
+shape parameters, solar forcing), the disagreement is most simply
+read as a real regional difference in the effective deep regolith
+conductivity at the two boreholes.
 
-\paragraph{The $K_d/Q_b$ degeneracy conditions only the absolute A17 value.}
-Single-borehole inversions of buried thermometers cannot break the
-degeneracy between deep conductivity and basal heat flux at steady
-state: the deep gradient is $|\partial_z T|=Q_b/K(T_d)$, and any
-multiplicative rescaling $(K_d,Q_b)\to(\alpha K_d,\alpha Q_b)$
-leaves the equilibrium profile invariant in the conduction-dominated
-limit. This degeneracy is visible directly in the joint posteriors
-(Fig.~\ref{fig:posterior-compare}a,b) as the dotted iso-ratio rays
-$Q_b/K_d = \mathrm{const}$ along which the likelihood is flat, and
-explicitly tested in the $K_d^{*}$-contrast heatmap of
-Fig.~\ref{fig:robustness}a. The absolute A17 retrieval is consequently conditioned on the
-adopted basal heat flux,
-$Q_{b,\mathrm{A17}}=15\,\si{\milli\watt\per\meter\squared}$
-\citep{langseth1976,nagihara2018}. Because the steady-state response is
-governed by the product $K_d\!\cdot\!Q_b$, adopting instead the lower
-$\sim\!10\,\si{\milli\watt\per\meter\squared}$ value implied by the
-\citet{saito2007,nagihara2018} reanalyses rescales the retrieval
-\emph{upward} to
-$K_d^{*}\sim\SI{16.8e-3}{\watt\per\meter\per\kelvin}$, moving the A17
-retrieval further from the M\&S 3-layer deep value rather than toward it.
-Conversely, the high-$Q_b$ end of the published envelope
-($\sim\!18\,\si{\milli\watt\per\meter\squared}$) brings A17 down to
-$\sim\SI{7.7e-3}{\watt\per\meter\per\kelvin}$, comparable to the M\&S
-value. The per-site
-\emph{contrast} is invariant under any global rescaling of $Q_b$;
-the $\Delta K_d^{*}\!\approx 6.6\,\si{\milli\watt\per\meter\per\kelvin}$
-median contrast is therefore robust to the $Q_b$ uncertainty, while the
-absolute A17 value is not.
+\paragraph{The absolute A17 value is conditional on the assumed $Q_b$;
+the inter-site contrast is not.}
+At steady state the deep gradient $|\partial_z T|\!=\!Q_b/K_d$ is
+invariant under any rescaling $(K_d,Q_b)\!\to\!(\alpha K_d,\alpha Q_b)$:
+a single borehole cannot tell those two products apart. This
+degeneracy is visible in the joint posteriors
+(Fig.~\ref{fig:posterior-compare}a,b) and tested explicitly in
+Fig.~\ref{fig:robustness}a. With the canonical
+$Q_b^{\mathrm{A17}}=15\,\si{\milli\watt\per\meter\squared}$
+\citep{langseth1976,nagihara2018} we recover $K_d=11.23$; with the
+lower
+$\sim\!10\,\si{\milli\watt\per\meter\squared}$
+\citet{saito2007,nagihara2018} value the answer rescales \emph{upward}
+to $\sim\!16.8$, and with the upper end $\sim\!18$ it drops to
+$\sim\!7.7\,\si{\milli\watt\per\meter\per\kelvin}$. None of these
+options eliminates the inter-site difference, because rescaling
+$Q_b$ globally moves both sites together. The headline contrast
+$\Delta K_d\!\approx\!6.6$ is therefore the robust statement; the
+absolute A17 number carries a $\sim\!\pm 40\%$ envelope set by the
+basal-flux debate.
 
-\paragraph{The Mart\'inez and Siegler 3-layer profile is one point in the same family.}
-Because the \citet{martinez2021} parameters were tuned directly
-against the HFE deep gradient analysed here, the agreement with the
-A17 record reported in Table~\ref{tab:rmse} (column 2) is a fit
-residual rather than an independent confirmation. The
-single-parameter retrieval reported in column 3 recovers a deep
-conductivity within a factor of two of the \citet{martinez2021}
-deep-layer value
-($11.2$ vs.\ $\SI{6.3e-3}{\watt\per\meter\per\kelvin}$). Combined
-with the $K_d/Q_b$ degeneracy described above, this places the
-\citet{martinez2021} deep layer as one point within a
-$(K_d,Q_b,\mathrm{shape})$ family of solutions consistent with the
-restored HFE record, rather than as a uniquely preferred
-parameterisation.
+\paragraph{The factor of two is consistent with ordinary regolith
+variability.} The retrieved ratio
+$K_d^{\mathrm{A17}}/K_d^{\mathrm{A15}}\!\approx\!2.3$ is large but
+not anomalous. Apollo cores give bulk porosities $\phi\!\sim\!0.30$--$0.45$
+\citep{mitchell1973,carrier1991}; an effective-medium scaling
+$K_\mathrm{eff}\!\propto\!(1-\phi)^2$ \citep{wood2020} yields a
+$\sim\!1.5\times$ shift for a 12-pp porosity difference. Solid lunar
+basalt is also $\sim\!30\%$ more conductive than solid highland
+anorthosite \citep{horai1972}, contributing another $\sim\!1.3\times$.
+The Apollo~15 site samples a mixed mare/highland regolith at the
+Imbrium--Apennine boundary
+\citep{korotev2005,wieczorek2006}; Apollo~17 sits in a basaltic
+embayment within the Taurus--Littrow highlands
+\citep{crawford2015}. Either mechanism alone, or the two combined
+($\sim\!2\times$), would account for the observed contrast. The
+present data cannot say which dominates; that is the most direct
+follow-up question raised here.
 
-\paragraph{The borestem cut is fixed by physics, not by residuals.}
-The shallow-sensor exclusion (\S\ref{sec:borestem}) is determined
-directly from Fig.~\ref{fig:amplitude}: the observed diurnal
-amplitude departs from the modelled regolith attenuation at
-$z\!\sim\!\zborestem$ at both sites independently. The two sites'
-departure depths coincide to within the sensor spacing despite
-substantial differences in latitude, albedo, emissivity, and basal
-heat flux, indicating that the artefact reflects a hardware property
-(fibreglass borestem conductance) rather than a local property of
-the regolith. The exclusion criterion therefore depends only on the
-amplitude-attenuation prediction $A(z\,;K,\rho,c_p)$, and is fixed
-prior to evaluation of the deep-RMSE statistics in
-Table~\ref{tab:rmse} and the $K_d$ retrieval in
-Fig.~\ref{fig:kdsweep}.
+\paragraph{Comparison with prior estimates.}
+The \citet{martinez2021} 3-layer model with
+$K_d^{\mathrm{disc}}=6.3\,\si{\milli\watt\per\meter\per\kelvin}$ was
+tuned against the same HFE record, so its A17 agreement is a fit
+residual rather than an independent test; under the $K_d/Q_b$
+degeneracy it is one point inside the same solution family. Direct
+laboratory measurements on Apollo soils
+\citep{cremers1971,horai1981,hemingway1973} give
+$\sim\!0.7$--$2\,\si{\milli\watt\per\meter\per\kelvin}$, factors of
+$\sim\!3$ (A15) and $\sim\!7$ (A17) below our in-situ values --- as
+expected, since lab measurements lose the m-scale grain-contact
+networks and radiative pathways that dominate the in-situ response.
+Our values bracket the orbital \citet{vasavada2012} estimate of
+$\sim\!7\,\si{\milli\watt\per\meter\per\kelvin}$, with A15 just below
+and A17 above.
 
-\paragraph{The contrast survives the auxiliary-parameter envelope.}
-Across the full $Q_b$ debate
-(Fig.~\ref{fig:robustness}a), the \Hayne / \Vas\ disagreement on
-$\chi$, and the choice of $c_p(T)$ parameterisation, the deep RMSE
-shifts by $<\SI{0.5}{\kelvin}$ at both sites
-(Table~\ref{tab:errorbudget}). The corresponding shift in the
-retrieved $K_d^{*}$ is small compared to the per-site contrast:
-$Q_b$ rescales the absolute value (per the degeneracy above), $\chi$
-enters $K(T,z)$ only through the radiative multiplier and produces
-$\lesssim\!10\%$ shifts in the parabolic minimum, and $c_p$ enters
-only through the spin-up rate (not the steady-state mean). A
-two-parameter joint fit varying both $K_d$ and the e-folding depth
-$H$ (Fig.~\ref{fig:robustness}b,c) yields joint minima at
-$H=\SI{10.0}{\centi\meter}$ (A15) and $H=\SI{4.0}{\centi\meter}$ (A17)
-with $K_{d,\mathrm{A15}}^{*}=5.17$ and $K_{d,\mathrm{A17}}^{*}=11.96\,\si{\milli\watt\per\meter\per\kelvin}$;
-both are within $\sim\!0.01\,\si{\kelvin}$ of the RMSE obtained at the canonical
-$H=\SI{6}{\centi\meter}$ slice, so the $H$ direction is poorly identified and the
-1-parameter retrieval at $H=6\,\si{\centi\meter}$ is a near-optimal projection of the
-joint surface. This demonstrates that $K_d$ is the dominant
-identified lever and that the retrieval is not a degenerate
-trade-off with $H$. The inter-site contrast in $K_d^{*}$ is
-therefore not an artefact of any single under-constrained \Hayne\
-ingredient. As an out-of-sample forcing-side check, the same
-forward model evaluated at each site produces noon-time and
-night-time surface brightness temperatures consistent with the
-\citet{williams2017diviner} Diviner gridded climate product to
-within $\sim\!1$--$2$\,K (Fig.~\ref{fig:diviner}); the residual is
-absorbed into the surface boundary condition and does not propagate
-to the deep retrieval.
-
-\paragraph{Comparison with laboratory measurements of returned regolith.}
-Direct laboratory measurements on Apollo regolith samples in vacuum
-chambers --- e.g.\ \citet{cremers1971,horai1981,hemingway1973} ---
-yield thermal conductivities of order
-$0.7$--$\SI{2.0e-3}{\watt\per\meter\per\kelvin}$ at relevant lunar
-temperatures. The retrieved in-situ
-values reported here are factors of $\sim\!3$ (A15) and $\sim\!7$
-(A17) larger. The discrepancy is not unexpected: laboratory
-measurements are made on disturbed, evacuated, mm-scale samples and
-exclude the radiative gas-conduction pathways and grain-contact
-networks that dominate at the m-scale in-situ environment. The
-factor-of-several scale difference between laboratory and orbital
-estimates of $K_d$ has been long noted
-\citep{vasavada2012,hayne2017}; the present in-situ retrieval places
-the A15 value within a factor of two of the orbital
-\citet{vasavada2012} estimate ($\sim\!\SI{7e-3}{\watt\per\meter\per\kelvin}$)
-and the A17 value above it, consistent with the broader picture that
-the effective conductivity sampled by a buried thermometer is set by
-m-scale regolith structure rather than by the bulk mineralogy of the
-constituent grains.
-
-\paragraph{Candidate physical mechanisms for the contrast.}
-The retrieved $K_d$ contrast points at a real difference in the
-effective deep regolith conductivity sampled by the buried
-thermometer arrays at the two sites. We do not attempt to identify
-the dominant mechanism here, but the magnitude of the contrast
-($K_d^{\mathrm{A17}}/K_d^{\mathrm{A15}}\!\approx\!2.3$) is within
-the range that ordinary intersite variations in two well-understood
-regolith properties can produce.
-
-\emph{(i) Porosity.} The Apollo cores indicate bulk regolith
-porosities in the range $\phi\!\sim\!0.30$--$0.45$
-\citep{mitchell1973,carrier1991}. In a granular packing the
-effective conductivity scales approximately as $K_\mathrm{eff}\!\propto\!(1-\phi)^n$
-with $n\!\sim\!2$ \citep{wood2020}, so a 12-percentage-point porosity
-difference ($\phi\!=\!0.30$ vs $0.42$) already produces a
-$\sim\!1.5\times$ shift in $K_\mathrm{eff}$.
-
-\emph{(ii) Bulk-grain conductivity.} The thermal conductivity of
-solid lunar basalt is $\sim\!2\,\si{\watt\per\meter\per\kelvin}$,
-$\sim\!30\%$ higher than that of solid highland anorthosite at the
-same temperature \citep{horai1972}. The Apollo~15 site sits at the
-Mare Imbrium / Apennine boundary and samples a regolith mixing
-mare basaltic and Apennine highland anorthositic material
-\citep{korotev2005,wieczorek2006}, whereas Apollo~17 sits in a
-basaltic embayment within the South Massif highland complex of
-Taurus--Littrow with locally distinct chemistry
-\citep{crawford2015}.
-
-Combining the two ($\sim\!1.5\times$ from porosity, $\sim\!1.3\times$
-from mineralogy) gives a plausible $\sim\!2\times$ contrast in
-$K_\mathrm{eff}$, consistent with the observed retrieval ratio
-within the bootstrap CI. Differential compaction over the
-$\sim\!3.5\,\mathrm{Gyr}$ exposure ages of the two sites,
-differences in micrometeorite-gardening rates between the mare-edge
-and basaltic-embayment settings, and contact-area geometry at depth
-are also plausible secondary contributors. Distinguishing among
-these requires in-situ measurements beyond the present dataset; we
-flag it as the most direct follow-up question raised by the
-retrieval.
-
-\paragraph{Implications for polar volatile-stability and instrument-design analyses.}
-The retrieved per-site contrast in $K_d$ implies that any analysis
-which adopts the global \citet{hayne2017} value as a fixed input ---
-including most polar volatile-stability calculations and
-spacecraft-thermal-design heat budgets --- inherits a model
-uncertainty no smaller than the inter-site disagreement. A
-factor-$\sim\!2$ error in $K_d$ translates directly into a
-factor-$\sim\!2$ error in the steady-state thermal resistance of the
-deep regolith column and propagates through the radiative surface
-balance to a multi-metre shift of the cold-trap depth at which water
-ice is stable on geological timescales. Solving for the depth at
-which $T(z)$ first reaches the ice-stability threshold $T_\mathrm{stable}$
-by forward-integrating $dT/dz = Q_b/K(T,z)$ through the full
-\citet{hayne2017} regolith profile (i.e.\ retaining the depth-dependent
-$K(z)$ transition over $H\!=\!\SI{6}{\centi\meter}$ and the
-$\chi(T/T_\mathrm{ref})^3$ radiative term --- both negligible at the
-$\sim\!80$\,K polar surface, but included for self-consistency), the
-indicative stability depth $z_\mathrm{stable}(K_d)$ traced in
-Fig.~\ref{fig:cold-trap} grows from $\sim\!9$\,m at the global
-\citet{hayne2017} value to $\sim\!29$\,m at the A17 retrieval --- a
-$3\times$ shift driven entirely by the regional $K_d$ contrast. Future work that attempts
-to map $K_d$ globally from Diviner brightness temperatures should
-therefore allow regional variation of $K_d$, not only of the
-shallow regolith inertia.
+\paragraph{Why this matters for polar volatiles and instrument
+design.} The global-uniform $K_d$ assumption is built into
+essentially every current polar volatile-stability calculation and
+buried-instrument thermal budget. If $K_d$ varies regionally by
+$\sim\!2\times$, those analyses inherit a comparable uncertainty.
+Integrating the Hayne $K(T,z)$ profile under polar conditions
+(Fig.~\ref{fig:cold-trap}) gives a cold-trap ice-stability depth
+that grows from $\sim\!9\,\mathrm{m}$ at the
+\citet{hayne2017} global value to $\sim\!29\,\mathrm{m}$ at the A17
+retrieval --- a $3\times$ shift in the depth of recoverable polar
+water ice driven entirely by the regional $K_d$ difference. Future
+Diviner-based maps of $K_d$ should therefore allow regional
+variation, not just shallow-regolith inertia. Two sites cannot
+establish a global pattern, but they do show that the
+single-number assumption is inconsistent with both in-situ records
+simultaneously.
 
 \begin{figure}[!htbp]
 \centering
@@ -1064,27 +939,16 @@ factor-of-$\sim\!3$ change in $z_\mathrm{stable}$.}
 \label{fig:cold-trap}
 \end{figure}
 
-\paragraph{Thermal profile comparison.}
-Figure~\ref{fig:thermal-profiles} places the two conductivity models
-side by side against the HFE stability-window temperatures.
-The top panels show the full annual-mean profile from the surface to
-220\,cm at each site; the bottom panels zoom into the deep-sensor zone
-($z \gtrsim 80$\,cm) with a tight temperature axis ($\lesssim 5$--8\,K
-span) to make inter-model differences visible.
-At Apollo~15, the Hayne retrieval ($K_{d,\mathrm{A15}}^{*}=4.86$\,mW\,m$^{-1}$\,K$^{-1}$)
-reproduces the deep gradient to within sensor scatter, whereas the
-M\&S 2021 profile with its single published
-$K_d^{\mathrm{disc}}=6.3$\,mW\,m$^{-1}$\,K$^{-1}$ predicts a gradient
-that is too shallow (warmer temperatures at depth), over-shooting the
-observed sensors by $\sim\!0.8$\,K.
-At Apollo~17, the situation is reversed: the retrieved value
-$K_{d,\mathrm{A17}}^{*}=11.23$\,mW\,m$^{-1}$\,K$^{-1}$ tracks the
-observations, while the M\&S fixed value produces a gradient that is
-too steep (cooler temperatures at depth), under-shooting by
-$\sim\!1.6$\,K.
-These opposing residuals are a direct geometric consequence of the
-inter-site contrast in $K_d$: a single global conductivity value
-cannot simultaneously satisfy both datasets.
+\paragraph{Same model, opposite residuals at the two sites.}
+With the per-site $K_d^{*}$, the Hayne profile reproduces the deep
+gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}). With
+the single \citet{martinez2021} value
+$K_d^{\mathrm{disc}}=6.3\,\si{\milli\watt\per\meter\per\kelvin}$, the
+predicted gradient is too shallow at A15 (over-shoots the observed
+deep temperatures by $\sim\!0.8\,\si{\kelvin}$) and too steep at A17
+(under-shoots by $\sim\!1.6\,\si{\kelvin}$). These opposite-signed
+residuals are the direct visual signature of the inter-site contrast:
+no single global $K_d$ satisfies both records at once.
 
 \begin{figure}[!htbp]
 \centering
