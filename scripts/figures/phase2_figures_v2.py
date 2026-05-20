@@ -610,10 +610,13 @@ def fig_cold_trap(d, out_path):
     eta = z / z_deep_limit_m   # dimensionless
 
     fig, (axA, axB) = plt.subplots(
-        1, 2, figsize=(JGR_FULL, 3.4),
-        gridspec_kw={"wspace": 0.45, "width_ratios": [1.25, 1.0]},
+        1, 2, figsize=(JGR_FULL, 4.2),
+        gridspec_kw={"wspace": 0.50, "width_ratios": [1.25, 1.0]},
     )
-    fig.subplots_adjust(left=0.075, right=0.93, top=0.86, bottom=0.34)
+    # bottom=0.36 leaves enough room below the x-axis labels for the
+    # legend box (anchored at y=0.02 below); top=0.86 gives panel
+    # titles breathing room above the axes.
+    fig.subplots_adjust(left=0.085, right=0.93, top=0.86, bottom=0.36)
 
     # ────────────── Panel (a): depth + twinned heat-flow axis ──────────
     axA.plot(Kd, z, color=C_TEAL, lw=2.4, label="Hayne $K(T,z)$ integration")
@@ -655,8 +658,9 @@ def fig_cold_trap(d, out_path):
     axB.plot(Kd, eta, color=C_TEAL, lw=2.4,
              label=r"$\eta(K_d)$ from Hayne $K(T,z)$ integration")
     axB.axhline(1.0, color=C_DIM, ls="--", lw=1.0, alpha=0.7)
-    axB.text(11.7, 1.0, "deep-limit\n($K_s\\!=\\!0$, $\\chi\\!=\\!0$)",
-             ha="right", va="bottom", fontsize=FS_TICK,
+    axB.text(0.02, 0.04, r"dashed: deep-limit ($K_s\!=\!0$, $\chi\!=\!0$)",
+             transform=axB.transAxes,
+             ha="left", va="bottom", fontsize=FS_TICK - 0.5,
              color=C_DIM, style="italic")
 
     for kd_v, lab, col in refs:
@@ -684,7 +688,7 @@ def fig_cold_trap(d, out_path):
                title=(f"Polar $Q_b = {Qb_polar*1e3:.0f}$ mW m$^{{-2}}$, "
                       f"$T_\\mathrm{{surf}} = {T_surf:.0f}$ K, "
                       f"$T_\\mathrm{{stable}} = {T_stable:.0f}$ K   "
-                      "(Schorghofer \\& Aharonson 2005)"),
+                      "(Schorghofer & Aharonson 2005)"),
                title_fontsize=FS_LABEL, borderpad=0.6,
                handlelength=1.6, columnspacing=1.6)
 
@@ -894,13 +898,14 @@ def fig_thermal_profiles(d, out_path):
         return z_mid * 100, out.T.mean(axis=1)   # depth in cm, mean T profile
 
     # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
-    # Legend goes ABOVE the plots (top of figure) so it can never overlap axes.
-    # Compact figsize 7.48 x 5.6 in so the figure fits with Fig 10 on the
-    # same page (was 9.0 in tall originally).
-    fig = plt.figure(figsize=(JGR_FULL, 5.6))
+    # Legend goes BELOW the plots so it cannot overlap any axis labels.
+    # hspace bumped to 0.45 so panel (c)/(d) titles do not collide with
+    # the (a)/(b) x-axis area.  Figsize 7.48 x 6.0 in (was 5.6) gives
+    # the additional vertical space the wider hspace needs.
+    fig = plt.figure(figsize=(JGR_FULL, 6.0))
     gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
-                           hspace=0.10, wspace=0.32,
-                           left=0.10, right=0.97, top=0.82, bottom=0.10)
+                           hspace=0.45, wspace=0.32,
+                           left=0.10, right=0.97, top=0.93, bottom=0.16)
     axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
     axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 
@@ -957,13 +962,12 @@ def fig_thermal_profiles(d, out_path):
                   color=C_DIM, style="italic")
 
         fmt_axis(ax_f,
-                 xlabel="",
+                 xlabel=r"Annual-mean $\langle T \rangle$  (K)",
                  ylabel="Depth  (cm)" if col == 0 else "",
                  title=f"({col_labels[col]})  {site_cfg['label']}")
         ax_f.set_ylim(220, 0)
         ax_f.yaxis.set_minor_locator(mtick.AutoMinorLocator())
         ax_f.xaxis.set_minor_locator(mtick.AutoMinorLocator())
-        ax_f.tick_params(labelbottom=False)   # x-ticks shared with zoom row
 
         # ── BOTTOM ROW: deep-only zoom, tight x-axis ──────────────────────────
         ax_z = axes_zoom[col]
@@ -1009,18 +1013,18 @@ def fig_thermal_profiles(d, out_path):
                        markerfacecolor=C_NEUTRAL, markersize=6,
                        label="HFE shallow sensors (borestem-excluded)")]
 
-    # ── shared legend above the top row (never overlaps axes) ────────────────
-    fig.legend(handles=legend_handles, loc="upper center",
-               bbox_to_anchor=(0.5, 0.99), ncols=2, frameon=True,
+    # ── shared legend BELOW the figure (user preference) ─────────────────────
+    fig.legend(handles=legend_handles, loc="lower center",
+               bbox_to_anchor=(0.5, 0.005), ncols=2, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=2.0, borderpad=0.5, columnspacing=1.4,
                labelspacing=0.3,
                title=(r"Model curves use per-site retrieved $K_d^{*}$ (Hayne shape) "
-                      r"and published $K_d$ (M\&S 3-layer).  "
+                      r"and published $K_d$ (M&S 3-layer).  "
                       r"Grey markers: excluded from retrieval."),
                title_fontsize=8.0)
 
-    fig.savefig(out_path, bbox_inches="tight")
+    fig.savefig(out_path)
     plt.close(fig)
     print(f"  → {out_path}")
 
