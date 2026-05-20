@@ -682,12 +682,40 @@ $\sigma_\rho$   ($\rho\,\pm 0.5\%$)                                 & 0.02 & 0.0
 Bootstrap median $K_d^{*}$                                          & 4.88 & 11.51 \\
 \bottomrule
 \end{tabular}
-\end{table} The inter-site contrast is
-robust under per-site rescaling of the assumed basal heat flux
-$Q_b$ across the published reanalysis envelope: as shown in
-Fig.~\ref{fig:robustness}(a), the contrast remains significant at
-$\geq\!2\sigma$ even when one site is rescaled by $\pm 30\%$
-relative to the other.
+\end{table}
+
+The decomposition makes clear which terms dominate. At Apollo~15
+the budget is led by the basal-flux uncertainty
+$\sigma_{Q_b}\!\approx\!1.5\,\si{\milli\watt\per\meter\per\kelvin}$
+(driven by the $\pm 30\%$ spread in the Langseth--Saito--Nagihara
+reanalyses) and the statistical sensor-composition term
+$\sigma_\mathrm{stat}\!\approx\!0.83$ (the $N\!=\!7$ small-sample
+bootstrap width plus the $\pm 2.5$\,cm sensor-placement jitter); the
+remaining four terms together contribute under
+$0.8\,\si{\milli\watt\per\meter\per\kelvin}$ in quadrature. At
+Apollo~17 the statistical term is itself the dominant component
+($\sigma_\mathrm{stat}\!\approx\!4.4$), reflecting the long upper
+shoulder of the A17 bootstrap distribution
+(Fig.~\ref{fig:bootstrap}a); $\sigma_{Q_b}$ is second
+($\sim\!3.5$), and the structural \Hayne-parameter uncertainties
+($\chi$, $H$, $K_s$, $\rho$) all sit at or below
+$2\,\si{\milli\watt\per\meter\per\kelvin}$.
+
+Two qualitative implications follow. First, the absolute $K_d^{*}$
+at each site is bounded by $Q_b$ and by the small-sample bootstrap,
+both of which are properties of the data (not of the \Hayne\ form);
+no further refinement of the regolith parameterisation will tighten
+these. Second, the inter-site contrast inherits only the
+\emph{contrast}-level uncertainty, not the sum of the per-site
+budgets: $\sigma_{Q_b}$ rescales both sites together and therefore
+drops out of $\Delta K_d^{*}$, leaving the statistical and
+structural contributions ($\sim\!4.5\,\si{\milli\watt\per\meter\per\kelvin}$
+combined) as the relevant scale --- still smaller than the
+$6.6\,\si{\milli\watt\per\meter\per\kelvin}$ contrast itself, which
+is why the contrast remains significant at $\geq\!2\sigma$ under any
+per-site rescaling of $Q_b$ across the published envelope
+(Fig.~\ref{fig:robustness}a) even when one site is rescaled by
+$\pm 30\%$ relative to the other.
 
 \paragraph*{Out-of-sample validation.}
 Three independent diagnostics, evaluated on data not used in the
@@ -880,7 +908,7 @@ over-shoots A15 by $\sim\!0.8\,\si{\kelvin}$ and under-shoots A17 by
 $\sim\!1.6\,\si{\kelvin}$ --- opposite-signed residuals that no
 single global $K_d$ can eliminate simultaneously.
 
-\begin{figure}[!htbp]
+\begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
 \caption{\textbf{Polar cold-trap depth vs.\ $K_d$ (Schorghofer-2005-style
@@ -893,18 +921,16 @@ $\eta=z_\mathrm{stable}/[(\Delta T)\,K_d/Q_b]$ relative to the
 constant-$K$ Fourier limit; $\eta\!\approx\!1.04$--$1.05$ quantifies
 the shallow-$K_s$ + radiative-term correction.}
 \label{fig:cold-trap}
-\end{figure}
+\vspace{0.8em}
 
-\begin{figure}[!htbp]
-\centering
+\refstepcounter{figure}\label{fig:thermal-profiles}
 \includegraphics[width=\linewidth]{figures/fig_thermal_profiles.pdf}
-\caption{\textbf{Annual-mean $T(z)$:
+\caption*{\textbf{Figure \thefigure.} \textbf{Annual-mean $T(z)$:
 Hayne with per-site $K_d^{*}$ vs.\ \citet{martinez2021} fixed
 $K_d^{\mathrm{disc}}=6.3$.} Solid teal: \Hayne\ at retrieved $K_d^{*}$.
 Dashed red: M\&S 2021. Coloured markers: HFE deep sensors (used in
 retrieval); grey markers: borestem-affected shallow sensors
 (excluded).}
-\label{fig:thermal-profiles}
 \end{figure}
 
 % =====================================================================

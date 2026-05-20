@@ -610,10 +610,10 @@ def fig_cold_trap(d, out_path):
     eta = z / z_deep_limit_m   # dimensionless
 
     fig, (axA, axB) = plt.subplots(
-        1, 2, figsize=(JGR_FULL, 4.6),
+        1, 2, figsize=(JGR_FULL, 3.4),
         gridspec_kw={"wspace": 0.45, "width_ratios": [1.25, 1.0]},
     )
-    fig.subplots_adjust(left=0.075, right=0.93, top=0.88, bottom=0.30)
+    fig.subplots_adjust(left=0.075, right=0.93, top=0.86, bottom=0.34)
 
     # ────────────── Panel (a): depth + twinned heat-flow axis ──────────
     axA.plot(Kd, z, color=C_TEAL, lw=2.4, label="Hayne $K(T,z)$ integration")
@@ -895,12 +895,12 @@ def fig_thermal_profiles(d, out_path):
 
     # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
     # Legend goes ABOVE the plots (top of figure) so it can never overlap axes.
-    # Compact figsize 7.48 x 6.8 in so the figure fits with Fig 10 on the
-    # same page (was 9.0 in tall, which forced it onto a separate page).
-    fig = plt.figure(figsize=(JGR_FULL, 6.8))
+    # Compact figsize 7.48 x 5.6 in so the figure fits with Fig 10 on the
+    # same page (was 9.0 in tall originally).
+    fig = plt.figure(figsize=(JGR_FULL, 5.6))
     gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
                            hspace=0.10, wspace=0.32,
-                           left=0.10, right=0.97, top=0.84, bottom=0.10)
+                           left=0.10, right=0.97, top=0.82, bottom=0.10)
     axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
     axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 
