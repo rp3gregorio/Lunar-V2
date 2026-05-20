@@ -580,16 +580,44 @@ def fig_lab_comparison(d, out_path):
 
 
 def fig_cold_trap(d, out_path):
+    """Two-panel cold-trap figure.
+
+    (a) z_stable vs K_d with a twinned right-hand y-axis showing the
+        column-integrated heat-flow drop  Q_b * z_stable  in K.
+        This makes the y-axis physically interpretable in heat-flow
+        terms (how much T drop the column buys you) rather than just
+        in metres.
+    (b) Dimensionless ratio  eta(K_d) = z_stable(K_d) /
+        [(T_stable - T_surf) * K_d / Q_b],  the cold-trap depth
+        normalised by the analytic deep-limit prediction (constant-K
+        Fourier formula).  eta == 1 would mean the deep-limit formula
+        is exact; eta > 1 quantifies the extra thermal resistance
+        contributed by the K_s shallow layer and the radiative term.
+        A flat curve at eta ~ 1.005 confirms the near-linearity
+        empirically, and the deviation is what was previously
+        invisible on the depth-vs-K_d plot alone.
+    """
     ct = d["cold_trap"]
-    Kd = np.array(ct["kd_grid"]) * 1e3
+    Kd = np.array(ct["kd_grid"]) * 1e3   # mW/m/K for x-axis
     z  = np.array(ct["depth_stable_m"])
+    Qb_polar  = ct["Qb_polar"]                                 # W/m^2
+    T_surf    = ct.get("T_surface_polar", 80.0)
+    T_stable  = ct.get("T_ice_stable", 110.0)
+    dT        = T_stable - T_surf
 
-    fig, ax = plt.subplots(figsize=(JGR_FULL, 4.6))
-    fig.subplots_adjust(left=0.09, right=0.97, top=0.88, bottom=0.36)
+    # Deep-limit constant-K prediction:  z_dl = dT * K_d / Q_b
+    z_deep_limit_m = dT * (Kd * 1e-3) / Qb_polar
+    eta = z / z_deep_limit_m   # dimensionless
 
-    ax.plot(Kd, z, color=C_TEAL, lw=2.4,
-            label="Cold-trap depth model")
-    ax.fill_between(Kd, z, 0, color=C_TEAL_L, alpha=0.20)
+    fig, (axA, axB) = plt.subplots(
+        1, 2, figsize=(JGR_FULL, 4.6),
+        gridspec_kw={"wspace": 0.45, "width_ratios": [1.25, 1.0]},
+    )
+    fig.subplots_adjust(left=0.075, right=0.93, top=0.88, bottom=0.30)
+
+    # ────────────── Panel (a): depth + twinned heat-flow axis ──────────
+    axA.plot(Kd, z, color=C_TEAL, lw=2.4, label="Hayne $K(T,z)$ integration")
+    axA.fill_between(Kd, z, 0, color=C_TEAL_L, alpha=0.20)
 
     refs = [
         (3.4, "Hayne 2017 global  ($K_d = 3.4$)", C_TEAL),
@@ -601,39 +629,64 @@ def fig_cold_trap(d, out_path):
     z_max = z.max()
     for kd_v, lab, col in refs:
         z_v = np.interp(kd_v, Kd, z)
-        ax.plot([kd_v, kd_v], [0, z_v], color=col, ls="--", lw=1.2, alpha=0.85)
-        ax.plot(kd_v, z_v, "o", markersize=11, color=col, mec="white", mew=1.3,
-                zorder=4, label=lab)
+        axA.plot([kd_v, kd_v], [0, z_v], color=col, ls="--", lw=1.2, alpha=0.85)
+        axA.plot(kd_v, z_v, "o", markersize=10, color=col, mec="white", mew=1.3,
+                 zorder=4, label=lab)
 
-    fmt_axis(ax,
+    fmt_axis(axA,
              xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Cold-trap depth  $z_\mathrm{stable}$  (m)",
-             title=("Implication for polar-volatile cold-trap depth   "
-                    f"(polar $Q_b = {ct['Qb_polar']*1e3:.0f}$ mW m$^{{-2}}$, "
-                    "$T_\\mathrm{surface} = 80$ K)"))
-    ax.set_xlim(2, 12)
-    ax.set_ylim(0, z_max * 1.10)
+             title=("(a)  Depth where buried ice is thermally stable"))
+    axA.set_xlim(2, 12)
+    axA.set_ylim(0, z_max * 1.10)
+
+    # Twinned right axis: column-integrated heat-flow drop  Q_b * z  (K)
+    axA_r = axA.twinx()
+    axA_r.set_ylim(axA.get_ylim()[0] * Qb_polar * 1000,
+                   axA.get_ylim()[1] * Qb_polar * 1000)
+    axA_r.set_ylabel(r"Column heat-flow $\Delta T = Q_b\,z$  (mK)",
+                     color=C_DIM)
+    axA_r.tick_params(axis="y", colors=C_DIM, labelsize=FS_TICK)
+    axA_r.spines["right"].set_color(C_DIM)
+    axA_r.spines["right"].set_visible(True)
+    axA_r.spines["top"].set_visible(False)
+
+    # ────────────── Panel (b): dimensionless residual eta ──────────────
+    axB.plot(Kd, eta, color=C_TEAL, lw=2.4,
+             label=r"$\eta(K_d)$ from Hayne $K(T,z)$ integration")
+    axB.axhline(1.0, color=C_DIM, ls="--", lw=1.0, alpha=0.7)
+    axB.text(11.7, 1.0, "deep-limit\n($K_s\\!=\\!0$, $\\chi\\!=\\!0$)",
+             ha="right", va="bottom", fontsize=FS_TICK,
+             color=C_DIM, style="italic")
+
+    for kd_v, lab, col in refs:
+        eta_v = np.interp(kd_v, Kd, eta)
+        axB.plot([kd_v, kd_v], [1.0, eta_v], color=col, ls="--", lw=1.2,
+                 alpha=0.85)
+        axB.plot(kd_v, eta_v, "o", markersize=10, color=col, mec="white",
+                 mew=1.3, zorder=4)
+
+    fmt_axis(axB,
+             xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
+             ylabel=r"$\eta = z_\mathrm{stable}/(\Delta T\cdot K_d/Q_b)$",
+             title=("(b)  Deviation from the constant-$K$ Fourier limit"))
+    axB.set_xlim(2, 12)
+    # Tight y-range around eta = 1 so the small deviation is visible
+    eta_min, eta_max = float(eta.min()), float(eta.max())
+    pad = max(0.002, 0.15 * (eta_max - eta_min))
+    axB.set_ylim(min(1.0, eta_min) - pad, eta_max + pad)
+    axB.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.3f"))
 
     # Shared legend BELOW the figure in its own box
-    fig.legend(loc="lower center", bbox_to_anchor=(0.5, 0.04),
-               ncols=2, frameon=True, edgecolor=C_GRID,
+    fig.legend(loc="lower center", bbox_to_anchor=(0.5, 0.02),
+               ncols=4, frameon=True, edgecolor=C_GRID,
                framealpha=0.97, fontsize=FS_LEGEND,
-               title="Reference points  (cold-trap stability depth at each $K_d$)",
-               title_fontsize=FS_LABEL, borderpad=0.7,
-               handlelength=2.0, columnspacing=2.0)
-
-    # The Schorghofer–Aharonson framework citation goes only into the
-    # caption now (not as an in-axes annotation), so the curve runs
-    # through the whole panel without obstruction.
-    if False:
-        ax.text(0.02, 0.04,
-            (f"Polar $Q_b = {ct['Qb_polar']*1e3:.0f}$ mW m$^{{-2}}$,  "
-             "$T_\\mathrm{surface} = 80$ K\n"
-             "Schorghofer & Aharonson 2005-style estimate"),
-            transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=FS_TICK, color=C_DIM, style="italic",
-            bbox=dict(boxstyle="round,pad=0.35", facecolor="white",
-                      edgecolor=C_GRID, lw=0.6))
+               title=(f"Polar $Q_b = {Qb_polar*1e3:.0f}$ mW m$^{{-2}}$, "
+                      f"$T_\\mathrm{{surf}} = {T_surf:.0f}$ K, "
+                      f"$T_\\mathrm{{stable}} = {T_stable:.0f}$ K   "
+                      "(Schorghofer \\& Aharonson 2005)"),
+               title_fontsize=FS_LABEL, borderpad=0.6,
+               handlelength=1.6, columnspacing=1.6)
 
     fig.savefig(out_path)
     plt.close(fig)

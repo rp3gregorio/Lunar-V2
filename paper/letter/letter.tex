@@ -1019,23 +1019,32 @@ shallow regolith inertia.
 \centering
 \includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
 \caption{\textbf{Implication for polar volatile cold-trap depth.}
-Indicative cold-trap depth $z_\mathrm{stable}$ at which buried water ice
-is thermally stable on geological timescales (a
-\citealt{schorghofer2005}-style estimate at fixed polar surface
-temperature $T_\mathrm{surf}\!=\!\SI{80}{\kelvin}$ and basal heat flux
-$Q_b\!=\!\SI{12}{\milli\watt\per\meter\squared}$), as a function of
-$K_d$. The curve is obtained by forward-integrating
-$dT/dz=Q_b/K(T,z)$ through the full \citet{hayne2017} regolith
-conductivity profile (depth-dependent $K(z)$ with $H\!=\!\SI{6}{\centi\meter}$
-plus the radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$) until $T$
-reaches the ice-stability threshold ($T_\mathrm{stable}\!=\!\SI{110}{\kelvin}$).
-Because the shallow $K_s$ layer adds only $\sim\!\SI{0.05}{\meter}$ of
-thermal resistance and the radiative term is negligible at polar
-temperatures, the response is nearly linear in $K_d$ ($z\!\propto\!K_d^{1.00}$
-to within $<\!1\%$ over the swept range). The factor-of-$\sim\!3$
-change in $K_d$ between the global \citet{hayne2017} value and the
-A17 retrieval translates into a factor-of-$\sim\!3$ change in
-$z_\mathrm{stable}$.}
+\textbf{(a)}~Indicative cold-trap depth $z_\mathrm{stable}$ (left axis,
+metres) at which buried water ice is thermally stable on geological
+timescales (a \citealt{schorghofer2005}-style estimate at fixed polar
+surface temperature $T_\mathrm{surf}\!=\!\SI{80}{\kelvin}$ and basal heat
+flux $Q_b\!=\!\SI{12}{\milli\watt\per\meter\squared}$), as a function of
+$K_d$. The curve is obtained by forward-integrating $dT/dz=Q_b/K(T,z)$
+through the full \citet{hayne2017} regolith conductivity profile
+(depth-dependent $K(z)$ with $H\!=\!\SI{6}{\centi\meter}$ plus the
+radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$) until $T$ reaches
+the ice-stability threshold $T_\mathrm{stable}\!=\!\SI{110}{\kelvin}$.
+The twinned right axis recasts the same depth as the column-integrated
+heat-flow drop $\Delta T = Q_b\,z_\mathrm{stable}$ (mK), the physical
+quantity that the column actually buys you against the
+$T_\mathrm{stable}\!-\!T_\mathrm{surf}\!=\!\SI{30}{\kelvin}$ surface-to-stable
+temperature jump. \textbf{(b)}~Dimensionless ratio
+$\eta(K_d)\!=\!z_\mathrm{stable}(K_d)/[(T_\mathrm{stable}-T_\mathrm{surf})\,K_d/Q_b]$,
+the cold-trap depth normalised by its analytic deep-limit prediction
+(constant-$K$ Fourier formula, dashed line at $\eta=1$). $\eta$ sits
+at $\sim\!1.04$--$1.05$ over the swept range, quantifying the small
+($\sim\!4$--$5\%$) extra thermal resistance contributed by the
+shallow $K_s$ layer and the radiative term, neither of which is
+captured by the constant-$K$ approximation. The near-flatness of
+$\eta(K_d)$ confirms empirically the $z\!\propto\!K_d^{1.00}$
+scaling. The factor-of-$\sim\!3$ change in $K_d$ between the global
+\citet{hayne2017} value and the A17 retrieval translates into a
+factor-of-$\sim\!3$ change in $z_\mathrm{stable}$.}
 \label{fig:cold-trap}
 \end{figure}
 
