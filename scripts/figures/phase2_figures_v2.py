@@ -929,21 +929,35 @@ def fig_thermal_profiles(d, out_path):
 
     # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
     # Legend goes BELOW the plots so it cannot overlap any axis labels.
-    # hspace 0.42 so panel (c)/(d) titles do not collide with the
-    # (a)/(b) x-axis area.  Figsize 7.48 x 5.4 in keeps the figure
-    # within the page when paired with Fig 10 on a single float page.
-    fig = plt.figure(figsize=(JGR_FULL, 5.4))
+    # bottom=0.215 reserves a clear strip for the legend box; the
+    # panel (c)/(d) x-axis labels sit above it inside the gridspec.
+    # The long explanatory note that used to be the legend title now
+    # lives in the LaTeX caption, so the legend box stays compact.
+    fig = plt.figure(figsize=(JGR_FULL, 5.6))
     gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
-                           hspace=0.42, wspace=0.32,
-                           left=0.10, right=0.97, top=0.93, bottom=0.17)
+                           hspace=0.46, wspace=0.32,
+                           left=0.10, right=0.97, top=0.94, bottom=0.215)
     axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
     axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 
     # ── run models and collect per-site data first ────────────────────────────
+    # Use phase_a_results.json as the single authoritative source for
+    # BOTH the Hayne K_d* and the 3-layer K_d* -- this is the same file
+    # the manuscript text and Table 1 are built from, so the figure and
+    # the text cannot drift apart.  No silent fallback: a missing
+    # kd_star_3layer is a hard error (a prior version drew the 3-layer
+    # curve at the Hayne K_d when phase2_results.json lacked the key).
+    _pa_path = _ROOT / "output" / "phase_a_results.json"
+    d_auth = json.loads(_pa_path.read_text())
+
     site_data = {}
     for name, site_cfg in SITE_CFGS.items():
-        kd_r  = d[name]["kd_star"]                  # Hayne retrieved K_d*
-        kd_3l = d[name].get("kd_star_3layer", kd_r) # 3-layer retrieved K_d*
+        kd_r  = d_auth[name]["kd_star"]              # Hayne retrieved K_d*
+        if "kd_star_3layer" not in d_auth[name]:
+            raise KeyError(
+                f"kd_star_3layer missing for {name} in {_pa_path}; "
+                "re-run the phase-A pipeline before regenerating Fig 10.")
+        kd_3l = d_auth[name]["kd_star_3layer"]       # 3-layer retrieved K_d*
         rho_s = TL_RHO_SITE[name]
         print(f"  Running Hayne K_d*={kd_r*1e3:.2f}  for {name} ...", flush=True)
         z_h, T_h = run_profile(site_cfg, make_k_hayne(kd_r))
@@ -1055,16 +1069,13 @@ def fig_thermal_profiles(d, out_path):
                        label="HFE shallow sensors (borestem-excluded)")]
 
     # ── shared legend BELOW the figure (user preference) ─────────────────────
+    # No legend title: the explanatory note is in the LaTeX caption so
+    # the box stays compact and clears the panel (c)/(d) x-axis labels.
     fig.legend(handles=legend_handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
+               bbox_to_anchor=(0.5, 0.012), ncols=3, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=2.0, borderpad=0.5, columnspacing=1.4,
-               labelspacing=0.3,
-               title=("Hayne (2017) and this-work 3-layer curves use the "
-                      "per-site retrieved $K_d^{*}$; Martínez & Siegler "
-                      "(2021) is parameter-free.  "
-                      "Grey markers: borestem-excluded."),
-               title_fontsize=8.0)
+               labelspacing=0.3)
 
     fig.savefig(out_path)
     plt.close(fig)

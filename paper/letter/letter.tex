@@ -241,19 +241,13 @@ fitted long-term drift $d\langle T\rangle/dt$ reported per sensor.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_apollo_timeline.pdf}
-\caption{\textbf{Per-probe stability-window timeline at Apollo~15
-and~17 (4 probes, 4 panels).} Top sub-panel per probe: raw HFE traces
-with translucent coral bands marking the documented data-quality
-events (drilling/emplacement transient; ALSEP power-conservation
-gaps; major and end-of-mission outages; verified against the
-per-sensor $t$ arrays of \citealt{nagihara2018}). Stability windows
-selected for the retrieval are outlined and labelled with the OLS-fit
-drift on the deepest sensor in $\si{\milli\kelvin}\,\si{\per\day}$.
-Bottom sub-panel per probe: per-sensor Gantt strip colour-coded by
-depth; each bar is broken at outages so the coloured segments span
-only days that contributed to $T_\mathrm{eq}$ (pale beige background:
-full record). Window-mean $T_\mathrm{eq}$ values at right edge are
-the inputs to the deep-sensor RMSE (eq.~\ref{eq:rmse-kd}).}
+\caption{Per-probe stability-window timeline at Apollo~15 and~17
+(4 probes). Each probe panel shows, above, the raw HFE traces with
+coral bands marking documented data-quality events and the selected
+stability windows outlined; and, below, a depth-coded per-sensor
+Gantt strip broken at outages. Selection criteria and the role of
+the window-mean $T_\mathrm{eq}$ are described in
+\S\ref{sec:methods}.}
 \label{fig:timeline}
 \end{figure}
 
@@ -451,8 +445,20 @@ of the percentile endpoints at both sites and on the contrast, and
 do not change any qualitative conclusion. The retrieval has exactly
 one free parameter.
 
-% Provenance check of the four parameterised functions is reproduced
-% in the Supporting Information (Fig.~S\ref{fig:hayne-props-SI}).
+To compare models with different free-parameter counts on the same
+deep-sensor set we use the small-sample-corrected Akaike information
+criterion, $\mathrm{AICc}=N\ln(\mathrm{RSS}/N)+2k+2k(k{+}1)/(N{-}k{-}1)$,
+where RSS is the deep-sensor residual sum of squares and $k$ is the
+number of fitted parameters ($k=0$ for the fixed-$K_d$ rows, $k=1$ for
+each retrieval). We report differences $\Delta\mathrm{AICc}$ relative
+to the best model at each site; by convention $\Delta\mathrm{AICc}
+\lesssim2$ indicates statistically indistinguishable models and
+$\gtrsim10$ a decisive preference. We do not report a reduced
+$\chi^2$: the within-stability-window scatter
+($\sigma\!\sim\!0.03$--$0.05$\,K) measures short-term thermometer
+precision rather than the model-adequacy error budget, so it yields
+$\chi^2_\nu\!\gg\!1$ for every model and is uninformative for model
+selection here.
 
 % =====================================================================
 \section{Results}\label{sec:results}
@@ -474,40 +480,27 @@ are excluded \emph{a priori} from the quantitative comparison; see
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2_apollo_mean_T_profile.pdf}
-\caption{\textbf{Annual-mean subsurface temperature profile
-$\langle T(z)\rangle$ versus Apollo HFE stability-window means at
-both landing sites.} Three conductivity models at their nominal
-(un-retrieved) parameters: \Hayne\ smooth-exponential (solid teal,
-global $K_d=3.4$), \citet{martinez2021} $T,\rho$-dependent (dashed
-red), and the this-work discrete 3-layer model (dotted green).
-Markers are coloured by sensor type (warm-charcoal~$=$~TG,
-grey~$=$~TR), with horizontal bars equal to the within-window
-standard deviation of the observed equilibrium temperature. The
-shaded band marks the borestem-contaminated zone
-($z<\SI{80}{\centi\meter}$); sensors there are plotted but excluded
-from the quantitative RMSE in Table~\ref{tab:rmse}. \emph{Same
-parameters at both sites; only $A$, $\varepsilon$, latitude, $Q_b$
-vary (measured quantities).}}
+\caption{Annual-mean subsurface temperature $\langle T(z)\rangle$ for
+three conductivity models at their nominal (un-retrieved) parameters
+--- \Hayne\ smooth-exponential (solid teal, global $K_d=3.4$),
+\citet{martinez2021} (dashed red), this-work 3-layer (dotted green)
+--- against the Apollo HFE stability-window means. Markers are coded
+by sensor type (charcoal $=$ TG, grey $=$ TR); horizontal bars are the
+within-window standard deviation. The shaded band is the
+borestem-contaminated zone ($z<\SI{80}{\centi\meter}$), excluded from
+the RMSE.}
 \label{fig:meanT}
 \end{figure}
 
 \begin{table}[t]
 \centering
 \small
-\caption{\textbf{Deep-sensor ($z>\SI{80}{\centi\meter}$) validation
-statistics.} The first row per site uses the published global \Hayne\
-$K_d$ held fixed; the lower two rows report the per-site retrieval of
-$K_d$ under the \Hayne\ smooth-exponential shape and under the
-this-work discrete 3-layer model (\S\ref{sec:methods-kd},
-Fig.~\ref{fig:kdsweep}). $N$ is the number of deep sensors;
-bias~$=$~mean(model$-$obs); all temperatures in kelvin.
-$K_d$ in mW\,m$^{-1}$\,K$^{-1}$, with 95\% non-parametric bootstrap
-CI in square brackets where applicable. $\Delta$AICc is the
-small-sample-corrected Akaike difference relative to the best (lowest-AICc)
-model at each site, with the free-parameter count $k$ ($0$ for the
-fixed-$K_d$ row, $1$ for each retrieval) entering the penalty;
-$\Delta\mathrm{AICc}\lesssim2$ denotes statistically indistinguishable
-models, $\gtrsim10$ decisive rejection.}
+\caption{Deep-sensor ($z>\SI{80}{\centi\meter}$) validation
+statistics for the three conductivity models. $K_d$ in
+mW\,m$^{-1}$\,K$^{-1}$ (95\% bootstrap CI in brackets); $N$ is the
+deep-sensor count; bias~$=$~mean(model$-$obs) in K; $\Delta$AICc is
+relative to the best model at each site. The first row per site holds
+$K_d$ at the published global value; the lower two retrieve it.}
 \label{tab:rmse}
 \begin{tabular}{llcccccc}
 \toprule
@@ -521,20 +514,6 @@ Apollo 17 & Hayne (2017), global       & $3.4$ (fixed)            & 16 & \textbf
 Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.18,21.62]$   & 16 & \textbf{0.30} & $-0.03$ & \textbf{0.0} \\
 Apollo 17 & 3-layer, $K_d^{*}$ fit     & $11.27$                  & 16 & \textbf{0.39} & $-0.04$ & $+8.5$ \\
 \bottomrule
-\multicolumn{7}{@{}p{0.92\linewidth}}{\footnotesize By $\Delta$AICc the
-per-site $K_d^{*}$ retrieval is decisively preferred over the fixed
-global value at A17 ($\Delta\mathrm{AICc}=70.5$) and weakly preferred at
-A15 ($1.7$). The two retrieved-$K_d$ shapes are statistically
-indistinguishable at A15 ($\Delta\mathrm{AICc}=0.04$) but the
-smooth-exponential form is favoured at A17 ($\Delta\mathrm{AICc}=8.5$);
-the retrieved $K_d^{*}$ nonetheless agrees to within $1\%$ at A17 and
-$17\%$ at A15 across the two shapes, so the inter-site contrast is not
-an artefact of the assumed $K(z)$ transition. A reduced-$\chi^2$ is not
-tabulated: the within-stability-window scatter ($\sigma\!\sim\!0.03$--$0.05$\,K)
-measures short-term thermometer precision, not the model-adequacy error
-budget, and yields $\chi^2_\nu\!\gg\!1$ for every model; $\Delta$AICc,
-which compares residual sums of squares directly, is the appropriate
-small-sample model-selection statistic here.}\\
 \end{tabular}
 \end{table}
 
@@ -563,18 +542,13 @@ Per-sensor phase-folded diurnal cycles for every Apollo HFE sensor
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/apollo_amplitude_vs_depth.pdf}
-\caption{\textbf{Diurnal amplitude (half-range of the
-local-solar-time-folded median temperature) versus sensor depth at both
-Apollo sites.} Black
-markers $=$ observed; navy curve $=$ \Hayne\ reference; grey curve
-$=$ 3-layer alternative. The shaded band marks the borestem zone
-($z<\SI{80}{\centi\meter}$); above it the observed amplitude exceeds
-the modelled regolith attenuation by $\geq\!10^{2}\!\times$ ---
-the borestem signature (\S\ref{sec:borestem}). Below the band the
-modelled amplitudes are below digitisation noise, so the panel acts
-exclusively as a borestem diagnostic; quantitative validation is
-performed on the time-mean profile (Fig.~\ref{fig:meanT},
-Table~\ref{tab:rmse}) and the $K_d$ retrieval (Fig.~\ref{fig:kdsweep}).}
+\caption{Diurnal amplitude (half-range of the
+local-solar-time-folded median temperature) versus sensor depth at
+both Apollo sites. Black markers: observed; navy curve: \Hayne\
+reference; grey curve: 3-layer alternative. The shaded band is the
+borestem zone ($z<\SI{80}{\centi\meter}$). The interpretation of the
+amplitude excess as the borestem signature is given in
+\S\ref{sec:borestem}.}
 \label{fig:amplitude}
 \end{figure}
 
@@ -704,19 +678,11 @@ Inter-site contrast $\Delta K_d^{*}\!=\!K_d^{\rm A17}\!-\!K_d^{\rm A15}$;
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\textbf{Per-component error budget for the retrieved
-$K_d^{*}$.} Each row is the propagated $1\sigma$ shift in $K_d^{*}$
-from varying one input within its published uncertainty, evaluated
-at the bootstrap median. $\sigma_\mathrm{stat}$ is the half-range of
-the bootstrap 16--84 percentile band (sensor-set composition plus
-$\pm 2.5$\,cm depth jitter). $\sigma_{Q_b}$ is the 30\% Saito--Nagihara
-basal-flux envelope mapped through the steady-state $K_d/Q_b$ degeneracy.
-$\sigma_\chi$ is the analytical chain-rule 15\% shift from a 30\%
-perturbation of the radiative coefficient $\chi$. $\sigma_H$ is the
-half-range of the per-$H$ $K_d^{*}$ across the joint 8$\times$8
-$K_d$--$H$ sweep ($H=3$--14\,cm; data-driven, not a fixed percentage).
-$\sigma_{K_s}$ and $\sigma_\rho$ are 2\% and 0.5\% perturbations,
-respectively (lab-scale-constrained). All values in mW\,m$^{-1}$\,K$^{-1}$.}
+\caption{Per-component error budget for the retrieved $K_d^{*}$. Each
+row is the propagated $1\sigma$ shift in $K_d^{*}$ from varying one
+input within its published uncertainty, evaluated at the bootstrap
+median; the components and how each is derived are described in
+\S\ref{sec:results-kd}. All values in mW\,m$^{-1}$\,K$^{-1}$.}
 \label{tab:errorbudget}
 \begin{tabular}{lrr}
 \toprule
@@ -735,8 +701,18 @@ Bootstrap median $K_d^{*}$                                          & 4.88 & 11.
 \end{tabular}
 \end{table}
 
-The decomposition makes clear which terms dominate. At Apollo~15
-the budget is led by the basal-flux uncertainty
+Each component of Table~\ref{tab:errorbudget} is derived as follows.
+$\sigma_\mathrm{stat}$ is the half-range of the bootstrap 16--84
+percentile band (sensor-set composition plus $\pm 2.5$\,cm depth
+jitter). $\sigma_{Q_b}$ is the $\pm 30\%$ Saito--Nagihara basal-flux
+envelope mapped through the steady-state $K_d/Q_b$ degeneracy.
+$\sigma_\chi$ is the chain-rule shift ($\Delta K_d/K_d\!\approx\!15\%$)
+from a $\pm 30\%$ perturbation of the radiative coefficient $\chi$.
+$\sigma_H$ is the half-range of the per-$H$ $K_d^{*}$ across the joint
+$8\times8$ $K_d$--$H$ sweep ($H=3$--$14$\,cm); $\sigma_{K_s}$ and
+$\sigma_\rho$ follow from $\pm 2\%$ and $\pm 0.5\%$ perturbations of
+$K_s$ and $\rho$. The decomposition makes clear which terms dominate.
+At Apollo~15 the budget is led by the basal-flux uncertainty
 $\sigma_{Q_b}\!\approx\!1.5\,\si{\milli\watt\per\meter\per\kelvin}$
 (driven by the $\pm 30\%$ spread in the Langseth--Saito--Nagihara
 reanalyses) and the statistical sensor-composition term
