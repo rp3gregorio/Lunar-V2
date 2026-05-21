@@ -839,37 +839,6 @@ rock-population effects \citep{bandfield2015,hayne2017}.}
 \label{fig:diviner}
 \end{figure}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_robustness.pdf}
-\caption{\textbf{Robustness of the per-site $K_d^{*}$ contrast.}
-(a)~Contrast $\Delta K_d^{*}$ as a function of per-site $Q_b$ rescaling
-factors $\alpha_{15},\alpha_{17}$. White diagonal: global rescaling
-(contrast invariant). Dashed contours: bootstrap-$\sigma$ significance.
-Black circle: nominal $Q_b$; green square: \citet{saito2007} A15
-reanalysis. (b),(c)~Joint $(K_d, H)$ RMSE surface at each site; red
-star is joint minimum, teal circle is the 1-parameter retrieval at
-$H=\SI{6}{\centi\meter}$. The two coincide within the
-$\SI{0.5}{\kelvin}$ contour: $H$ is poorly identified, $K_d$
-dominates.}
-\label{fig:robustness}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
-\caption{\textbf{Joint $(K_d, Q_b)$ posteriors
-and marginals with the Saito--Nagihara $Q_b$ prior.} (a),(b) Joint
-posterior on the $(K_d, Q_b)$
-plane; white contours = 5/32/68\% mass levels, coral star = mode,
-dotted rays = iso-ratio degeneracy $Q_b/K_d=\mathrm{const}$.
-(c),(d) Marginals $P(K_d)$ (teal, bottom axis) and $P(Q_b)$ (coral
-dashed, top axis, rescaled). Medians:
-$K_{d,\mathrm{A15}}=3.9$, $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$;
-$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
-\label{fig:posterior-compare}
-\end{figure}
-
 % =====================================================================
 \FloatBarrier
 \section{Discussion}\label{sec:discussion}\label{sec:disc}
@@ -935,6 +904,37 @@ incompatibility of any single global $K_d$ with both records; the
 contrast magnitude ($\sim\!6.6\,\si{\milli\watt\per\meter\per\kelvin}$
 at nominal $Q_b$) is reported with the explicit caveat that two sites
 cannot establish it at $>\!95\%$ confidence.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
+\caption{\textbf{Joint $(K_d, Q_b)$ posteriors
+and marginals with the Saito--Nagihara $Q_b$ prior.} (a),(b) Joint
+posterior on the $(K_d, Q_b)$
+plane; white contours = 5/32/68\% mass levels, coral star = mode,
+dotted rays = iso-ratio degeneracy $Q_b/K_d=\mathrm{const}$.
+(c),(d) Marginals $P(K_d)$ (teal, bottom axis) and $P(Q_b)$ (coral
+dashed, top axis, rescaled). Medians:
+$K_{d,\mathrm{A15}}=3.9$, $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$;
+$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
+\label{fig:posterior-compare}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_robustness.pdf}
+\caption{\textbf{Robustness of the per-site $K_d^{*}$ contrast.}
+(a)~Contrast $\Delta K_d^{*}$ as a function of per-site $Q_b$ rescaling
+factors $\alpha_{15},\alpha_{17}$. White diagonal: global rescaling
+(contrast invariant). Dashed contours: bootstrap-$\sigma$ significance.
+Black circle: nominal $Q_b$; green square: \citet{saito2007} A15
+reanalysis. (b),(c)~Joint $(K_d, H)$ RMSE surface at each site; red
+star is joint minimum, teal circle is the 1-parameter retrieval at
+$H=\SI{6}{\centi\meter}$. The two coincide within the
+$\SI{0.5}{\kelvin}$ contour: $H$ is poorly identified, $K_d$
+dominates.}
+\label{fig:robustness}
+\end{figure}
 
 \subsection{The factor of two is consistent with ordinary regolith
 variability}
