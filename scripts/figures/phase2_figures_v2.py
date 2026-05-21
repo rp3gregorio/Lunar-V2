@@ -824,12 +824,16 @@ def fig_posterior(out_path):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FIGURE — Thermal profile comparison (Hayne retrieved vs M&S 3-layer)
+# FIGURE — Thermal profile comparison: three conductivity models
+#   (Hayne retrieved K_d* | genuine Martinez & Siegler 2021 | this-work 3-layer)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_thermal_profiles(d, out_path):
-    """Side-by-side depth–temperature profiles: Hayne (K_d retrieved) vs
-    M&S 2021 3-layer (published K_d = 6.3), compared against HFE data,
-    at both Apollo sites.  Runs the forward model from scratch."""
+    """Depth-temperature profiles against the Apollo HFE deep sensors at
+    both sites, for three conductivity models: the Hayne (2017)
+    smooth-exponential form at its per-site retrieved K_d*, the genuine
+    parameter-free Martinez & Siegler (2021) T,rho-dependent model
+    (make_k_ms below), and the this-work discrete 3-layer model at its
+    retrieved K_d*.  Runs the forward model from scratch."""
     import sys; sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
     from copy import deepcopy
     from lunar.grid import make_geometric_grid

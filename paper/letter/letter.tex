@@ -98,9 +98,11 @@ Apollo~15 and~17, integrating the 1-D heat equation under
 ephemeris-driven solar forcing with shallow sensors excluded
 \emph{a priori}. Our central result is that no single globally-uniform
 $K_d$ reproduces both records: the published Hayne (2017) global value
-leaves opposite-signed deep-sensor residuals ($+1.0$\,K at A15,
-$+2.9$\,K at A17) and is decisively rejected at A17 by the small-sample
-Akaike criterion ($\Delta\mathrm{AICc}=70$). Retrieving $K_d$ per site
+leaves deep-sensor residuals that differ by a factor of three between
+the sites ($+1.0$\,K mean at A15, $+2.9$\,K at A17) and is decisively
+rejected at A17 by the small-sample Akaike criterion
+($\Delta\mathrm{AICc}=70$), and the two sites are reconciled only by
+\emph{different} retrieved conductivities. Retrieving $K_d$ per site
 minimises the deep-sensor RMSE at
 $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ ($N=7$) and
 $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
@@ -650,12 +652,27 @@ this-work 3-layer model.}
 \label{fig:kdsweep}
 \end{figure}
 
-The inter-site contrast (bootstrap-median of $K_{d,\mathrm{A17}}^{*}-K_{d,\mathrm{A15}}^{*}$) is
+We report two distinct summary statistics, and keep them clearly
+separated. The per-site $K_d^{*}$ values quoted above
+($4.86$, $11.23\,\si{\milli\watt\per\meter\per\kelvin}$) are the
+\emph{parabolic point estimates} of each RMSE minimum; the bootstrap
+\emph{medians} of the same quantities are $4.88$ and $11.51$
+(Table~\ref{tab:errorbudget}), marginally higher because each
+bootstrap distribution is right-skewed. The inter-site contrast is
+computed as the bootstrap median of the paired difference
+$K_{d,\mathrm{A17}}^{*}-K_{d,\mathrm{A15}}^{*}$ \emph{within each
+resample} --- not as the difference of the two separate point
+estimates --- and is
 $\Delta K_d^{*} = 6.63^{+7.43}_{-1.25}\,\si{\milli\watt\per\meter\per\kelvin}$
 ($1\sigma$, asymmetric) with a 95\% bootstrap confidence interval
 $[-3.2,\,16.6]\,\si{\milli\watt\per\meter\per\kelvin}$
 that just touches zero at its lower bound (Fig.~\ref{fig:bootstrap};
 $p\approx 0.05$ for the null of inter-site equality with the extended A15 sweep grid).
+The paired construction is the statistically correct one --- it
+preserves the resample-level correlation between the sites --- and it
+is why $\Delta K_d^{*}$ ($6.63$) is the difference of the bootstrap
+medians ($11.51-4.88$) rather than of the point estimates
+($11.23-4.86=6.37$).
 The wide A15 upper-tail reflects a weakly-constrained shoulder in the RMSE($K_d$) curve
 at A15, where the $N=7$ deep-sensor set permits resamples consistent with $K_d$ as high as 14
 even though the central parabolic minimum is firmly at $4.86$. The
@@ -888,13 +905,18 @@ MCMC analysis, although not an independent estimate of the magnitude
 (\S\ref{sec:results-kd}), gives
 $P(K_d^{\mathrm{A17}}\!>\!K_d^{\mathrm{A15}})\!\approx\!96\%$, and the
 ordering survives every per-site basal-flux assignment within the
-published envelope (\S\ref{sec:results-kd}). The decisive and
-referee-proof statement is the one that needs no significance test on
-the contrast: with a single fixed $K_d$, the \citet{hayne2017} global
-value leaves \emph{opposite-signed} deep residuals
-($+1.0$\,K at A15, $+2.9$\,K at A17; Table~\ref{tab:rmse}) and is
-rejected outright at A17 ($\Delta\mathrm{AICc}=70$). No globally-uniform
-conductivity can null residuals of opposite sign simultaneously.
+published envelope (\S\ref{sec:results-kd}). The decisive statement is the one that needs no significance test on
+the contrast magnitude: \emph{no single value of $K_d$ nulls the
+deep-sensor residuals at both sites}. The published global value
+($3.4\,\si{\milli\watt\per\meter\per\kelvin}$) runs warm at both sites
+($+1.0$\,K mean at A15, $+2.9$\,K at A17; Table~\ref{tab:rmse}) and is
+rejected outright at A17 ($\Delta\mathrm{AICc}=70$). Raising $K_d$ to
+the value that zeroes the A17 bias ($11.23$) over-corrects A15 to a
+mean residual of $-0.50$\,K; conversely, the value that zeroes A15
+($4.86$) still leaves A17 warm by $+1.63$\,K. The sign of the leftover
+bias at one site therefore \emph{flips} depending on which site is
+used to fix $K_d$, and no globally-uniform conductivity can place both
+sites at zero bias simultaneously.
 Because every input that varies between the two retrievals is either
 measured (latitude, albedo, basal heat flux) or held identical (Hayne
 shape parameters, solar forcing), the simplest reading is a real
@@ -955,9 +977,13 @@ follow-up question raised here.
 The \citet{martinez2021} model is calibrated to orbital Diviner
 brightness temperatures rather than to the in-situ HFE record, so it
 provides a genuinely independent comparison; evaluated at the two
-sites it predicts a deep conductivity ($\sim\!7$--$8\,\si{\milli\watt\per\meter\per\kelvin}$,
-temperature-dependent) that lies between our A15 and A17 retrievals
-and reproduces neither exactly. Direct laboratory measurements on
+sites its effective deep conductivity is
+$\sim\!7$--$8\,\si{\milli\watt\per\meter\per\kelvin}$
+(temperature-dependent), intermediate between our A15 and A17
+retrievals. It is correspondingly too conductive for A15 and not
+conductive enough for A17, leaving the deep record warm at both sites
+(\S\ref{sec:disc-kd}); a single globally-calibrated relation cannot
+match the two sites at once. Direct laboratory measurements on
 Apollo soils \citep{cremers1971,horai1981,hemingway1973} give
 $\sim\!0.7$--$2\,\si{\milli\watt\per\meter\per\kelvin}$, factors of
 $\sim\!3$ (A15) and $\sim\!7$ (A17) below our in-situ values --- as
@@ -985,16 +1011,25 @@ establish a global pattern, but they do show that the
 single-number assumption is inconsistent with both in-situ records
 simultaneously.
 
-\subsection{One model cannot fit both sites}
+\subsection{No single globally-uniform model fits both sites}
 With the per-site retrieved $K_d^{*}$, the \Hayne\ form reproduces
 the deep gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}),
 and the this-work 3-layer model does likewise --- confirming that the
 result is a property of the data, not of a particular $K(z)$ shape.
-By contrast, the parameter-free \citet{martinez2021} model, having a
-single global temperature--density relation, over-predicts the A15
-deep temperatures and under-predicts those at A17: opposite-signed
-residuals that no single globally-uniform conductivity model can
-eliminate simultaneously.
+The two parameter-free predictions behave very differently. The
+\citet{hayne2017} global value runs warm at both sites
+(Table~\ref{tab:rmse}). The genuine \citet{martinez2021}
+temperature--density model, evaluated with no free parameter, is also
+warm at both sites but by unequal amounts --- a mean deep-sensor
+residual of $+0.6$\,K at A15 and $+2.3$\,K at A17 (deep RMSE $1.1$ and
+$2.4$\,K; Fig.~\ref{fig:thermal-profiles}c,d) --- so it,
+too, fits A15 tolerably while missing A17 badly. The common feature
+is that any model carrying a single global conductivity relation
+predicts deep temperatures that are correct at one site only: the
+A17 record demands a markedly more conductive deep regolith than any
+globally-calibrated relation supplies. This is the same conclusion
+reached from the $K_d$ retrieval (\S\ref{sec:disc-kd}), now seen
+directly in the forward profiles.
 
 \begin{figure}[p]
 \centering
