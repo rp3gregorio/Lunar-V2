@@ -396,11 +396,11 @@ def fig_kd_sweep():
         ax.plot(s["kd_star"]*1e3, s["rmse_star"], "*", color=color,
                 markersize=20, mec="white", mew=1.4, zorder=5)
 
-    # vertical reference lines
+    # vertical reference lines: literature deep-conductivity values
     ax.axvline(3.4, color=C_HAYNE, ls="--", lw=1.2, alpha=0.7,
-               label="Hayne 2017  $K_d = 3.4$")
-    ax.axvline(6.3, color=C_MS, ls=":", lw=1.2, alpha=0.7,
-               label="Martinez & Siegler 2021  $K_d = 6.3$")
+               label="Hayne 2017 global  $K_d = 3.4$")
+    ax.axvline(3.8, color=C_FOREST, ls=":", lw=1.2, alpha=0.7,
+               label="Feng 2020 deep value  $K_d = 3.8$")
 
     fmt_axis(ax,
              xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",

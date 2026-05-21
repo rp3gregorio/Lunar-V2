@@ -925,13 +925,13 @@ def fig_thermal_profiles(d, out_path):
 
     # ── 2×2 grid: top = full profile, bottom = deep-only zoom ────────────────
     # Legend goes BELOW the plots so it cannot overlap any axis labels.
-    # hspace bumped to 0.45 so panel (c)/(d) titles do not collide with
-    # the (a)/(b) x-axis area.  Figsize 7.48 x 6.0 in (was 5.6) gives
-    # the additional vertical space the wider hspace needs.
-    fig = plt.figure(figsize=(JGR_FULL, 6.0))
+    # hspace 0.42 so panel (c)/(d) titles do not collide with the
+    # (a)/(b) x-axis area.  Figsize 7.48 x 5.4 in keeps the figure
+    # within the page when paired with Fig 10 on a single float page.
+    fig = plt.figure(figsize=(JGR_FULL, 5.4))
     gs  = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85],
-                           hspace=0.45, wspace=0.32,
-                           left=0.10, right=0.97, top=0.93, bottom=0.16)
+                           hspace=0.42, wspace=0.32,
+                           left=0.10, right=0.97, top=0.93, bottom=0.17)
     axes_full = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])]
     axes_zoom = [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
 

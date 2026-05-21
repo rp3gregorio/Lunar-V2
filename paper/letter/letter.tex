@@ -69,9 +69,10 @@
 \newcommand{\dT}{\Delta T}
 \newcommand{\zborestem}{80\,\si{\centi\meter}}
 
-\title{\bfseries An Inter-Site Contrast in Lunar Deep Regolith
-Conductivity from a Per-Site Retrieval Against the Restored Apollo
-15 and 17 Heat-Flow Experiment Record}
+\title{\bfseries Site-Specific Retrieval of Lunar Deep Regolith
+Conductivity from the Restored Apollo 15 and 17 Heat-Flow Experiment
+Record: An Inter-Site Contrast and a Benchmark for Global Thermal
+Modelling}
 
 \author{R.~P.~Gregorio\thanks{Independent researcher.
 Correspondence to: \texttt{rp3gregorio@gmail.com}.}}
@@ -85,37 +86,36 @@ Correspondence to: \texttt{rp3gregorio@gmail.com}.}}
 \begin{abstract}
 \noindent
 The deep thermal conductivity of lunar regolith, $K_d$, sets the
-subsurface equilibrium temperature and, by extension, the stability
-depth of polar volatiles and the heat budget of buried instruments.
-Existing constraints on $K_d$ derive almost entirely from orbital
-brightness temperatures and treat the parameter as globally uniform;
-no per-site \emph{in-situ} retrieval with rigorous uncertainty
-propagation has previously been reported. Here we use the restored
-1971--1977 Apollo Heat-Flow Experiment (HFE) record at Apollo~15
-and~17 to perform a single-parameter retrieval of $K_d$ within the
-\citet{hayne2017} regolith functional form, integrating the 1-D heat
-equation under ephemeris-driven solar forcing (JPL DE440) with shallow
-sensors excluded \emph{a priori} via the modelled diurnal-amplitude
-depth profile. The deep-sensor RMSE is minimised at
-$K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ ($N=7$, RMSE $0.91$\,K) and
-$K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$ ($N=16$,
-RMSE $0.30$\,K); reported uncertainties are asymmetric $1\sigma$
-intervals from a non-parametric bootstrap ($N_\mathrm{boot}=1500$,
-with $\pm 2.5$\,cm sensor-placement jitter \citep{nagihara2018}
-propagated per resample). The 95\% CIs are $[3.94,14.36]$ and
-$[10.18,21.62]$\,mW\,m$^{-1}$\,K$^{-1}$ and the inter-site contrast
-is $\Delta K_d^{*}=6.6^{+7.4}_{-1.3}\,(1\sigma)$, 95\% CI $[-3.2,16.6]$,
-$p\approx 0.05$. A complementary MCMC
-treatment with a published $Q_b$ prior gives
-$P(K_d^{\rm A17} > K_d^{\rm A15}) \approx 96\%$. The contrast is
-invariant under global rescaling of the basal heat flux and is
-reproduced out-of-sample by Diviner surface-temperature closure, by
-sensor-type cross-prediction, and by leave-one-deepest-out residuals.
-The two-site disagreement implies that the globally-uniform value
-currently adopted in polar-volatile and instrument-design analyses
-should carry an uncertainty no smaller than the inter-site contrast
-we report; a definitive claim of \emph{regional} heterogeneity
-will require additional in-situ sites beyond the two analysed here.
+subsurface equilibrium temperature and hence the stability depth of
+polar volatiles and the heat budget of buried instruments. Existing
+constraints derive almost entirely from orbital brightness
+temperatures and treat $K_d$ as globally uniform. As the first phase
+of a programme building toward a regionally-resolved global thermal
+model, we perform a site-specific \emph{in-situ} retrieval of $K_d$
+from the restored 1971--1977 Apollo Heat-Flow Experiment (HFE) record
+at Apollo~15 and~17, integrating the 1-D heat equation under
+ephemeris-driven solar forcing with shallow sensors excluded
+\emph{a priori}. The deep-sensor RMSE is minimised at
+$K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ ($N=7$) and
+$K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
+($N=16$); uncertainties are asymmetric $1\sigma$ intervals from a
+non-parametric bootstrap ($N_\mathrm{boot}=1500$, with $\pm 2.5$\,cm
+sensor-placement jitter propagated per resample). The inter-site
+contrast is $\Delta K_d^{*}=6.6^{+7.4}_{-1.3}$ (95\% CI $[-3.2,16.6]$,
+$p\approx 0.05$); a complementary MCMC treatment with a published
+$Q_b$ prior gives $P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$. The
+retrieval returns the same contrast under a discrete 3-layer
+conductivity profile, is invariant under global rescaling of the
+basal heat flux, and is reproduced out-of-sample by Diviner
+surface-temperature closure, sensor-type cross-prediction, and
+leave-one-deepest-out residuals; neither the Hayne (2017) global
+value nor the parameter-free \citet{martinez2021} model reproduces
+both sites simultaneously. The two-site disagreement shows that the
+globally-uniform $K_d$ adopted in polar-volatile and
+instrument-design analyses should carry an uncertainty no smaller
+than the contrast reported here, and provides two anchored in-situ
+benchmarks for the regionally-resolved global thermal model
+developed in the next phase of this work.
 \end{abstract}
 
 \begin{plainlanguagesummary}
@@ -151,8 +151,8 @@ at least as large as the inter-site disagreement we report here.
         ($1\sigma$ bootstrap; 95\% CIs $[3.94,14.36]$ and $[10.18,21.62]$).
   \item Inter-site difference is significant at $p\approx 0.05$ (bootstrap);
         MCMC gives $P(K_{d,\mathrm{A17}}>K_{d,\mathrm{A15}})\approx 96\%$.
-  \item The contrast is invariant under global $Q_b$ rescaling; absolute
-        A17 stays $Q_b$-conditioned via the $K_d/Q_b$ degeneracy.
+  \item The contrast survives a 3-layer conductivity model and global
+        $Q_b$ rescaling, anchoring a future global thermal model.
 \end{itemize}
 
 % =====================================================================
@@ -173,8 +173,8 @@ The Apollo~15 and Apollo~17 Heat-Flow Experiment (HFE) datasets
 constraint at depth. Several previous works have compared
 regolith thermal models to HFE temperatures
 \citep{vasavada2012,hayne2017,nagihara2018}, and
-\citet{martinez2021} explicitly tunes a 3-layer $K(z)$ profile
-against the deep HFE record.
+\citet{martinez2021} developed a low-temperature, density-dependent
+conductivity model calibrated to orbital data.
 
 \paragraph*{Novel contributions of this work.}
 The present study differs from prior comparisons in three respects
@@ -334,12 +334,12 @@ All fixed parameters are collected in Table~\ref{tab:params}.
 \footnotesize
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.05}
-\caption{\textbf{Thermophysical input parameters for both model architectures.}
-Only $K_d$ is varied in the retrieval (\S\ref{sec:methods-kd}); all others fixed
-at published values.  Where two values appear, they are A15\,/\,A17.
-$z_1$: base of M\&S uniform surface layer; $z_2$: base of linear ramp zone.
-Both models share the Hemingway--Robie--Wilson $c_p$ polynomial
-$c_p\!=\!c_0+c_1 T+\ldots+c_4 T^4$,
+\caption{\textbf{Thermophysical input parameters for the three model
+architectures.} Only $K_d$ is varied in the retrieval
+(\S\ref{sec:methods-kd}) for the Hayne and 3-layer forms; the
+Mart\'inez \& Siegler (2021) model is parameter-free.  Where two values
+appear they are A15\,/\,A17.  All three share the Hemingway--Robie--Wilson
+$c_p$ polynomial $c_p\!=\!c_0+c_1 T+\ldots+c_4 T^4$,
 $(c_0,\ldots,c_4)\!=\!(-3.61,\;2.74,\;2.36\!\times\!10^{-3},\;
 {-1.23}\!\times\!10^{-5},\;8.91\!\times\!10^{-9})$\,J\,kg$^{-1}$\,K$^{-n}$
 \citep{hemingway1973}.}
@@ -357,15 +357,20 @@ $\chi$              & 2.7                & ---                      & \\
 $T_\mathrm{ref}$    & 350                & K                        & \\
 $\rho_s\,/\,\rho_d$ & 1100\,/\,1800      & kg\,m$^{-3}$             & \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{Mart\'inez \& Siegler (2021) 3-layer
-    \citep{martinez2021}}} \\[2pt]
-$K_s^\mathrm{disc}$  & $1.0\times10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ & \\
-$K_d^\mathrm{disc}$  & $6.3\times10^{-3}$ & W\,m$^{-1}$\,K$^{-1}$ & \\
-$z_1\,/\,z_2$        & 0.07\,/\,0.20      & m                       & \\
-$\rho_\mathrm{max}$  & 1800               & kg\,m$^{-3}$             & \\
+\multicolumn{4}{@{}l}{\textit{Mart\'inez \& Siegler (2021),
+    $T,\rho$-dependent \citep{martinez2021}}} \\[2pt]
+\multicolumn{4}{@{}p{0.93\linewidth}}{\footnotesize
+    Parameter-free: $K(T,\rho)$ is fully fixed by the Woods-Robinson
+    amorphous-conduction polynomial and the density profile (no $K_d$
+    to retrieve).  Verified against the published code.} \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{This-work discrete 3-layer model}} \\[2pt]
+$K_s$               & $7.4\times10^{-4}$ & W\,m$^{-1}$\,K$^{-1}$ & \citet{hayne2017} \\
+$z_1\,/\,z_2$        & 0.02\,/\,0.20      & m                       & Langseth+ 1976 \\
+$\rho_d$ (A15\,/\,A17) & 1825\,/\,1960    & kg\,m$^{-3}$             & \citet{langseth1976} \\
 \midrule
 \multicolumn{4}{@{}l}{\textit{Site-specific measured quantities
-    (both models)}} \\[2pt]
+    (all models)}} \\[2pt]
 Latitude $\phi$           & $26.1^\circ$\,/\,$20.2^\circ$\,N
                           & ---           & ALSEP gazetteer \\
 Bond albedo $A$           & 0.131\,/\,0.137
@@ -380,43 +385,33 @@ Solar constant $S_0$      & 1361
 \end{tabular}
 \end{table}
 
-As an alternative architecture for $K(z)$ we also consider the
-publicly available 3-layer parameterisation of \citet{martinez2021},
-with parameters adopted as published. In their model the deep
-conductivity is $K_d^\mathrm{disc}=
-\SI{6.3e-3}{\watt\per\meter\per\kelvin}$, approximately a factor of
-two larger than the \Hayne\ value, and the bulk density $\rho(z)$
-continues to increase below $z = \SI{20}{\centi\meter}$ toward a
-deep limit $\rho_\mathrm{max}=\SI{1800}{\kilogram\per\meter\cubed}$.
-Because \citet{martinez2021} tuned this 3-layer profile directly
-against the same HFE deep gradient analysed here, its agreement with
-the A17 record in Table~\ref{tab:rmse} should be interpreted as a
-fit residual rather than as an independent validation.
-Fig.~\ref{fig:schematic} contrasts the two architectures: the
-\Hayne\ profile transitions continuously from $K_s$ to $K_d$ through
-an exponential with e-folding scale $H=\SI{6}{\centi\meter}$, while
-the \citet{martinez2021} profile reaches $K_d$ through a
-piecewise-linear ramp that saturates at $z=\SI{20}{\centi\meter}$.
+We compare the \Hayne\ retrieval against two further regolith
+conductivity models. The first is the genuine \citet{martinez2021}
+model, whose conductivity
+$K(T,\rho)=(A_1\rho+A_2)\,k_\mathrm{am}(T)+(B_1\rho+B_2)\,T^3$
+is fully determined by temperature and density --- it has no free
+$K_d$ to retrieve, so it enters the comparison as a single fixed
+prediction. Here $k_\mathrm{am}(T)$ is the low-temperature
+amorphous-conduction polynomial of \citet{martinez2021}, and we use
+their published coefficients without modification.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig2_model_schematic.pdf}
-\caption{\textbf{Conceptual comparison of the two regolith conductivity
-model architectures.} (a)~Physical layer structure: the \Hayne\
-profile (blue) transitions continuously from a surface value
-$K_s=0.74$\,mW\,m$^{-1}$\,K$^{-1}$ to a deep value
-$K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$ via an exponential with
-$H=\SI{6}{\centi\meter}$; the \citet{martinez2021} 3-layer profile
-(red) has a uniform surface layer ($K_s=1.0$\,mW\,m$^{-1}$\,K$^{-1}$,
-$0$--$7$\,cm), a linear ramp zone ($7$--$20$\,cm), and a uniform deep
-layer ($K_d=6.3$\,mW\,m$^{-1}$\,K$^{-1}$, below $20$\,cm). (b)~The
-corresponding $K(z)$ profiles evaluated at $T=250$\,K including the
-radiative multiplier $1+\chi(T/T_\mathrm{ref})^3$; the shaded region
-is where the \citet{martinez2021} conductivity exceeds the \Hayne\
-value. The factor-of-$\sim\!2$ difference in $K_d$ is the dominant
-control on the deep-gradient discrepancy in Table~\ref{tab:rmse}.}
-\label{fig:schematic}
-\end{figure}
+The second is a deliberately simple discrete 3-layer model
+introduced in this work (\emph{not} from \citealt{martinez2021}). It
+approximates the documented Apollo regolith structure with a
+radiative-dominated surface layer ($0$--$\SI{2}{\centi\meter}$;
+\citealt{langseth1976}), a rapid-compaction transition
+($2$--$\SI{20}{\centi\meter}$), and a compacted deep layer. The
+$\SI{20}{\centi\meter}$ transition base is the depth at which the
+\Hayne\ exponential ($H=\SI{6}{\centi\meter}$) has reached
+$\sim\!97\%$ of $K_d$, so the boundary is consistent with the
+\Hayne\ comparison. Its only site-specific input is the deep bulk
+density --- $\rho_d\approx\SI{1825}{\kilogram\per\meter\cubed}$ at
+A15 and $\SI{1960}{\kilogram\per\meter\cubed}$ at A17
+\citep{langseth1976} --- which sets the transition-ramp curvature
+(a denser column compacts faster). As in the \Hayne\ form, $K_d$
+itself is the single swept free parameter, so the 3-layer model
+provides a direct test of how sensitive the retrieved $K_d^{*}$ is
+to the assumed transition shape.
 
 \subsection{Per-site $K_d$ retrieval (Hayne shape held fixed)}\label{sec:methods-kd}
 To convert the model-comparison in Table~\ref{tab:rmse} into a
@@ -461,25 +456,32 @@ one free parameter.
 \section{Results}\label{sec:results}
 
 \subsection{Annual-mean subsurface profile}\label{sec:results-mean}
-Fig.~\ref{fig:meanT} compares the modelled time-averaged
-$\langle T(z)\rangle$ against the Apollo HFE stability-window means at
-both sites. With \emph{no per-site tuning}, the \Hayne\ reference
-reproduces the deep gradient at both sites within
-$1.4$ and $2.7\,\si{\kelvin}$, respectively (Table~\ref{tab:rmse});
-the 3-layer alternative reduces both RMSEs to below \SI{1.1}{\kelvin}.
-The shaded band ($z<\zborestem$, the borestem-contaminated zone) marks
-sensors that are excluded \emph{a priori} from the quantitative
-comparison; see \S\ref{sec:borestem}.
+Fig.~\ref{fig:meanT} compares three modelled time-averaged
+$\langle T(z)\rangle$ profiles --- the \Hayne\ smooth-exponential
+form at its published global $K_d$, the \citet{martinez2021}
+$T,\rho$-dependent model, and the this-work discrete 3-layer model
+--- against the Apollo HFE stability-window means at both sites. With
+\emph{no per-site tuning}, the published global \Hayne\ value
+($K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$) under-predicts the deep gradient
+at both sites (Table~\ref{tab:rmse}), and neither published model
+reproduces both records simultaneously. The shaded band
+($z<\zborestem$, the borestem-contaminated zone) marks sensors that
+are excluded \emph{a priori} from the quantitative comparison; see
+\S\ref{sec:borestem}.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2_apollo_mean_T_profile.pdf}
 \caption{\textbf{Annual-mean subsurface temperature profile
 $\langle T(z)\rangle$ versus Apollo HFE stability-window means at
-both landing sites.} Markers are coloured by sensor type
-(warm-charcoal~$=$~TG, grey~$=$~TR), with horizontal bars equal to the
-within-window standard deviation of the observed equilibrium
-temperature. The shaded band marks the borestem-contaminated zone
+both landing sites.} Three conductivity models at their nominal
+(un-retrieved) parameters: \Hayne\ smooth-exponential (solid teal,
+global $K_d=3.4$), \citet{martinez2021} $T,\rho$-dependent (dashed
+red), and the this-work discrete 3-layer model (dotted green).
+Markers are coloured by sensor type (warm-charcoal~$=$~TG,
+grey~$=$~TR), with horizontal bars equal to the within-window
+standard deviation of the observed equilibrium temperature. The
+shaded band marks the borestem-contaminated zone
 ($z<\SI{80}{\centi\meter}$); sensors there are plotted but excluded
 from the quantitative RMSE in Table~\ref{tab:rmse}. \emph{Same
 parameters at both sites; only $A$, $\varepsilon$, latitude, $Q_b$
@@ -491,28 +493,31 @@ vary (measured quantities).}}
 \centering
 \small
 \caption{\textbf{Deep-sensor ($z>\SI{80}{\centi\meter}$) validation
-statistics.} The two upper rows per site use \emph{published} $K_d$
-values held fixed; the third row reports the per-site fit of $K_d$
-under the \Hayne\ shape (\S\ref{sec:methods-kd},
+statistics.} The first row per site uses the published global \Hayne\
+$K_d$ held fixed; the lower two rows report the per-site retrieval of
+$K_d$ under the \Hayne\ smooth-exponential shape and under the
+this-work discrete 3-layer model (\S\ref{sec:methods-kd},
 Fig.~\ref{fig:kdsweep}). $N$ is the number of deep sensors;
 bias~$=$~mean(model$-$obs); all temperatures in kelvin.
 $K_d$ in mW\,m$^{-1}$\,K$^{-1}$, with 95\% non-parametric bootstrap
-CI in square brackets.}
+CI in square brackets where applicable.}
 \label{tab:rmse}
 \begin{tabular}{llcccccc}
 \toprule
 Site & Model & $K_d$ & $N$ & RMSE & Bias & MAE \\
 \midrule
-Apollo 15 & Hayne (2017)               & $3.4$ (fixed)            & 7  & \textbf{1.38} & $+1.03$ & 1.08 \\
-Apollo 15 & 3-layer alt.\ (M\&S 2021)  & $6.3$ (fixed)            & 7  & \textbf{1.08} & $-0.59$ & 1.01 \\
-Apollo 15 & Hayne shape, $K_d^{*}$ fit & $4.86\,[3.94,14.36]$       & 7  & \textbf{0.91} & $+0.01$ & 0.77 \\
+Apollo 15 & Hayne (2017), global       & $3.4$ (fixed)            & 7  & \textbf{1.37} & $+1.03$ & 1.08 \\
+Apollo 15 & Hayne shape, $K_d^{*}$ fit & $4.86\,[3.94,14.36]$     & 7  & \textbf{0.90} & $+0.00$ & 0.77 \\
+Apollo 15 & 3-layer, $K_d^{*}$ fit     & $5.70$                   & 7  & \textbf{0.90} & $-0.02$ & 0.78 \\
 \midrule
-Apollo 17 & Hayne (2017)               & $3.4$ (fixed)            & 16 & \textbf{2.68} & $+2.54$ & 2.54 \\
-Apollo 17 & 3-layer alt.\ (M\&S 2021)$^\dagger$ & $6.3$ (fixed) & 16 & \textbf{0.65} & $+0.05$ & 0.54 \\
-Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.18,21.62]$    & 16 & \textbf{0.30} & $-0.03$ & 0.27 \\
+Apollo 17 & Hayne (2017), global       & $3.4$ (fixed)            & 16 & \textbf{2.96} & $+2.88$ & 2.88 \\
+Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.18,21.62]$   & 16 & \textbf{0.30} & $-0.03$ & 0.27 \\
+Apollo 17 & 3-layer, $K_d^{*}$ fit     & $11.27$                  & 16 & \textbf{0.39} & $-0.04$ & 0.32 \\
 \bottomrule
-\multicolumn{7}{l}{\footnotesize $^\dagger$\citet{martinez2021}'s 3-layer profile was tuned against the same HFE record;}\\
-\multicolumn{7}{l}{\footnotesize \phantom{$^\dagger$}its A17 row should therefore be read as a fit residual, not an independent test.}\\
+\multicolumn{7}{@{}p{0.92\linewidth}}{\footnotesize The 3-layer
+retrieval returns a $K_d^{*}$ close to the \Hayne\ value at both sites
+and an essentially identical RMSE, confirming that the retrieved deep
+conductivity is insensitive to the assumed $K(z)$ transition shape.}\\
 \end{tabular}
 \end{table}
 
@@ -594,15 +599,18 @@ are
 K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}\,[3.94,\,14.36]\,\si{\milli\watt\per\meter\per\kelvin},\qquad
 K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}\,[10.18,\,21.62]\,\si{\milli\watt\per\meter\per\kelvin},
 \]
-with corresponding deep-sensor RMSE\,$=0.91$\,K ($N=7$) and
+with corresponding deep-sensor RMSE\,$=0.90$\,K ($N=7$) and
 $0.30$\,K ($N=16$) respectively (Fig.~\ref{fig:bootstrap}). The
-retrieval improves on the published-$K_d$ \Hayne\ baseline at both
-sites (Table~\ref{tab:rmse}: $1.38\to 0.91$ at A15, $2.68\to 0.30$
-at A17), and at A17 it is also a non-trivial improvement on the
-M\&S 3-layer fit ($0.65\to 0.30$\,K). The bias collapses to
-$\le 0.03$\,K at both sites, indicating that $K_d$ is the principal
-identified lever between the \Hayne\ form and the in-situ HFE
-record once the borestem zone is excluded.
+retrieval improves on the published global-$K_d$ \Hayne\ baseline at
+both sites (Table~\ref{tab:rmse}: $1.37\to 0.90$ at A15,
+$2.96\to 0.30$ at A17), and the bias collapses to $\le 0.03$\,K,
+indicating that $K_d$ is the principal identified lever between the
+\Hayne\ form and the in-situ HFE record once the borestem zone is
+excluded. Repeating the retrieval under the discrete 3-layer model
+returns $K_d^{*}=5.70$ (A15) and $11.27$ (A17)\,mW\,m$^{-1}$\,K$^{-1}$
+at essentially the same RMSE (Table~\ref{tab:rmse}); the retrieved
+deep conductivity, and the inter-site contrast, are therefore
+insensitive to the assumed $K(z)$ transition shape.
 
 \begin{figure}[!htbp]
 \centering
@@ -612,7 +620,8 @@ form.} Deep-sensor RMSE vs $K_d$, with the other \Hayne\ parameters held
 at their published values. Filled markers: swept grid; solid curve:
 parabolic refinement near the minimum; shaded band: bootstrap 95\% CI.
 Dashed vertical: \citet{hayne2017} global $K_d=3.4$; dotted:
-\citet{martinez2021} $K_d=6.3$.}
+the \citet{feng2020} deep value $K_d=3.8$ adopted by the
+this-work 3-layer model.}
 \label{fig:kdsweep}
 \end{figure}
 
@@ -856,13 +865,13 @@ present data cannot say which dominates; that is the most direct
 follow-up question raised here.
 
 \paragraph{Comparison with prior estimates.}
-The \citet{martinez2021} 3-layer model with
-$K_d^{\mathrm{disc}}=6.3\,\si{\milli\watt\per\meter\per\kelvin}$ was
-tuned against the same HFE record, so its A17 agreement is a fit
-residual rather than an independent test; under the $K_d/Q_b$
-degeneracy it is one point inside the same solution family. Direct
-laboratory measurements on Apollo soils
-\citep{cremers1971,horai1981,hemingway1973} give
+The \citet{martinez2021} model is calibrated to orbital Diviner
+brightness temperatures rather than to the in-situ HFE record, so it
+provides a genuinely independent comparison; evaluated at the two
+sites it predicts a deep conductivity ($\sim\!7$--$8\,\si{\milli\watt\per\meter\per\kelvin}$,
+temperature-dependent) that lies between our A15 and A17 retrievals
+and reproduces neither exactly. Direct laboratory measurements on
+Apollo soils \citep{cremers1971,horai1981,hemingway1973} give
 $\sim\!0.7$--$2\,\si{\milli\watt\per\meter\per\kelvin}$, factors of
 $\sim\!3$ (A15) and $\sim\!7$ (A17) below our in-situ values --- as
 expected, since lab measurements lose the m-scale grain-contact
@@ -888,14 +897,16 @@ establish a global pattern, but they do show that the
 single-number assumption is inconsistent with both in-situ records
 simultaneously.
 
-\paragraph{Same model, opposite residuals at the two sites.}
-With the per-site $K_d^{*}$, the Hayne profile reproduces the deep
-gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}); the
-single \citet{martinez2021} value
-$K_d^{\mathrm{disc}}=6.3\,\si{\milli\watt\per\meter\per\kelvin}$
-over-shoots A15 by $\sim\!0.8\,\si{\kelvin}$ and under-shoots A17 by
-$\sim\!1.6\,\si{\kelvin}$ --- opposite-signed residuals that no
-single global $K_d$ can eliminate simultaneously.
+\paragraph{One model cannot fit both sites.}
+With the per-site retrieved $K_d^{*}$, the \Hayne\ form reproduces
+the deep gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}),
+and the this-work 3-layer model does likewise --- confirming that the
+result is a property of the data, not of a particular $K(z)$ shape.
+By contrast, the parameter-free \citet{martinez2021} model, having a
+single global temperature--density relation, over-predicts the A15
+deep temperatures and under-predicts those at A17: opposite-signed
+residuals that no single globally-uniform conductivity model can
+eliminate simultaneously.
 
 \begin{figure}[p]
 \centering
@@ -915,10 +926,12 @@ the shallow-$K_s$ + radiative-term correction.}
 \refstepcounter{figure}\label{fig:thermal-profiles}
 \includegraphics[width=\linewidth]{figures/fig_thermal_profiles.pdf}
 \caption*{\textbf{Figure \thefigure.} \textbf{Annual-mean $T(z)$:
-Hayne with per-site $K_d^{*}$ vs.\ \citet{martinez2021} fixed
-$K_d^{\mathrm{disc}}=6.3$.} Solid teal: \Hayne\ at retrieved $K_d^{*}$.
-Dashed red: M\&S 2021. Coloured markers: HFE deep sensors (used in
-retrieval); grey markers: borestem-affected shallow sensors
+three conductivity models against the Apollo HFE deep sensors.}
+Solid teal: \Hayne\ at the per-site retrieved $K_d^{*}$; dashed red:
+parameter-free \citet{martinez2021}; dotted green: this-work 3-layer
+at its per-site retrieved $K_d^{*}$. Top panels: full profile;
+bottom panels: deep-sensor zoom. Coloured markers: HFE deep sensors
+(used in retrieval); grey markers: borestem-affected shallow sensors
 (excluded).}
 \end{figure}
 
@@ -939,9 +952,12 @@ distribution of the inter-site contrast has its 95\% CI lower bound
 just touching zero ($p\approx 0.05$), and both per-site retrievals reject
 the published global value $3.4\,\si{\milli\watt\per\meter\per\kelvin}$
 at the 95\% level. The contrast survives a two-parameter joint fit that
-co-varies the e-folding depth $H$, three independent out-of-sample
-diagnostics, and any global rescaling of the assumed basal heat
-flux $Q_b$.
+co-varies the e-folding depth $H$, a discrete 3-layer conductivity
+model (which returns $K_d^{*}=5.70$ and $11.27$\,mW\,m$^{-1}$\,K$^{-1}$
+at the two sites), three independent out-of-sample diagnostics, and
+any global rescaling of the assumed basal heat flux $Q_b$. Neither
+the \citet{hayne2017} global value nor the \citet{martinez2021}
+$T,\rho$-dependent model reproduces both records simultaneously.
 
 Two methodological choices unique to this work make the result
 defensible: an \emph{a priori} borestem cut at
@@ -961,8 +977,20 @@ uncertainty at least as large as the inter-site disagreement
 reported here. Whether this disagreement reflects \emph{regional}
 variability across the lunar surface, or local-scale heterogeneity
 between two specific borehole locations, cannot be answered with
-$N=2$ in-situ sites and is left as a target for future landed
-instruments.
+$N=2$ in-situ sites alone.
+
+This site-specific retrieval is the first phase of a two-phase
+programme. Phase~1, reported here, establishes that a single-parameter
+thermal model can be anchored to the in-situ HFE record at each
+landing site, and delivers two conductivity benchmarks --- with
+quantified, propagated uncertainties --- against which any global
+model must be checked. Phase~2 will extend the framework from these
+two anchored pixels to a regionally-resolved global thermal model:
+the per-site retrievals here calibrate the deep-conductivity term,
+the borestem-cut and stability-window machinery generalise to other
+in-situ datasets (Chang'E, ChaSTE), and the orbital Diviner record
+supplies the spatial coverage. The two Apollo benchmarks are the
+ground truth that phase~2 is built to reproduce.
 
 % =====================================================================
 \section*{Limitations}
@@ -1076,7 +1104,6 @@ $\mathrm{boot}$ & bootstrap quantity \\
 \toprule
 $^{*}$            & best-fit / retrieved (e.g.\ $K_d^{*}$) \\
 $^{\rm A15,A17}$  & per-site qualifier \\
-$^{\rm disc}$     & \citet{martinez2021} 3-layer discrete value \\
 $^{\rm ref}$      & published reference value \\
 $^{\rm HFE}$      & Apollo HFE-measured \\
 $\langle\cdot\rangle$ & time-average over stability window \\
