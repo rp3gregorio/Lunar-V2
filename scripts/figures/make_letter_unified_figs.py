@@ -124,6 +124,50 @@ LETTER_FIGS = _REPO / "paper" / "letter" / "figures"
 PHASE_A     = _REPO / "output" / "phase_a_results.json"
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Robust bottom-legend placement.
+#
+# Every recurring "legend overlaps the axis label" bug came from hand-
+# guessing a `bottom` margin that turned out too small for the legend.
+# This helper removes the guesswork: it draws the legend, MEASURES its
+# rendered height, and then reserves exactly that much space below the
+# axes -- so the legend can never sit on top of the x-axis title.
+# Use this for every multi-panel letter figure with a shared legend.
+# ══════════════════════════════════════════════════════════════════════════════
+def legend_below(fig, handles, labels, *, ncols=3, pad_in=0.10, **kw):
+    """Place a shared legend in a reserved strip below all axes.
+
+    The figure is grown downward and the axes are pushed up by exactly
+    the legend's measured height plus `pad_in` inches of clearance, so
+    no axis label is ever overlapped regardless of legend size.
+    """
+    fig.canvas.draw()                       # so text extents are real
+    leg = fig.legend(handles, labels, loc="lower center",
+                     bbox_to_anchor=(0.5, 0.0), ncols=ncols,
+                     frameon=True, edgecolor=C_GRID, framealpha=0.97,
+                     borderpad=0.6, **kw)
+    fig.canvas.draw()
+    # legend height in inches
+    bb = leg.get_window_extent()
+    leg_h_in = bb.height / fig.dpi
+    fig_w, fig_h = fig.get_size_inches()
+    reserve = leg_h_in + pad_in             # inches to clear at the bottom
+    # grow the figure so the plot area is unchanged, legend gets its own band
+    new_h = fig_h + reserve
+    fig.set_size_inches(fig_w, new_h)
+    # current axes occupy [bottom0, top0] of the OLD figure; rescale up
+    frac = reserve / new_h
+    for ax in fig.axes:
+        p = ax.get_position()
+        ax.set_position([p.x0,
+                         frac + p.y0 * (1 - frac),
+                         p.width,
+                         p.height * (1 - frac)])
+    # pin the legend inside the reserved band, centred
+    leg.set_bbox_to_anchor((0.5, pad_in / new_h / 2), transform=fig.transFigure)
+    return leg
+
+
 # ── Solver ────────────────────────────────────────────────────────────────────
 def k_func_hayne(kd, h=HAYNE["H"]):
     def f(T, z):
@@ -223,9 +267,10 @@ def run_pixel(site_cfg, *, kfunc):
 # FIGURE 2 — Annual-mean subsurface T profile
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_mean_T_profile():
-    fig, axes = plt.subplots(1, 2, figsize=(JGR_FULL, 5.0),
+    fig, axes = plt.subplots(1, 2, figsize=(JGR_FULL, 4.6),
                              gridspec_kw={"wspace": 0.28})
-    fig.subplots_adjust(left=0.08, right=0.97, top=0.92, bottom=0.20)
+    # No hand-tuned bottom margin: legend_below() reserves the space.
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.93, bottom=0.13)
 
     for ax, name in zip(axes, ["A15", "A17"]):
         cfg = SITES[name]
@@ -288,12 +333,10 @@ def fig_mean_T_profile():
         ax.invert_yaxis()
         ax.set_ylim(250, 0)
 
-    # shared legend below
+    # shared legend in a reserved strip below -- never overlaps the axes
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", bbox_to_anchor=(0.5, 0.005),
-               ncols=3, frameon=True, edgecolor=C_GRID, framealpha=0.97,
-               fontsize=FS_LEGEND, handlelength=2.2, borderpad=0.6,
-               columnspacing=1.6)
+    legend_below(fig, h, l, ncols=3, fontsize=FS_LEGEND,
+                 handlelength=2.2, columnspacing=1.6)
 
     out = LETTER_FIGS / "fig2_apollo_mean_T_profile.pdf"
     fig.savefig(out)
@@ -369,24 +412,20 @@ def fig_amplitude_vs_depth():
 # FIGURE 4 — K_d sweep (the central retrieval figure)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_kd_sweep():
-    """Two-panel K_d retrieval figure.
+    """Single-panel K_d retrieval figure.
 
-    (a) Full deep-sensor RMSE(K_d) sweep at both sites, extended past
-        the published grid so the curve is shown rising again on the
-        high-K_d side -- i.e. each minimum is a genuine bracketed bowl,
-        not a descending shoulder.
-    (b) Zoom on the minima region (RMSE < 1.6 K) so the depth and
-        sharpness of each minimum, the parabolic fit, and the 95%
-        bootstrap CI band are legible.
+    Deep-sensor RMSE(K_d) at both sites, extended past the fitting grid
+    so each curve is shown rising again on the high-K_d side -- the
+    minima are genuine bracketed bowls, not descending shoulders. The
+    x-axis is held tight enough that the two minima, the parabolic fit,
+    and the 95% bootstrap CI bands are all clearly legible.
     """
     d = json.loads(PHASE_A.read_text())
 
     # ── extend the sweep so the rising high-K_d tail is shown ────────────
-    # The stored grids stop at 15 (A15) and 25 (A17) mW/m/K; we run a few
-    # extra forward models to confirm RMSE keeps rising beyond them.
     from scripts.pipeline.phase_a_pipeline import SITES, run_kd_sweep_extended
-    EXT = {"A15": np.linspace(15.5e-3, 24.0e-3, 6),
-           "A17": np.linspace(25.5e-3, 36.0e-3, 6)}
+    EXT = {"A15": np.linspace(15.5e-3, 22.0e-3, 5),
+           "A17": np.linspace(25.5e-3, 30.0e-3, 4)}
     ext_curve = {}
     for name in ("A15", "A17"):
         _, _, R, _ = run_kd_sweep_extended(SITES[name], EXT[name],
@@ -394,18 +433,14 @@ def fig_kd_sweep():
         ext_curve[name] = (EXT[name] * 1e3, np.sqrt((R ** 2).mean(axis=0)))
 
     from scipy.interpolate import CubicSpline
-    # bottom=0.34 reserves a clear strip for the two-row legend so it
-    # cannot ride up over the panel x-axis titles.
-    fig, axes = plt.subplots(1, 2, figsize=(JGR_FULL, 4.7))
-    fig.subplots_adjust(left=0.08, right=0.985, top=0.91, bottom=0.34,
-                        wspace=0.26)
-    ax_full, ax_zoom = axes
+    # No hand-tuned bottom margin: legend_below() reserves the strip.
+    fig, ax = plt.subplots(figsize=(JGR_FULL, 4.8))
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.93, bottom=0.13)
 
     for name, color in [("A15", C_A15), ("A17", C_A17)]:
         s    = d[name]
         kdg  = np.array(s["kd_grid"]) * 1e3
         rmse = np.array(s["rmse_curve"])
-        # splice the extended rising tail onto the stored grid
         kde, rme = ext_curve[name]
         kd_all   = np.concatenate([kdg, kde])
         rm_all   = np.concatenate([rmse, rme])
@@ -414,51 +449,39 @@ def fig_kd_sweep():
 
         b = s["bootstrap"]
         lo, hi = b["ci_lo"] * 1e3, b["ci_hi"] * 1e3
-        kd_star = s["kd_star"] * 1e3
-        rmse_star = s["rmse_star"]
-        lbl = (f"{name}  $K_d^{{*}} = {kd_star:.2f}$  [{lo:.2f}, {hi:.2f}]")
+        kd_star, rmse_star = s["kd_star"] * 1e3, s["rmse_star"]
 
-        for ax in (ax_full, ax_zoom):
-            in_ci = (kdf >= lo) & (kdf <= hi)
-            ax.fill_between(kdf[in_ci], 0, cs(kdf[in_ci]),
-                            color=color, alpha=0.10, zorder=0)
-            ax.plot(kdf, cs(kdf), "-", color=color, lw=2.4,
-                    label=lbl if ax is ax_full else None)
-            ax.plot(kd_all, rm_all, "o", color=color, markersize=3.6,
-                    mec="white", mew=0.5, zorder=3)
-            ax.plot(kd_star, rmse_star, "*", color=color,
-                    markersize=19, mec="white", mew=1.4, zorder=5)
+        in_ci = (kdf >= lo) & (kdf <= hi)
+        ax.fill_between(kdf[in_ci], 0, cs(kdf[in_ci]),
+                        color=color, alpha=0.12, zorder=0)
+        ax.plot(kdf, cs(kdf), "-", color=color, lw=2.6,
+                label=f"{name}  $K_d^{{*}} = {kd_star:.2f}$  "
+                      f"[{lo:.2f}, {hi:.2f}]")
+        ax.plot(kd_all, rm_all, "o", color=color, markersize=4.2,
+                mec="white", mew=0.6, zorder=3)
+        ax.plot(kd_star, rmse_star, "*", color=color,
+                markersize=22, mec="white", mew=1.5, zorder=5)
 
-    # reference lines on both panels
-    for ax in (ax_full, ax_zoom):
-        ax.axvline(3.4, color=C_HAYNE, ls="--", lw=1.2, alpha=0.7,
-                   label="Hayne 2017 global  $K_d = 3.4$"
-                   if ax is ax_full else None)
-        ax.axvline(3.8, color=C_FOREST, ls=":", lw=1.2, alpha=0.7,
-                   label="Feng 2020 deep value  $K_d = 3.8$"
-                   if ax is ax_full else None)
+    ax.axvline(3.4, color=C_HAYNE, ls="--", lw=1.3, alpha=0.75,
+               label="Hayne 2017 global  $K_d = 3.4$")
+    ax.axvline(3.8, color=C_FOREST, ls=":", lw=1.3, alpha=0.75,
+               label="Feng 2020 deep value  $K_d = 3.8$")
 
-    fmt_axis(ax_full,
+    fmt_axis(ax,
              xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Deep-sensor RMSE  (K)",
-             title="(a)  Full sweep")
-    ax_full.set_xlim(0, 37)
-    ax_full.set_ylim(0, 6)
+             title="Per-site $K_d$ retrieval under the Hayne 2017 "
+                   "functional form")
+    # tight enough that both minima are clearly readable, wide enough
+    # that the rising high-K_d tails are still visible
+    ax.set_xlim(0, 30)
+    ax.set_ylim(0, 4)
 
-    fmt_axis(ax_zoom,
-             xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
-             ylabel=r"Deep-sensor RMSE  (K)",
-             title="(b)  Minima zoom")
-    ax_zoom.set_xlim(2, 17)
-    ax_zoom.set_ylim(0, 1.6)
-
-    h, l = ax_full.get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", bbox_to_anchor=(0.5, 0.015),
-               ncols=2, frameon=True, edgecolor=C_GRID, framealpha=0.97,
-               fontsize=FS_LEGEND, handlelength=2.2, borderpad=0.6,
-               columnspacing=2.2,
-               title="Stars: retrieved $K_d^{*}$;  shaded: 95% bootstrap CI",
-               title_fontsize=FS_LABEL)
+    h, l = ax.get_legend_handles_labels()
+    legend_below(fig, h, l, ncols=2, fontsize=FS_LEGEND,
+                 handlelength=2.4, columnspacing=2.2,
+                 title="Stars: retrieved $K_d^{*}$;  shaded: 95% bootstrap CI",
+                 title_fontsize=FS_LABEL)
 
     out = LETTER_FIGS / "fig5_kd_sweep.pdf"
     fig.savefig(out)
