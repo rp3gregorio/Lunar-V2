@@ -1,4 +1,14 @@
 """
+SUPERSEDED -- not used by the current manuscript.
+
+This schematic depicted a two-model architecture (Hayne vs. a
+"Martinez & Siegler piecewise 3-layer" model) that was found to
+mis-describe the genuine Martinez & Siegler (2021) conductivity model.
+The figure was removed from the letter; the script is retained only
+for history.  Do not regenerate or cite it.
+
+Original description follows.
+
 Model schematic for the letter (Fig. 1).
 
 Three-panel layout designed at JGR:Planets full-width (190 mm = 7.48 in):

@@ -17,7 +17,10 @@ from __future__ import annotations
 import json, sys, pathlib, time
 from copy import deepcopy
 
-sys.path.insert(0, '/Users/rp3gregorio/Lunar-V2')
+# Repo root resolved from this file's location, so results and figures
+# are written into the SAME checkout the script is run from.
+_REPO = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO))
 from lunar import _bootstrap as boot
 boot.ensure_lunar(extra=('spiceypy', 'scipy'))
 boot.ensure_apollo_hfe(mission='a15',
@@ -41,7 +44,7 @@ from lunar.apollo_helpers import extract_sensor_stability
 sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1)
 
 # Re-use the publication style from the v2 figure script
-sys.path.insert(0, '/Users/rp3gregorio/Lunar-V2/scripts')
+sys.path.insert(0, str(_REPO / 'scripts' / 'figures'))
 from phase2_figures_v2 import (   # type: ignore
     C_A15, C_A17, C_HAYNE, C_MS, C_LAB, C_TEAL, C_TEAL_L,
     C_FOREST, C_CORAL, C_CHAR, C_DIM, C_GRID,
@@ -286,9 +289,9 @@ def loo_deepest(R, kd_grid, z_obs_deep):
 # ══════════════════════════════════════════════════════════════════════════════
 def main():
     t0 = time.time()
-    out_dir = pathlib.Path('/Users/rp3gregorio/Lunar-V2/output')
-    fig_letter = pathlib.Path('/Users/rp3gregorio/Lunar-V2/paper/letter/figures')
-    fig_appendix = pathlib.Path('/Users/rp3gregorio/Lunar-V2/paper/appendix/figures')
+    out_dir = _REPO / 'output'
+    fig_letter = _REPO / 'paper' / 'letter' / 'figures'
+    fig_appendix = _REPO / 'paper' / 'appendix' / 'figures'
     results = {}
 
     # ── A1: extended K_d grids ────────────────────────────────────────────

@@ -460,10 +460,14 @@ def fig_robustness(d, out_path):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FIGURE — K_d sweep redesign (letter)
+# FIGURE — K_d sweep, SUPERSEDED single-panel version.
+#   The letter now uses the two-panel fig_kd_sweep() in
+#   make_letter_unified_figs.py.  Kept only for reference; not called
+#   by main().  Do not reintroduce: it predates the genuine-M&S fix.
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_kd_sweep_v2(d, out_path):
-    """JGR:Planets full-width with legend inside the upper-right."""
+    """SUPERSEDED. Single-panel K_d sweep; replaced by the two-panel
+    fig_kd_sweep() in make_letter_unified_figs.py."""
     fig, ax = plt.subplots(figsize=(JGR_FULL, 4.2))
     fig.subplots_adjust(left=0.10, right=0.97, top=0.89, bottom=0.15)
 
@@ -499,9 +503,9 @@ def fig_kd_sweep_v2(d, out_path):
 
     # vertical references with legend entries (so they go OUTSIDE)
     ax.axvline(3.4, color=C_TEAL, ls="--", lw=1.2, alpha=0.75, zorder=1,
-               label="Hayne 2017  $K_d = 3.4$")
-    ax.axvline(6.3, color=C_MS, ls=":", lw=1.2, alpha=0.75, zorder=1,
-               label="Martínez & Siegler 2021  $K_d = 6.3$")
+               label="Hayne 2017 global  $K_d = 3.4$")
+    ax.axvline(3.8, color=C_FOREST, ls=":", lw=1.2, alpha=0.75, zorder=1,
+               label="Feng 2020 deep value  $K_d = 3.8$")
 
     fmt_axis(ax,
              xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
@@ -532,7 +536,8 @@ def fig_lab_comparison(d, out_path):
         ("Hemingway 1973 (lab)",           1.2, 0.3, C_LAB,    "Lab"),
         ("Hayne 2017 (orbital, global)",   3.4, 0.5, C_HAYNE,  "Orbital"),
         ("Vasavada 2012 (orbital, deep)",  7.0, 1.5, C_HAYNE,  "Orbital"),
-        ("Martínez & Siegler 2021 (orbital, 3-layer)", 6.3, 1.0, C_HAYNE, "Orbital"),
+        ("Martínez & Siegler 2021 (orbital, $T,\\rho$-dependent)",
+         7.5, 0.5, C_HAYNE, "Orbital"),
         ("This work — A15 (in situ)",
          d["A15"]["bootstrap"]["median"]*1e3,
          (d["A15"]["bootstrap"]["ci_hi"] - d["A15"]["bootstrap"]["ci_lo"])/4*1e3,
@@ -1090,7 +1095,8 @@ def main():
     print("Regenerating Phase-2 figures with publication-grade aesthetic:")
     fig_bootstrap(d, LETTER_FIGS / "fig_bootstrap.pdf")
     fig_robustness(d, LETTER_FIGS / "fig_robustness.pdf")
-    fig_kd_sweep_v2(d, LETTER_FIGS / "fig5_kd_sweep_v2.pdf")
+    # fig_kd_sweep_v2 is superseded by the two-panel fig_kd_sweep() in
+    # make_letter_unified_figs.py and is no longer generated.
     fig_lab_comparison(d, APPENDIX_FIGS / "fig_lab_comparison.pdf")
     fig_cold_trap(d, APPENDIX_FIGS / "fig_cold_trap_depth.pdf")
     fig_posterior(APPENDIX_FIGS / "fig_kd_qb_posterior.pdf")

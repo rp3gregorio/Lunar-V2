@@ -18,8 +18,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from copy import deepcopy
 
-sys.path.insert(0, "/Users/rp3gregorio/Lunar-V2")
-sys.path.insert(0, "/Users/rp3gregorio/Lunar-V2/scripts")
+# Resolve the repo root from this file's location, not a hard-coded
+# absolute path -- the manuscript and the figures must live in the
+# SAME checkout or the published PDFs silently go stale.
+_REPO = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO))
+sys.path.insert(0, str(_REPO / "scripts"))
 
 from lunar import _bootstrap as boot
 boot.ensure_lunar(extra=("spiceypy", "scipy"))
@@ -116,8 +120,8 @@ SITES = {
                 T_MEAN_EFF=256.5, MIN_DEPTH_CM=80, mission="a17"),
 }
 
-LETTER_FIGS = pathlib.Path("/Users/rp3gregorio/Lunar-V2/paper/letter/figures")
-PHASE_A     = pathlib.Path("/Users/rp3gregorio/Lunar-V2/output/phase_a_results.json")
+LETTER_FIGS = _REPO / "paper" / "letter" / "figures"
+PHASE_A     = _REPO / "output" / "phase_a_results.json"
 
 
 # ── Solver ────────────────────────────────────────────────────────────────────
@@ -365,55 +369,95 @@ def fig_amplitude_vs_depth():
 # FIGURE 4 — K_d sweep (the central retrieval figure)
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_kd_sweep():
-    """Reads Phase-A results and plots the K_d sweep curves with the
-    unified palette (A15 = forest green, A17 = coral) and a shared
-    legend below."""
+    """Two-panel K_d retrieval figure.
+
+    (a) Full deep-sensor RMSE(K_d) sweep at both sites, extended past
+        the published grid so the curve is shown rising again on the
+        high-K_d side -- i.e. each minimum is a genuine bracketed bowl,
+        not a descending shoulder.
+    (b) Zoom on the minima region (RMSE < 1.6 K) so the depth and
+        sharpness of each minimum, the parabolic fit, and the 95%
+        bootstrap CI band are legible.
+    """
     d = json.loads(PHASE_A.read_text())
 
-    fig, ax = plt.subplots(figsize=(JGR_FULL, 5.0))
-    fig.subplots_adjust(left=0.10, right=0.97, top=0.92, bottom=0.30)
+    # ── extend the sweep so the rising high-K_d tail is shown ────────────
+    # The stored grids stop at 15 (A15) and 25 (A17) mW/m/K; we run a few
+    # extra forward models to confirm RMSE keeps rising beyond them.
+    from scripts.pipeline.phase_a_pipeline import SITES, run_kd_sweep_extended
+    EXT = {"A15": np.linspace(15.5e-3, 24.0e-3, 6),
+           "A17": np.linspace(25.5e-3, 36.0e-3, 6)}
+    ext_curve = {}
+    for name in ("A15", "A17"):
+        _, _, R, _ = run_kd_sweep_extended(SITES[name], EXT[name],
+                                           k_model="hayne")
+        ext_curve[name] = (EXT[name] * 1e3, np.sqrt((R ** 2).mean(axis=0)))
 
     from scipy.interpolate import CubicSpline
+    # bottom=0.34 reserves a clear strip for the two-row legend so it
+    # cannot ride up over the panel x-axis titles.
+    fig, axes = plt.subplots(1, 2, figsize=(JGR_FULL, 4.7))
+    fig.subplots_adjust(left=0.08, right=0.985, top=0.91, bottom=0.34,
+                        wspace=0.26)
+    ax_full, ax_zoom = axes
+
     for name, color in [("A15", C_A15), ("A17", C_A17)]:
-        s   = d[name]
-        kdg = np.array(s["kd_grid"]) * 1e3
+        s    = d[name]
+        kdg  = np.array(s["kd_grid"]) * 1e3
         rmse = np.array(s["rmse_curve"])
-        cs  = CubicSpline(kdg, rmse)
-        kdf = np.linspace(kdg[0], kdg[-1], 400)
+        # splice the extended rising tail onto the stored grid
+        kde, rme = ext_curve[name]
+        kd_all   = np.concatenate([kdg, kde])
+        rm_all   = np.concatenate([rmse, rme])
+        cs       = CubicSpline(kd_all, rm_all)
+        kdf      = np.linspace(kd_all[0], kd_all[-1], 600)
 
         b = s["bootstrap"]
-        lo, hi = b["ci_lo"]*1e3, b["ci_hi"]*1e3
-        # CI band along the curve
-        in_ci = (kdf >= lo) & (kdf <= hi)
-        ax.fill_between(kdf[in_ci], 0, cs(kdf[in_ci]),
-                        color=color, alpha=0.10, zorder=0)
+        lo, hi = b["ci_lo"] * 1e3, b["ci_hi"] * 1e3
+        kd_star = s["kd_star"] * 1e3
+        rmse_star = s["rmse_star"]
+        lbl = (f"{name}  $K_d^{{*}} = {kd_star:.2f}$  [{lo:.2f}, {hi:.2f}]")
 
-        ax.plot(kdf, cs(kdf), "-", color=color, lw=2.4,
-                label=f"{name}  $K_d^{{*}} = {s['kd_star']*1e3:.2f}$  "
-                      f"[{lo:.2f}, {hi:.2f}]")
-        ax.plot(kdg, rmse, "o", color=color, markersize=4.0,
-                mec="white", mew=0.5, zorder=3)
-        ax.plot(s["kd_star"]*1e3, s["rmse_star"], "*", color=color,
-                markersize=20, mec="white", mew=1.4, zorder=5)
+        for ax in (ax_full, ax_zoom):
+            in_ci = (kdf >= lo) & (kdf <= hi)
+            ax.fill_between(kdf[in_ci], 0, cs(kdf[in_ci]),
+                            color=color, alpha=0.10, zorder=0)
+            ax.plot(kdf, cs(kdf), "-", color=color, lw=2.4,
+                    label=lbl if ax is ax_full else None)
+            ax.plot(kd_all, rm_all, "o", color=color, markersize=3.6,
+                    mec="white", mew=0.5, zorder=3)
+            ax.plot(kd_star, rmse_star, "*", color=color,
+                    markersize=19, mec="white", mew=1.4, zorder=5)
 
-    # vertical reference lines: literature deep-conductivity values
-    ax.axvline(3.4, color=C_HAYNE, ls="--", lw=1.2, alpha=0.7,
-               label="Hayne 2017 global  $K_d = 3.4$")
-    ax.axvline(3.8, color=C_FOREST, ls=":", lw=1.2, alpha=0.7,
-               label="Feng 2020 deep value  $K_d = 3.8$")
+    # reference lines on both panels
+    for ax in (ax_full, ax_zoom):
+        ax.axvline(3.4, color=C_HAYNE, ls="--", lw=1.2, alpha=0.7,
+                   label="Hayne 2017 global  $K_d = 3.4$"
+                   if ax is ax_full else None)
+        ax.axvline(3.8, color=C_FOREST, ls=":", lw=1.2, alpha=0.7,
+                   label="Feng 2020 deep value  $K_d = 3.8$"
+                   if ax is ax_full else None)
 
-    fmt_axis(ax,
+    fmt_axis(ax_full,
              xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
              ylabel=r"Deep-sensor RMSE  (K)",
-             title="Per-site $K_d$ retrieval under the Hayne 2017 functional form")
-    ax.set_xlim(0, 26)
-    ax.set_ylim(0, 6)
+             title="(a)  Full sweep")
+    ax_full.set_xlim(0, 37)
+    ax_full.set_ylim(0, 6)
 
-    h, l = ax.get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", bbox_to_anchor=(0.5, 0.005),
+    fmt_axis(ax_zoom,
+             xlabel=r"Deep conductivity  $K_d$  (mW m$^{-1}$ K$^{-1}$)",
+             ylabel=r"Deep-sensor RMSE  (K)",
+             title="(b)  Minima zoom")
+    ax_zoom.set_xlim(2, 17)
+    ax_zoom.set_ylim(0, 1.6)
+
+    h, l = ax_full.get_legend_handles_labels()
+    fig.legend(h, l, loc="lower center", bbox_to_anchor=(0.5, 0.015),
                ncols=2, frameon=True, edgecolor=C_GRID, framealpha=0.97,
                fontsize=FS_LEGEND, handlelength=2.2, borderpad=0.6,
-               title="Sites:  $K_d^{*}$  [95% bootstrap CI]   and reference values",
+               columnspacing=2.2,
+               title="Stars: retrieved $K_d^{*}$;  shaded: 95% bootstrap CI",
                title_fontsize=FS_LABEL)
 
     out = LETTER_FIGS / "fig5_kd_sweep.pdf"

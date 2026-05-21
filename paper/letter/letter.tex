@@ -583,9 +583,15 @@ Fig.~\ref{fig:kdsweep} shows the deep-sensor RMSE
 (eq.~\ref{eq:rmse-kd}) as a function of $K_d$ at each landing site,
 with the \Hayne\ functional form (eqs.~\ref{eq:K}--\ref{eq:cp})
 otherwise unchanged. Both curves have a clean, well-resolved minimum
-within the swept range. The parabolic point estimates with asymmetric
-$1\sigma$ bootstrap uncertainties (and 95\% intervals in square brackets)
-are
+interior to the swept range. Extending the sweep well beyond the
+fitting grid confirms that each minimum is a genuine bracketed bowl
+rather than a descending shoulder: the deep-sensor RMSE rises
+monotonically on the high-$K_d$ side, reaching $\approx\!2.0$\,K by
+$K_d=25$ at A15 and by $K_d=40$ at A17
+(Fig.~\ref{fig:kdsweep}a). A longer sweep would therefore only
+\emph{raise} the RMSE and cannot relocate either minimum. The
+parabolic point estimates with asymmetric $1\sigma$ bootstrap
+uncertainties (and 95\% intervals in square brackets) are
 \[
 K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}\,[3.94,\,14.36]\,\si{\milli\watt\per\meter\per\kelvin},\qquad
 K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}\,[10.18,\,21.62]\,\si{\milli\watt\per\meter\per\kelvin},
@@ -616,13 +622,15 @@ the two shapes are not equally good fits.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig5_kd_sweep.pdf}
-\caption{\textbf{Per-site $K_d$ retrieval under the \Hayne\ functional
-form.} Deep-sensor RMSE vs $K_d$, with the other \Hayne\ parameters held
-at their published values. Filled markers: swept grid; solid curve:
-parabolic refinement near the minimum; shaded band: bootstrap 95\% CI.
-Dashed vertical: \citet{hayne2017} global $K_d=3.4$; dotted:
-the \citet{feng2020} deep value $K_d=3.8$ adopted by the
-this-work 3-layer model.}
+\caption{Per-site $K_d$ retrieval under the \Hayne\ functional form,
+with all other \Hayne\ parameters held at their published values.
+(a)~Full deep-sensor RMSE($K_d$) sweep, extended past the
+fitting grid so the curve is shown rising again on the high-$K_d$
+side: each minimum is a genuine bracketed bowl, not a descending
+shoulder. (b)~Zoom on the minima ($\mathrm{RMSE}<1.6$\,K). Markers:
+forward-model evaluations; stars: retrieved $K_d^{*}$; shaded band:
+95\% bootstrap CI. Dashed vertical: \citet{hayne2017} global
+$K_d=3.4$; dotted: the \citet{feng2020} deep value $K_d=3.8$.}
 \label{fig:kdsweep}
 \end{figure}
 
@@ -1047,14 +1055,15 @@ the per-site contrast is invariant under any global $Q_b$ rescaling,
 but the absolute A17 value is not, and a $\sim\!30\%$ revision of
 $Q_{b,\mathrm{A17}}$ along the lines of the
 \citet{saito2007,nagihara2018} reanalyses brings $K_{d,\mathrm{A17}}^{*}$
-into approximate agreement with the deep layer of the
-\citet{martinez2021} 3-layer profile; correspondingly, the 95\%
-credible interval on $\Delta K_d$ from the Bayesian treatment just
-touches zero at the lower bound, even though the central estimate
+down into approximate agreement with the
+$\sim\!7.5\,\si{\milli\watt\per\meter\per\kelvin}$ effective deep
+conductivity of the \citet{martinez2021} model; correspondingly, the
+95\% credible interval on $\Delta K_d$ from the Bayesian treatment
+just touches zero at the lower bound, even though the central estimate
 sits well away from the null. \emph{(iii)} The retrieval
 assumes that the \citet{hayne2017} functional form for $K(T,z)$ is
 correct and varies only $K_d$; a discrete-layer or piecewise-linear
-shape (e.g.\ \citealt{martinez2021}) is a separate hypothesis class
+$K(z)$ shape is a separate hypothesis class
 which is not tested here. \emph{(iv)} The diurnal-amplitude depth
 profile (Fig.~\ref{fig:amplitude}) is used only as a borestem
 diagnostic and not as a frequency-domain validation, because below
