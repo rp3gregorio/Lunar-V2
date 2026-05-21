@@ -53,7 +53,59 @@ TOL_FAST     = 0.05
 GRID         = dict(z_max=5.0, dz0=0.002, growth=0.08)
 
 HAYNE = dict(K_S=K_SURFACE, K_D=K_DEEP, H=H_PARAMETER, CHI=CHI_RADIATIVE)
-MS_K_S, MS_K_D, MS_Z1, MS_Z2 = 1.0e-3, 6.3e-3, 0.07, 0.20
+
+# ── Martinez & Siegler (2021) genuine conductivity model ─────────────────────
+# Source: Martinez & Siegler (2021, JGR Planets 126, e2021JE006829),
+# "A Global Thermal Conductivity Model for Lunar Regolith at Low
+# Temperatures".  Verified against their published code
+# (Zenodo 12586656, lunar1Dheat v1.6, 1DFunctions/updateRK.m):
+#
+#   K_MS(T, rho) = (A1*rho + A2) * k_am(T)  +  (B1*rho + B2) * T^3
+#
+# where k_am(T) is the Woods-Robinson et al. (2019) amorphous-solid
+# conduction polynomial (8 terms in powers of T).  rho is the
+# depth-dependent density rho(z) = rho_d - (rho_d - rho_s) exp(-z/H).
+# This is NOT a layered model — it is temperature- and density-
+# dependent.  Coefficients reproduced verbatim from updateRK.m.
+MS_AM = dict(  # Woods-Robinson 2019 amorphous-conduction polynomial
+    A=-2.03297e-1, B=-11.472, C=22.5793, D=-14.3084, E=3.41742,
+    F=0.01101, G=-2.80491e-5, H=3.35837e-8, I=-1.40021e-11,
+)
+MS_A1, MS_A2 = 5.0821e-6, -0.0051       # density-scaling of k_am
+MS_B1, MS_B2 = 2.022e-13, -1.953e-10    # density-scaling of radiative T^3
+MS_RHO_S, MS_RHO_D, MS_H = 1100.0, 1800.0, 0.054   # heat1D.m values
+
+# ── This-work discrete 3-layer conductivity model ────────────────────────────
+# A discrete piecewise approximation of the Apollo-measured regolith
+# compaction structure (NOT from Martinez & Siegler).  The three zones
+# follow the layered structure documented at the HFE sites:
+#   * surface layer  0--2 cm  : radiative-dominated, loosely-packed
+#                               grains (Langseth, Keihm & Peters 1976
+#                               identify the radiative top "2--3 cm");
+#                               K = K_s = 0.74 mW/m/K (Hayne 2017).
+#   * transition     2--20 cm : rapid-compaction zone; K rises from
+#                               K_s toward the deep value.  20 cm is
+#                               where the Hayne (2017) exponential
+#                               (H = 6 cm) has reached ~97% of K_d,
+#                               so the boundary is consistent with the
+#                               Hayne comparison.
+#   * deep          >20 cm    : compacted regolith, K = K_d.
+# Site specificity enters through the transition SHAPE: the Apollo
+# cores give different deep bulk densities at the two sites (A15
+# ~1825, A17 ~1960 kg/m^3; Grott et al. 2010), and a denser column
+# compacts over a shorter depth.  We encode this with a density-set
+# curvature exponent p_site in the transition ramp (see k_func_3layer):
+# the A17 column, being denser, reaches the deep value slightly faster.
+# K_d itself remains the single swept free parameter, exactly as for
+# the Hayne form -- the density only shapes the layer profile, it is
+# not itself retrieved.
+TL_K_S   = K_SURFACE          # 7.4e-4 W/m/K  (Hayne 2017 surface value)
+TL_K_D   = 3.8e-3             # W/m/K default deep value (Feng 2020)
+TL_Z1    = 0.02              # base of surface layer (m)  -- Langseth 1976
+TL_Z2    = 0.20              # base of transition layer (m)
+# Grott et al. (2010) deep bulk densities at the two HFE sites:
+TL_RHO_SITE = {"A15": 1825.0, "A17": 1960.0}   # kg/m^3
+TL_RHO_REF  = 1800.0          # Hayne (2017) nominal deep density
 
 SITES = {
     "A15": dict(label="Apollo 15", lat=26.13, lon=3.63,
@@ -76,16 +128,68 @@ def k_func_hayne(kd, h=HAYNE["H"]):
     return f
 
 
+def _ms_density(z):
+    """Depth-dependent density rho(z) used by the Martinez & Siegler
+    model:  rho(z) = rho_d - (rho_d - rho_s) exp(-z/H)  (makegrid.m)."""
+    return MS_RHO_D - (MS_RHO_D - MS_RHO_S) * np.exp(-np.asarray(z) / MS_H)
+
+
 def k_func_ms():
-    """3-layer M&S K(z) with the same radiative multiplier."""
+    """Genuine Martinez & Siegler (2021) thermal conductivity model.
+
+    K_MS(T, rho) = (A1*rho + A2) * k_am(T) + (B1*rho + B2) * T^3
+
+    with k_am(T) the Woods-Robinson (2019) amorphous-solid conduction
+    polynomial.  rho is rho(z); see _ms_density.  Verified line-for-
+    line against Martinez & Siegler's published code (updateRK.m).
+    """
+    am = MS_AM
     def f(T, z):
-        z_arr = np.atleast_1d(np.asarray(z))
-        T_arr = np.atleast_1d(np.asarray(T))
+        T_arr = np.atleast_1d(np.asarray(T, dtype=float))
+        z_arr = np.atleast_1d(np.asarray(z, dtype=float))
         if T_arr.shape != z_arr.shape:
             T_arr = np.broadcast_to(T_arr, z_arr.shape).copy()
-        Kc = np.where(z_arr < MS_Z2,
-                      MS_K_S + (MS_K_D - MS_K_S) * (z_arr / MS_Z2),
-                      MS_K_D)
+        # Woods-Robinson amorphous-conduction polynomial k_am(T)
+        k_am = (am["A"] + am["B"]*T_arr**-4.0 + am["C"]*T_arr**-3.0
+                + am["D"]*T_arr**-2.0 + am["E"]*T_arr**-1.0
+                + am["F"]*T_arr + am["G"]*T_arr**2.0
+                + am["H"]*T_arr**3.0 + am["I"]*T_arr**4.0)
+        rho = _ms_density(z_arr)
+        return (MS_A1*rho + MS_A2) * k_am + (MS_B1*rho + MS_B2) * T_arr**3.0
+    return f
+
+
+def k_func_3layer(kd=TL_K_D, rho_deep=TL_RHO_REF):
+    """This-work discrete 3-layer conductivity model (see header).
+
+    Piecewise structural conductivity:
+      z < TL_Z1                : K_s  (surface radiative layer)
+      TL_Z1 <= z < TL_Z2       : transition K_s -> kd, with a
+                                 density-set curvature
+      z >= TL_Z2               : kd  (deep compacted layer)
+    times the Hayne (2017) radiative multiplier 1 + chi (T/T_ref)^3
+    so the temperature dependence is consistent with the other two
+    models in the comparison.
+
+    Site specificity: a denser column compacts over a shorter depth,
+    so the transition ramp is raised to a power p < 1 that decreases
+    with deep bulk density (denser -> faster approach to kd).  We map
+    density to exponent linearly about the Hayne reference density:
+        p = 1 - 0.5*(rho_deep - TL_RHO_REF)/TL_RHO_REF
+    At the Hayne reference density p = 1 (linear ramp); at the denser
+    A17 site p < 1 (concave-up, faster rise).  K_d is unchanged --
+    only the layer SHAPE responds to density.
+    """
+    p = 1.0 - 0.5 * (rho_deep - TL_RHO_REF) / TL_RHO_REF
+    p = float(np.clip(p, 0.4, 1.6))
+    def f(T, z):
+        z_arr = np.atleast_1d(np.asarray(z, dtype=float))
+        T_arr = np.atleast_1d(np.asarray(T, dtype=float))
+        if T_arr.shape != z_arr.shape:
+            T_arr = np.broadcast_to(T_arr, z_arr.shape).copy()
+        frac = np.clip((z_arr - TL_Z1) / (TL_Z2 - TL_Z1), 0.0, 1.0) ** p
+        ramp = TL_K_S + (kd - TL_K_S) * frac
+        Kc = np.where(z_arr < TL_Z1, TL_K_S, ramp)
         return Kc * (1.0 + HAYNE["CHI"] * (T_arr / T_REFERENCE) ** 3)
     return f
 
