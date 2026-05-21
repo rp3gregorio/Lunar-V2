@@ -34,7 +34,12 @@ def iso_to_seconds(iso_arr):
 
 def find_stable_window(subset, slope_thresh_K_per_year=0.08, min_frac=0.20):
     """Scan 55%–85% of a record; pick the earliest start where the trailing
-    linear fit has |slope| < threshold.  Fallback: last 25% of records."""
+    linear fit has |slope| < threshold.  Fallback: last 25% of records.
+
+    0.08 K/yr (~2.2e-4 K/day) is the stated criterion in the paper (letter
+    §2.1).  It is ~4.6× stricter than the naive 1e-3 K/day often cited;
+    the stricter value reduces bias from residual post-disturbance drift.
+    """
     n = len(subset)
     t_sec = iso_to_seconds(subset['time_iso'])
     t_day = (t_sec - t_sec[0]) / 86400.0

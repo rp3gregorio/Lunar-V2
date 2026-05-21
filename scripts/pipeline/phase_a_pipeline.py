@@ -61,19 +61,42 @@ HAYNE = dict(K_S=K_SURFACE, H=H_PARAMETER, CHI=CHI_RADIATIVE,
              T_REF=T_REFERENCE)
 
 SITES = {
-    'A15': dict(label='Apollo 15', lat=26.13, lon=3.63,
+    'A15': dict(tag='A15', label='Apollo 15', lat=26.13, lon=3.63,
                 albedo=0.131, emissivity=0.95, Q_BASAL=0.021,
                 T_MEAN_EFF=250.0, MIN_DEPTH_CM=80, mission='a15'),
-    'A17': dict(label='Apollo 17', lat=20.19, lon=30.77,
+    'A17': dict(tag='A17', label='Apollo 17', lat=20.19, lon=30.77,
                 albedo=0.137, emissivity=0.95, Q_BASAL=0.015,
                 T_MEAN_EFF=255.0, MIN_DEPTH_CM=80, mission='a17'),
 }
 
 DEPTH_SIGMA_CM = 2.5    # Nagihara 2018 sensor placement uncertainty
 
+# ── This-work discrete 3-layer conductivity model ────────────────────────────
+# Apollo-grounded layer structure (see make_letter_unified_figs.py header):
+#   0--2 cm    surface radiative layer (Langseth+ 1976), K = K_s
+#   2--20 cm   compaction transition; ramp curvature set by deep density
+#   >20 cm     compacted deep layer, K = K_d (the swept parameter)
+TL_Z1, TL_Z2 = 0.02, 0.20          # layer boundaries (m)
+TL_RHO_REF   = 1800.0              # Hayne (2017) nominal deep density
+TL_RHO_SITE  = {'A15': 1825.0, 'A17': 1960.0}   # Grott+ 2010 deep densities
+
+
+def conductivity_3layer(T, z, Kd, rho_deep=TL_RHO_REF):
+    """Discrete 3-layer K(T,z): piecewise structural profile times the
+    Hayne radiative multiplier.  A denser column (higher rho_deep)
+    compacts faster, encoded as a transition-ramp exponent p<1."""
+    z = np.asarray(z, dtype=float)
+    T = np.broadcast_to(np.asarray(T, dtype=float), z.shape).astype(float)
+    p = float(np.clip(1.0 - 0.5 * (rho_deep - TL_RHO_REF) / TL_RHO_REF,
+                      0.4, 1.6))
+    frac = np.clip((z - TL_Z1) / (TL_Z2 - TL_Z1), 0.0, 1.0) ** p
+    Kc = np.where(z < TL_Z1, HAYNE['K_S'],
+                  HAYNE['K_S'] + (Kd - HAYNE['K_S']) * frac)
+    return Kc * (1.0 + HAYNE['CHI'] * (T / HAYNE['T_REF']) ** 3)
+
 
 # ── Solver wrappers ──────────────────────────────────────────────────────────
-def run_with(site_cfg, *, kd, h=None, qb=None):
+def run_with(site_cfg, *, kd, h=None, qb=None, k_model='hayne'):
     site = deepcopy(site_cfg)
     if qb is not None:
         site['Q_BASAL'] = qb
@@ -85,9 +108,14 @@ def run_with(site_cfg, *, kd, h=None, qb=None):
     cos_lat = np.cos(np.deg2rad(site['lat']))
     phase   = 2.0 * np.pi * t_s / T_LUNAR
     insol   = S0 * cos_lat * np.maximum(0.0, np.cos(phase))
-    def k_func(T, z):
-        return conductivity_hayne(T, z, Ks=HAYNE['K_S'], Kd=kd,
-                                  H=h, chi=HAYNE['CHI'])
+    if k_model == '3layer':
+        rho_deep = TL_RHO_SITE.get(site_cfg.get('tag', ''), TL_RHO_REF)
+        def k_func(T, z):
+            return conductivity_3layer(T, z, Kd=kd, rho_deep=rho_deep)
+    else:
+        def k_func(T, z):
+            return conductivity_hayne(T, z, Ks=HAYNE['K_S'], Kd=kd,
+                                      H=h, chi=HAYNE['CHI'])
     def cp_func(T):
         return specific_heat(T, model='hayne')
     K_init = k_func(np.full_like(z_mid, site['T_MEAN_EFF']), z_mid)
@@ -124,7 +152,7 @@ def kd_star_from_residuals(R, kd_grid, idx=None):
 # ══════════════════════════════════════════════════════════════════════════════
 # A1 — Extended K_d sweep
 # ══════════════════════════════════════════════════════════════════════════════
-def run_kd_sweep_extended(site_cfg, kd_grid):
+def run_kd_sweep_extended(site_cfg, kd_grid, k_model='hayne'):
     obs = extract_sensor_stability(site_cfg['mission'],
                                    min_depth_cm=site_cfg['MIN_DEPTH_CM'])
     z_obs = np.asarray(obs['depth_cm_all']) / 100.0
@@ -137,12 +165,12 @@ def run_kd_sweep_extended(site_cfg, kd_grid):
 
     R = np.empty((len(z_obs_deep), len(kd_grid)))
     for k, kd in enumerate(kd_grid):
-        z_mid, T_mean_z = run_with(site_cfg, kd=kd)
+        z_mid, T_mean_z = run_with(site_cfg, kd=kd, k_model=k_model)
         T_pred = np.interp(z_obs_deep, z_mid, T_mean_z)
         R[:, k] = T_pred - T_obs_deep
         if (k + 1) % 5 == 0 or k == len(kd_grid) - 1:
-            print(f"   K_d sweep ({site_cfg['label']}): {k+1}/{len(kd_grid)}",
-                  flush=True)
+            print(f"   K_d sweep ({site_cfg['label']}, {k_model}): "
+                  f"{k+1}/{len(kd_grid)}", flush=True)
     return z_obs_deep, T_obs_deep, R, stype_deep
 
 
@@ -282,6 +310,22 @@ def main():
                              rmse_curve=np.sqrt((R**2).mean(axis=0)).tolist())
         print(f"   K_d* = {kd_star*1e3:.3f} mW/m/K, RMSE* = {rmse_star:.3f} K",
               flush=True)
+
+    # ── A1b: same K_d sweep under the this-work discrete 3-layer model ────
+    # The 3-layer model has the same single free parameter K_d, so we
+    # retrieve it the same way.  This quantifies how sensitive the
+    # retrieved K_d* is to the assumed K(z) transition shape.
+    for name, cfg in SITES.items():
+        print(f"\n=== A1b: 3-layer K_d sweep — {name} ===", flush=True)
+        _, _, R3, _ = run_kd_sweep_extended(cfg, kd_grids[name],
+                                            k_model='3layer')
+        kd3, rmse3 = kd_star_from_residuals(R3, kd_grids[name])
+        results[name]['kd_star_3layer'] = kd3
+        results[name]['rmse_star_3layer'] = rmse3
+        results[name]['rmse_curve_3layer'] = \
+            np.sqrt((R3**2).mean(axis=0)).tolist()
+        print(f"   3-layer K_d* = {kd3*1e3:.3f} mW/m/K, "
+              f"RMSE* = {rmse3:.3f} K", flush=True)
 
     # ── A5: depth-uncertainty bootstrap (extended grid + jittered depths) ─
     print(f"\n=== A5: bootstrap with depth uncertainty (±{DEPTH_SIGMA_CM} cm) ===",

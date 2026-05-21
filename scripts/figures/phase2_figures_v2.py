@@ -857,9 +857,20 @@ def fig_thermal_profiles(d, out_path):
                     albedo=0.137, emissivity=0.95, Q_BASAL=0.015,
                     T_MEAN_EFF=255.0, MIN_DEPTH_CM=80),
     }
-    # M&S 2021 3-layer piecewise-K parameters (published)
-    KS_MS, KD_MS = 1.0e-3, 6.3e-3
-    Z1_MS, Z2_MS = 0.07, 0.20   # surface-layer base, ramp-zone base
+    # ── Genuine Martinez & Siegler (2021) conductivity model ──────────────
+    # K_MS(T,rho) = (A1 rho + A2) k_am(T) + (B1 rho + B2) T^3
+    # verified against their Zenodo code (lunar1Dheat v1.6, updateRK.m).
+    MS_AM = dict(A=-2.03297e-1, B=-11.472, C=22.5793, D=-14.3084,
+                 E=3.41742, F=0.01101, G=-2.80491e-5, H=3.35837e-8,
+                 I=-1.40021e-11)
+    MS_A1, MS_A2 = 5.0821e-6, -0.0051
+    MS_B1, MS_B2 = 2.022e-13, -1.953e-10
+    MS_RHO_S, MS_RHO_D, MS_H = 1100.0, 1800.0, 0.054
+
+    # ── This-work discrete 3-layer model (Apollo-grounded) ────────────────
+    TL_Z1, TL_Z2 = 0.02, 0.20
+    TL_RHO_REF   = 1800.0
+    TL_RHO_SITE  = {'A15': 1825.0, 'A17': 1960.0}   # Grott+ 2010
 
     def make_k_hayne(kd):
         def k(T, z):
@@ -867,15 +878,30 @@ def fig_thermal_profiles(d, out_path):
                                       H=H_PARAMETER, chi=CHI)
         return k
 
-    def make_k_ms(kd=KD_MS):
+    def make_k_ms():
+        am = MS_AM
         def k(T, z):
-            # piecewise-linear base conductivity
-            k_base = np.where(
-                z <= Z1_MS, KS_MS,
-                np.where(z <= Z2_MS,
-                         KS_MS + (kd - KS_MS) * (z - Z1_MS) / (Z2_MS - Z1_MS),
-                         kd))
-            return k_base * (1.0 + CHI * (T / T_REF) ** 3)
+            T_a = np.broadcast_to(np.asarray(T, float),
+                                  np.asarray(z, float).shape).astype(float)
+            z_a = np.asarray(z, float)
+            k_am = (am['A'] + am['B']*T_a**-4 + am['C']*T_a**-3
+                    + am['D']*T_a**-2 + am['E']*T_a**-1 + am['F']*T_a
+                    + am['G']*T_a**2 + am['H']*T_a**3 + am['I']*T_a**4)
+            rho = MS_RHO_D - (MS_RHO_D - MS_RHO_S) * np.exp(-z_a / MS_H)
+            return (MS_A1*rho + MS_A2)*k_am + (MS_B1*rho + MS_B2)*T_a**3
+        return k
+
+    def make_k_3layer(kd, rho_deep=TL_RHO_REF):
+        p = float(np.clip(1.0 - 0.5*(rho_deep - TL_RHO_REF)/TL_RHO_REF,
+                          0.4, 1.6))
+        def k(T, z):
+            z_a = np.asarray(z, float)
+            T_a = np.broadcast_to(np.asarray(T, float),
+                                  z_a.shape).astype(float)
+            frac = np.clip((z_a - TL_Z1)/(TL_Z2 - TL_Z1), 0.0, 1.0) ** p
+            Kc = np.where(z_a < TL_Z1, K_SURFACE,
+                          K_SURFACE + (kd - K_SURFACE)*frac)
+            return Kc * (1.0 + CHI * (T_a / T_REF) ** 3)
         return k
 
     def run_profile(site_cfg, k_func):
@@ -912,11 +938,15 @@ def fig_thermal_profiles(d, out_path):
     # ── run models and collect per-site data first ────────────────────────────
     site_data = {}
     for name, site_cfg in SITE_CFGS.items():
-        kd_r = d[name]["kd_star"]
+        kd_r  = d[name]["kd_star"]                  # Hayne retrieved K_d*
+        kd_3l = d[name].get("kd_star_3layer", kd_r) # 3-layer retrieved K_d*
+        rho_s = TL_RHO_SITE[name]
         print(f"  Running Hayne K_d*={kd_r*1e3:.2f}  for {name} ...", flush=True)
         z_h, T_h = run_profile(site_cfg, make_k_hayne(kd_r))
-        print(f"  Running M&S 3-layer K_d={KD_MS*1e3:.1f} for {name} ...", flush=True)
+        print(f"  Running M&S model for {name} ...", flush=True)
         z_m, T_m = run_profile(site_cfg, make_k_ms())
+        print(f"  Running 3-layer K_d*={kd_3l*1e3:.2f} for {name} ...", flush=True)
+        z_3, T_3 = run_profile(site_cfg, make_k_3layer(kd_3l, rho_deep=rho_s))
 
         obs_raw = extract_sensor_stability(site_cfg['mission'], min_depth_cm=0)
         sensors = obs_raw['sensors']
@@ -924,7 +954,9 @@ def fig_thermal_profiles(d, out_path):
         T_obs = np.array([s['T_eq']     for s in sensors])
         T_err = np.array([s['T_std']    for s in sensors])
         deep  = z_obs >= site_cfg['MIN_DEPTH_CM']
-        site_data[name] = dict(kd_r=kd_r, z_h=z_h, T_h=T_h, z_m=z_m, T_m=T_m,
+        site_data[name] = dict(kd_r=kd_r, kd_3l=kd_3l,
+                                z_h=z_h, T_h=T_h, z_m=z_m, T_m=T_m,
+                                z_3=z_3, T_3=T_3,
                                 z_obs=z_obs, T_obs=T_obs, T_err=T_err, deep=deep)
 
     legend_handles = []
@@ -933,8 +965,10 @@ def fig_thermal_profiles(d, out_path):
     for col, (name, site_cfg) in enumerate(SITE_CFGS.items()):
         sd     = site_data[name]
         kd_r   = sd['kd_r']
+        kd_3l  = sd['kd_3l']
         z_h, T_h = sd['z_h'], sd['T_h']
         z_m, T_m = sd['z_m'], sd['T_m']
+        z_3, T_3 = sd['z_3'], sd['T_3']
         z_obs, T_obs, T_err = sd['z_obs'], sd['T_obs'], sd['T_err']
         deep   = sd['deep']
         C_site = C_A15 if name == "A15" else C_A17
@@ -943,9 +977,11 @@ def fig_thermal_profiles(d, out_path):
         ax_f = axes_full[col]
 
         lH, = ax_f.plot(T_h, z_h, color=C_TEAL, lw=2.0,
-                        label=rf"Hayne  $K_d^{{*}}={kd_r*1e3:.2f}$ mW m$^{{-1}}$ K$^{{-1}}$")
+                        label=rf"Hayne (2017), $K_d^{{*}}={kd_r*1e3:.2f}$")
         lM, = ax_f.plot(T_m, z_m, color=C_MS,   lw=2.0, ls="--",
-                        label=rf"M\&S 2021  $K_d={KD_MS*1e3:.1f}$ mW m$^{{-1}}$ K$^{{-1}}$")
+                        label="Martínez & Siegler (2021)")
+        l3, = ax_f.plot(T_3, z_3, color=C_FOREST, lw=2.2, ls=":",
+                        label=rf"This work, 3-layer $K_d^{{*}}={kd_3l*1e3:.2f}$")
 
         ax_f.errorbar(T_obs[~deep], z_obs[~deep], xerr=T_err[~deep],
                       fmt="o", ms=5, color=C_NEUTRAL, mec=C_NEUTRAL,
@@ -977,8 +1013,9 @@ def fig_thermal_profiles(d, out_path):
         ax_z.set_ylim(220, MIN_CM - 3)
 
         # model curves — only the deep portion matters visually
-        ax_z.plot(T_h, z_h, color=C_TEAL, lw=2.2)
-        ax_z.plot(T_m, z_m, color=C_MS,   lw=2.2, ls="--")
+        ax_z.plot(T_h, z_h, color=C_TEAL,   lw=2.2)
+        ax_z.plot(T_m, z_m, color=C_MS,     lw=2.2, ls="--")
+        ax_z.plot(T_3, z_3, color=C_FOREST, lw=2.2, ls=":")
 
         ax_z.errorbar(T_obs[deep], z_obs[deep], xerr=T_err[deep],
                       fmt="o", ms=7, color=C_site, mec="white", mew=1.0,
@@ -1008,20 +1045,21 @@ def fig_thermal_profiles(d, out_path):
         ax_z.xaxis.set_minor_locator(mtick.AutoMinorLocator())
 
         if col == 0:
-            legend_handles = [lH, lM, lD,
+            legend_handles = [lH, lM, l3, lD,
                 Line2D([0],[0], marker="o", color="none",
                        markerfacecolor=C_NEUTRAL, markersize=6,
                        label="HFE shallow sensors (borestem-excluded)")]
 
     # ── shared legend BELOW the figure (user preference) ─────────────────────
     fig.legend(handles=legend_handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.005), ncols=2, frameon=True,
+               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=2.0, borderpad=0.5, columnspacing=1.4,
                labelspacing=0.3,
-               title=(r"Model curves use per-site retrieved $K_d^{*}$ (Hayne shape) "
-                      r"and published $K_d$ (M&S 3-layer).  "
-                      r"Grey markers: excluded from retrieval."),
+               title=("Hayne (2017) and this-work 3-layer curves use the "
+                      "per-site retrieved $K_d^{*}$; Martínez & Siegler "
+                      "(2021) is parameter-free.  "
+                      "Grey markers: borestem-excluded."),
                title_fontsize=8.0)
 
     fig.savefig(out_path)

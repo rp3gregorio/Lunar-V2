@@ -40,7 +40,7 @@ from lunar.apollo_helpers import extract_sensor_stability
 from phase2_figures_v2 import (   # type: ignore
     JGR_FULL,
     FS_TITLE, FS_LABEL, FS_TICK, FS_LEGEND,
-    C_HAYNE, C_MS, C_A15, C_A17, C_CHAR, C_DIM, C_GRID,
+    C_HAYNE, C_MS, C_A15, C_A17, C_CHAR, C_DIM, C_GRID, C_FOREST,
     fmt_axis,
 )
 
@@ -233,17 +233,28 @@ def fig_mean_T_profile():
         deep  = np.array(obs["deep_mask"], dtype=bool)
         stype = np.array(obs["stype_all"])
 
-        # model: Hayne reference + M&S 3-layer
-        z_mid, T_mat_H, _  = run_pixel(cfg, kfunc=k_func_hayne(HAYNE["K_D"]))
+        # Three published / this-work conductivity models, all at their
+        # nominal (un-retrieved) parameters:
+        #   - Hayne (2017) smooth-exponential, global K_d = 3.4 mW/m/K
+        #   - Martinez & Siegler (2021) genuine T,rho-dependent model
+        #   - this-work discrete 3-layer model (deep K_d = 3.8 mW/m/K
+        #     nominal; per-site density shapes the transition)
+        rho_site = TL_RHO_SITE[name]
+        z_mid, T_mat_H,  _ = run_pixel(cfg, kfunc=k_func_hayne(HAYNE["K_D"]))
         z_mid, T_mat_MS, _ = run_pixel(cfg, kfunc=k_func_ms())
+        z_mid, T_mat_3L, _ = run_pixel(
+            cfg, kfunc=k_func_3layer(kd=TL_K_D, rho_deep=rho_site))
         T_H  = T_mat_H.mean(axis=1)
         T_MS = T_mat_MS.mean(axis=1)
+        T_3L = T_mat_3L.mean(axis=1)
 
         # plot
         ax.plot(T_H,  z_mid * 100, "-",  color=C_HAYNE, lw=2.0,
                 label="Hayne (2017) — smooth exponential")
         ax.plot(T_MS, z_mid * 100, "--", color=C_MS, lw=2.0,
-                label="Martinez & Siegler (2021) — 3-layer")
+                label="Martinez & Siegler (2021) — $T,\\rho$-dependent")
+        ax.plot(T_3L, z_mid * 100, ":", color=C_FOREST, lw=2.2,
+                label="This work — discrete 3-layer")
 
         # observed sensors
         col_TG = C_CHAR
