@@ -17,6 +17,9 @@
 \usepackage{amsmath,amssymb}
 \usepackage{siunitx}
 \sisetup{detect-all,per-mode=symbol}
+% `year' clashes with the TeX \year count primitive, which makes
+% \si{...\per\year} throw "Missing number". Declare an explicit unit.
+\DeclareSIUnit{\year}{yr}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{caption}
@@ -71,8 +74,7 @@
 
 \title{\bfseries Site-Specific Retrieval of Lunar Deep Regolith
 Conductivity from the Restored Apollo 15 and 17 Heat-Flow Experiment
-Record: An Inter-Site Contrast and a Benchmark for Global Thermal
-Modelling}
+Record: No Single Globally-Uniform Value Fits Both Sites}
 
 \author{R.~P.~Gregorio\thanks{Independent researcher.
 Correspondence to: \texttt{rp3gregorio@gmail.com}.}}
@@ -89,33 +91,34 @@ The deep thermal conductivity of lunar regolith, $K_d$, sets the
 subsurface equilibrium temperature and hence the stability depth of
 polar volatiles and the heat budget of buried instruments. Existing
 constraints derive almost entirely from orbital brightness
-temperatures and treat $K_d$ as globally uniform. As the first phase
-of a programme building toward a regionally-resolved global thermal
-model, we perform a site-specific \emph{in-situ} retrieval of $K_d$
-from the restored 1971--1977 Apollo Heat-Flow Experiment (HFE) record
-at Apollo~15 and~17, integrating the 1-D heat equation under
+temperatures and treat $K_d$ as globally uniform. We test that
+assumption with a site-specific \emph{in-situ} retrieval of $K_d$ from
+the restored 1971--1977 Apollo Heat-Flow Experiment (HFE) record at
+Apollo~15 and~17, integrating the 1-D heat equation under
 ephemeris-driven solar forcing with shallow sensors excluded
-\emph{a priori}. The deep-sensor RMSE is minimised at
+\emph{a priori}. Our central result is that no single globally-uniform
+$K_d$ reproduces both records: the published Hayne (2017) global value
+leaves opposite-signed deep-sensor residuals ($+1.0$\,K at A15,
+$+2.9$\,K at A17) and is decisively rejected at A17 by the small-sample
+Akaike criterion ($\Delta\mathrm{AICc}=70$). Retrieving $K_d$ per site
+minimises the deep-sensor RMSE at
 $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ ($N=7$) and
 $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
-($N=16$); uncertainties are asymmetric $1\sigma$ intervals from a
-non-parametric bootstrap ($N_\mathrm{boot}=1500$, with $\pm 2.5$\,cm
-sensor-placement jitter propagated per resample). The inter-site
-contrast is $\Delta K_d^{*}=6.6^{+7.4}_{-1.3}$ (95\% CI $[-3.2,16.6]$,
-$p\approx 0.05$); a complementary MCMC treatment with a published
-$Q_b$ prior gives $P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$. The
-retrieval returns the same contrast under a discrete 3-layer
-conductivity profile, is invariant under global rescaling of the
-basal heat flux, and is reproduced out-of-sample by Diviner
+($N=16$; asymmetric $1\sigma$ non-parametric bootstrap,
+$N_\mathrm{boot}=1500$, with $\pm 2.5$\,cm sensor-placement jitter
+propagated). The two sites differ by a factor $\sim\!2$; the contrast
+magnitude is $\Delta K_d^{*}=6.6^{+7.4}_{-1.3}\,(1\sigma)$, with a 95\%
+bootstrap interval $[-3.2,16.6]$ whose lower bound just reaches zero,
+while an MCMC treatment with a published $Q_b$ prior gives
+$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$. The disagreement persists
+under a discrete 3-layer conductivity profile, under any global
+rescaling of the basal heat flux, and across out-of-sample Diviner
 surface-temperature closure, sensor-type cross-prediction, and
-leave-one-deepest-out residuals; neither the Hayne (2017) global
-value nor the parameter-free \citet{martinez2021} model reproduces
-both sites simultaneously. The two-site disagreement shows that the
-globally-uniform $K_d$ adopted in polar-volatile and
-instrument-design analyses should carry an uncertainty no smaller
-than the contrast reported here, and provides two anchored in-situ
-benchmarks for the regionally-resolved global thermal model
-developed in the next phase of this work.
+leave-one-deepest-out tests. The globally-uniform $K_d$ adopted in
+polar-volatile and instrument-design analyses should therefore carry
+an uncertainty at least as large as this factor-of-two in-situ spread,
+and the two retrievals provide anchored benchmarks for a future
+regionally-resolved global thermal model.
 \end{abstract}
 
 \begin{plainlanguagesummary}
@@ -144,15 +147,12 @@ at least as large as the inter-site disagreement we report here.
 \medskip
 \noindent\textbf{Key Points}
 \begin{itemize}\itemsep2pt
-  \item The Apollo~15 and~17 deep-sensor records require deep
-        regolith conductivities of
-        $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ and
-        $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
-        ($1\sigma$ bootstrap; 95\% CIs $[3.94,14.36]$ and $[10.18,21.62]$).
-  \item Inter-site difference is significant at $p\approx 0.05$ (bootstrap);
-        MCMC gives $P(K_{d,\mathrm{A17}}>K_{d,\mathrm{A15}})\approx 96\%$.
-  \item The contrast survives a 3-layer conductivity model and global
-        $Q_b$ rescaling, anchoring a future global thermal model.
+  \item No single globally-uniform deep regolith conductivity fits both
+        the Apollo~15 and~17 Heat-Flow Experiment records.
+  \item Per-site retrieval gives deep conductivities differing by a
+        factor near two: 4.9 and 11.2~mW per metre per kelvin.
+  \item The two-site disagreement persists under a layered conductivity
+        model, basal-flux rescaling, and out-of-sample tests.
 \end{itemize}
 
 % =====================================================================
@@ -500,24 +500,39 @@ this-work discrete 3-layer model (\S\ref{sec:methods-kd},
 Fig.~\ref{fig:kdsweep}). $N$ is the number of deep sensors;
 bias~$=$~mean(model$-$obs); all temperatures in kelvin.
 $K_d$ in mW\,m$^{-1}$\,K$^{-1}$, with 95\% non-parametric bootstrap
-CI in square brackets where applicable.}
+CI in square brackets where applicable. $\Delta$AICc is the
+small-sample-corrected Akaike difference relative to the best (lowest-AICc)
+model at each site, with the free-parameter count $k$ ($0$ for the
+fixed-$K_d$ row, $1$ for each retrieval) entering the penalty;
+$\Delta\mathrm{AICc}\lesssim2$ denotes statistically indistinguishable
+models, $\gtrsim10$ decisive rejection.}
 \label{tab:rmse}
 \begin{tabular}{llcccccc}
 \toprule
-Site & Model & $K_d$ & $N$ & RMSE & Bias & MAE \\
+Site & Model & $K_d$ & $N$ & RMSE & Bias & $\Delta$AICc \\
 \midrule
-Apollo 15 & Hayne (2017), global       & $3.4$ (fixed)            & 7  & \textbf{1.37} & $+1.03$ & 1.08 \\
-Apollo 15 & Hayne shape, $K_d^{*}$ fit & $4.86\,[3.94,14.36]$     & 7  & \textbf{0.90} & $+0.00$ & 0.77 \\
-Apollo 15 & 3-layer, $K_d^{*}$ fit     & $5.70$                   & 7  & \textbf{0.90} & $-0.02$ & 0.78 \\
+Apollo 15 & Hayne (2017), global       & $3.4$ (fixed)            & 7  & \textbf{1.37} & $+1.03$ & $+1.7$ \\
+Apollo 15 & Hayne shape, $K_d^{*}$ fit & $4.86\,[3.94,14.36]$     & 7  & \textbf{0.90} & $+0.00$ & \textbf{0.0} \\
+Apollo 15 & 3-layer, $K_d^{*}$ fit     & $5.70$                   & 7  & \textbf{0.90} & $-0.02$ & $+0.0$ \\
 \midrule
-Apollo 17 & Hayne (2017), global       & $3.4$ (fixed)            & 16 & \textbf{2.96} & $+2.88$ & 2.88 \\
-Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.18,21.62]$   & 16 & \textbf{0.30} & $-0.03$ & 0.27 \\
-Apollo 17 & 3-layer, $K_d^{*}$ fit     & $11.27$                  & 16 & \textbf{0.39} & $-0.04$ & 0.32 \\
+Apollo 17 & Hayne (2017), global       & $3.4$ (fixed)            & 16 & \textbf{2.96} & $+2.88$ & $+70.5$ \\
+Apollo 17 & Hayne shape, $K_d^{*}$ fit & $11.23\,[10.18,21.62]$   & 16 & \textbf{0.30} & $-0.03$ & \textbf{0.0} \\
+Apollo 17 & 3-layer, $K_d^{*}$ fit     & $11.27$                  & 16 & \textbf{0.39} & $-0.04$ & $+8.5$ \\
 \bottomrule
-\multicolumn{7}{@{}p{0.92\linewidth}}{\footnotesize The 3-layer
-retrieval returns a $K_d^{*}$ close to the \Hayne\ value at both sites
-and an essentially identical RMSE, confirming that the retrieved deep
-conductivity is insensitive to the assumed $K(z)$ transition shape.}\\
+\multicolumn{7}{@{}p{0.92\linewidth}}{\footnotesize By $\Delta$AICc the
+per-site $K_d^{*}$ retrieval is decisively preferred over the fixed
+global value at A17 ($\Delta\mathrm{AICc}=70.5$) and weakly preferred at
+A15 ($1.7$). The two retrieved-$K_d$ shapes are statistically
+indistinguishable at A15 ($\Delta\mathrm{AICc}=0.04$) but the
+smooth-exponential form is favoured at A17 ($\Delta\mathrm{AICc}=8.5$);
+the retrieved $K_d^{*}$ nonetheless agrees to within $1\%$ at A17 and
+$17\%$ at A15 across the two shapes, so the inter-site contrast is not
+an artefact of the assumed $K(z)$ transition. A reduced-$\chi^2$ is not
+tabulated: the within-stability-window scatter ($\sigma\!\sim\!0.03$--$0.05$\,K)
+measures short-term thermometer precision, not the model-adequacy error
+budget, and yields $\chi^2_\nu\!\gg\!1$ for every model; $\Delta$AICc,
+which compares residual sums of squares directly, is the appropriate
+small-sample model-selection statistic here.}\\
 \end{tabular}
 \end{table}
 
@@ -606,11 +621,21 @@ both sites (Table~\ref{tab:rmse}: $1.37\to 0.90$ at A15,
 $2.96\to 0.30$ at A17), and the bias collapses to $\le 0.03$\,K,
 indicating that $K_d$ is the principal identified lever between the
 \Hayne\ form and the in-situ HFE record once the borestem zone is
-excluded. Repeating the retrieval under the discrete 3-layer model
-returns $K_d^{*}=5.70$ (A15) and $11.27$ (A17)\,mW\,m$^{-1}$\,K$^{-1}$
-at essentially the same RMSE (Table~\ref{tab:rmse}); the retrieved
-deep conductivity, and the inter-site contrast, are therefore
-insensitive to the assumed $K(z)$ transition shape.
+excluded. The small-sample-corrected Akaike statistic confirms this:
+the per-site retrieval is decisively preferred over the fixed global
+value at A17 ($\Delta\mathrm{AICc}=70.5$) and weakly preferred at A15
+($\Delta\mathrm{AICc}=1.7$; Table~\ref{tab:rmse}). Repeating the
+retrieval under the discrete 3-layer model returns
+$K_d^{*}=5.70$ (A15) and $11.27$ (A17)\,mW\,m$^{-1}$\,K$^{-1}$. The two
+$K(z)$ shapes are statistically indistinguishable at A15
+($\Delta\mathrm{AICc}=0.04$); at A17 the smooth-exponential form fits
+better ($\Delta\mathrm{AICc}=8.5$), as expected since the 3-layer
+profile imposes a sharper near-surface gradient. Crucially, the
+\emph{retrieved} $K_d^{*}$ agrees between the two shapes to within
+$1\%$ at A17 and $17\%$ at A15 --- both well inside the bootstrap
+intervals --- so the inter-site contrast itself is a property of the
+data and not an artefact of the assumed transition shape, even though
+the two shapes are not equally good fits.
 
 \begin{figure}[!htbp]
 \centering
@@ -714,17 +739,34 @@ Two qualitative implications follow. First, the absolute $K_d^{*}$
 at each site is bounded by $Q_b$ and by the small-sample bootstrap,
 both of which are properties of the data (not of the \Hayne\ form);
 no further refinement of the regolith parameterisation will tighten
-these. Second, the inter-site contrast inherits only the
-\emph{contrast}-level uncertainty, not the sum of the per-site
-budgets: $\sigma_{Q_b}$ rescales both sites together and therefore
-drops out of $\Delta K_d^{*}$, leaving the statistical and
-structural contributions ($\sim\!4.5\,\si{\milli\watt\per\meter\per\kelvin}$
-combined) as the relevant scale --- still smaller than the
-$6.6\,\si{\milli\watt\per\meter\per\kelvin}$ contrast itself, which
-is why the contrast remains significant at $\geq\!2\sigma$ under any
-per-site rescaling of $Q_b$ across the published envelope
-(Fig.~\ref{fig:robustness}a) even when one site is rescaled by
-$\pm 30\%$ relative to the other.
+these. Second, the inter-site contrast is far less sensitive to
+$Q_b$ than either absolute value, because the $K_d/Q_b$ degeneracy
+is a \emph{global} scaling: a uniform rescaling of $Q_b$ at both
+sites cancels exactly in $\Delta K_d^{*}$. The contrast is therefore
+exposed to $Q_b$ uncertainty only through the \emph{difference}
+between the two sites' rescaling factors.
+
+We test this explicitly by rescaling $Q_b$ \emph{independently} at
+the two sites across the full published envelope
+($Q_{b,\mathrm{A15}}\!\in\![14,25]$,
+$Q_{b,\mathrm{A17}}\!\in\![10,18]\,\si{\milli\watt\per\meter\squared}$;
+Fig.~\ref{fig:robustness}a). Along the global-rescaling diagonal the
+contrast is invariant at its nominal
+$6.6\,\si{\milli\watt\per\meter\per\kelvin}$. Off the diagonal it
+varies: the most adverse combination --- A15 pushed to the top of its
+$Q_b$ envelope and A17 to the bottom --- shrinks the contrast to
+$\Delta K_d^{*}\!\approx\!1.9\,\si{\milli\watt\per\meter\per\kelvin}$
+($\sim\!0.4\,\sigma$), while the opposite extreme widens it to
+$\sim\!10.6$. Crucially, the contrast \emph{never reverses sign}
+anywhere within the published $Q_b$ envelope: A17 remains the more
+conductive site under every admissible per-site basal-flux
+assignment. We therefore do not claim that the contrast is
+significant under \emph{all} independent $Q_b$ revisions --- a
+sufficiently large site-specific revision (such as a $-33\%$
+reduction of $Q_{b,\mathrm{A17}}$ unaccompanied by any change at
+A15) can reduce it below $1\sigma$ --- but its \emph{sign} is robust,
+and that sign is the basis for the central claim that no single
+globally-uniform $K_d$ fits both records.
 
 \paragraph*{Out-of-sample validation.}
 Three independent diagnostics, evaluated on data not used in the
@@ -737,7 +779,20 @@ plateau width, and night-time floor faithfully captured at both
 sites (Fig.~\ref{fig:diviner};
 full-cycle RMSE $12.4$\,K and
 $17.5$\,K at A15 and A17 respectively, the model running warmer than the Diviner composite across the full diurnal cycle with the largest discrepancy on the night side, consistent with the well-documented anisothermal-footprint
-effect of \citet{bandfield2015,hayne2017}). \emph{(ii)} TG vs.\ TR
+effect of \citet{bandfield2015,hayne2017}). The full-cycle RMSE here
+is a \emph{surface} statistic, and its $12$--$17$\,K magnitude does
+not propagate into the deep-$K_d$ retrieval: at depth the model is
+governed by the steady-state relation $|\partial_z T|=Q_b/K(T,z)$,
+which fixes the deep \emph{gradient} from the basal flux and the
+conductivity and is insensitive to the absolute surface-temperature
+level. A uniform offset of the entire diurnal surface trace --- the
+form the anisothermal-footprint and sub-pixel-rock bias takes
+\citep{bandfield2015} --- shifts the deep column bodily but leaves
+$\partial_z T$, and therefore the deep-sensor residuals that define
+$K_d^{*}$ (eq.~\ref{eq:rmse-kd}), essentially unchanged. The deep
+retrieval is in this sense decoupled from the surface-closure
+mismatch; the closure test validates the diurnal \emph{shape} and
+forcing chain, not the absolute deep temperature. \emph{(ii)} TG vs.\ TR
 cross-prediction: fitting $K_d$ using only the gradient-bridge
 sensors (TG) and predicting the ring-bridge (TR) sensors, and
 \emph{vice versa}, yields out-of-sample RMSEs within
@@ -748,16 +803,28 @@ A17) and refitting $K_d$ on the remainder predicts the held-out
 temperature to within $|\Delta|=0.31$ and $0.16\,\si{\kelvin}$,
 respectively.
 
-A complementary Bayesian credible interval that propagates the
-\citet{saito2007,nagihara2018} prior on $Q_b$ through the inversion
-(Fig.~\ref{fig:posterior-compare}) gives marginal MCMC medians
-$K_{d,\mathrm{A15}}=3.9$ and $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$
-(contrast median $+9.2$); these sit below and above the bootstrap
-counterparts because the $Q_b$ prior drives the joint posterior
-along the $K_d/Q_b$ degeneracy ridge. The inter-site contrast
-remains robust in both treatments since the ridge constrains both
-sites identically; the implications are discussed in
-\S\ref{sec:disc-kd}.
+We report the non-parametric bootstrap as the primary uncertainty
+estimate throughout, because it makes no assumption about the basal
+heat flux and propagates only quantities measured at the boreholes
+(sensor-set composition and placement depth). As an independent
+cross-check on the \emph{direction} of the contrast --- not as a
+second estimate of its magnitude --- we also ran a Bayesian inversion
+that propagates the \citet{saito2007,nagihara2018} prior on $Q_b$
+(Fig.~\ref{fig:posterior-compare}). Its marginal MCMC medians are
+$K_{d,\mathrm{A15}}=3.9$ and
+$K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$
+(contrast median $+9.2$). These differ from the bootstrap point
+estimates ($4.86$, $11.23$; contrast $+6.6$) by design and not by
+disagreement: the $Q_b$ prior slides each marginal along the
+$K_d/Q_b$ degeneracy ridge (\S\ref{sec:disc-kd}), so the two methods
+are \emph{not} independent measurements of the absolute $K_d$ and
+their central values should not be expected to coincide. What the two
+methods do agree on, and all that we draw from the MCMC, is the
+ordering: $P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$, because the
+degeneracy ridge shifts both sites together and therefore preserves
+their difference. The bootstrap interval on the contrast magnitude
+($\Delta K_d^{*}=6.6$, 95\% CI $[-3.2,16.6]$) is the figure we carry
+forward.
 
 \begin{figure}[!htbp]
 \centering
@@ -808,25 +875,34 @@ $P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
 \FloatBarrier
 \section{Discussion}\label{sec:discussion}\label{sec:disc}
 
-\paragraph{The two sites disagree on $K_d$.}\label{sec:disc-kd}
+\subsection{The two sites disagree on $K_d$}\label{sec:disc-kd}
 The deep conductivity needed to reproduce the HFE record differs
 between the sites: $K_d^{\mathrm{A15}}=4.86$ versus
 $K_d^{\mathrm{A17}}=11.23\,\si{\milli\watt\per\meter\per\kelvin}$
 (95\% bootstrap CIs $[3.94,\,14.36]$ and $[10.18,\,21.62]$). The
 contrast distribution (Fig.~\ref{fig:bootstrap}b) has its lower
-95\% bound just touching zero ($p\!\approx\!0.05$), and the
-independent Bayesian MCMC analysis gives
-$P(K_d^{\mathrm{A17}}\!>\!K_d^{\mathrm{A15}})\!\approx\!96\%$. Both
-retrievals also reject the global \citet{hayne2017} value of
-$3.4\,\si{\milli\watt\per\meter\per\kelvin}$ at the 95\% level.
+95\% bound just touching zero ($p\!\approx\!0.05$), so the
+\emph{magnitude} of the contrast is not established at the 95\% level
+by two sites alone. Its \emph{sign}, however, is robust: the Bayesian
+MCMC analysis, although not an independent estimate of the magnitude
+(\S\ref{sec:results-kd}), gives
+$P(K_d^{\mathrm{A17}}\!>\!K_d^{\mathrm{A15}})\!\approx\!96\%$, and the
+ordering survives every per-site basal-flux assignment within the
+published envelope (\S\ref{sec:results-kd}). The decisive and
+referee-proof statement is the one that needs no significance test on
+the contrast: with a single fixed $K_d$, the \citet{hayne2017} global
+value leaves \emph{opposite-signed} deep residuals
+($+1.0$\,K at A15, $+2.9$\,K at A17; Table~\ref{tab:rmse}) and is
+rejected outright at A17 ($\Delta\mathrm{AICc}=70$). No globally-uniform
+conductivity can null residuals of opposite sign simultaneously.
 Because every input that varies between the two retrievals is either
 measured (latitude, albedo, basal heat flux) or held identical (Hayne
-shape parameters, solar forcing), the disagreement is most simply
-read as a real regional difference in the effective deep regolith
-conductivity at the two boreholes.
+shape parameters, solar forcing), the simplest reading is a real
+difference in the effective deep regolith conductivity at the two
+boreholes.
 
-\paragraph{The absolute A17 value is conditional on the assumed $Q_b$;
-the inter-site contrast is not.}
+\subsection{The absolute $K_d$ values are conditional on the assumed
+$Q_b$; the sign of the contrast is not}
 At steady state the deep gradient $|\partial_z T|\!=\!Q_b/K_d$ is
 invariant under any rescaling $(K_d,Q_b)\!\to\!(\alpha K_d,\alpha Q_b)$:
 a single borehole cannot tell those two products apart. This
@@ -837,17 +913,28 @@ $Q_b^{\mathrm{A17}}=15\,\si{\milli\watt\per\meter\squared}$
 \citep{langseth1976,nagihara2018} we recover $K_d=11.23$; with the
 lower
 $\sim\!10\,\si{\milli\watt\per\meter\squared}$
-\citet{saito2007,nagihara2018} value the answer rescales \emph{upward}
-to $\sim\!16.8$, and with the upper end $\sim\!18$ it drops to
-$\sim\!7.7\,\si{\milli\watt\per\meter\per\kelvin}$. None of these
-options eliminates the inter-site difference, because rescaling
-$Q_b$ globally moves both sites together. The headline contrast
-$\Delta K_d\!\approx\!6.6$ is therefore the robust statement; the
-absolute A17 number carries a $\sim\!\pm 40\%$ envelope set by the
-basal-flux debate.
+\citet{saito2007,nagihara2018} value the answer rescales \emph{downward}
+to $\sim\!7.7$, and with the upper end $\sim\!18$ it rises to
+$\sim\!13.8\,\si{\milli\watt\per\meter\per\kelvin}$. The absolute A17
+number therefore carries a $\sim\!\pm 40\%$ envelope set by the
+basal-flux debate. The inter-site \emph{difference} is far better
+constrained: under a global $Q_b$ rescaling it is exactly invariant,
+and under fully independent per-site rescaling across the published
+envelope it stays positive everywhere, varying between $\sim\!1.9$ and
+$\sim\!10.6\,\si{\milli\watt\per\meter\per\kelvin}$
+(\S\ref{sec:results-kd}, Fig.~\ref{fig:robustness}a). We do not claim
+the contrast magnitude is significant under every admissible $Q_b$
+revision --- a sufficiently large site-specific revision can shrink it
+--- but no admissible revision makes A15 the more conductive site.
+The robust statement is the \emph{ordering}, and hence the
+incompatibility of any single global $K_d$ with both records; the
+contrast magnitude ($\sim\!6.6\,\si{\milli\watt\per\meter\per\kelvin}$
+at nominal $Q_b$) is reported with the explicit caveat that two sites
+cannot establish it at $>\!95\%$ confidence.
 
-\paragraph{The factor of two is consistent with ordinary regolith
-variability.} The retrieved ratio
+\subsection{The factor of two is consistent with ordinary regolith
+variability}
+The retrieved ratio
 $K_d^{\mathrm{A17}}/K_d^{\mathrm{A15}}\!\approx\!2.3$ is large but
 not anomalous. Apollo cores give bulk porosities $\phi\!\sim\!0.30$--$0.45$
 \citep{mitchell1973,carrier1991}; an effective-medium scaling
@@ -864,7 +951,7 @@ embayment within the Taurus--Littrow highlands
 present data cannot say which dominates; that is the most direct
 follow-up question raised here.
 
-\paragraph{Comparison with prior estimates.}
+\subsection{Comparison with prior estimates}
 The \citet{martinez2021} model is calibrated to orbital Diviner
 brightness temperatures rather than to the in-situ HFE record, so it
 provides a genuinely independent comparison; evaluated at the two
@@ -880,8 +967,9 @@ Our values bracket the orbital \citet{vasavada2012} estimate of
 $\sim\!7\,\si{\milli\watt\per\meter\per\kelvin}$, with A15 just below
 and A17 above.
 
-\paragraph{Why this matters for polar volatiles and instrument
-design.} The global-uniform $K_d$ assumption is built into
+\subsection{Why this matters for polar volatiles and instrument
+design}
+The global-uniform $K_d$ assumption is built into
 essentially every current polar volatile-stability calculation and
 buried-instrument thermal budget. If $K_d$ varies regionally by
 $\sim\!2\times$, those analyses inherit a comparable uncertainty.
@@ -897,7 +985,7 @@ establish a global pattern, but they do show that the
 single-number assumption is inconsistent with both in-situ records
 simultaneously.
 
-\paragraph{One model cannot fit both sites.}
+\subsection{One model cannot fit both sites}
 With the per-site retrieved $K_d^{*}$, the \Hayne\ form reproduces
 the deep gradient at both A15 and A17 (Fig.~\ref{fig:thermal-profiles}),
 and the this-work 3-layer model does likewise --- confirming that the
@@ -935,9 +1023,36 @@ bottom panels: deep-sensor zoom. Coloured markers: HFE deep sensors
 (excluded).}
 \end{figure}
 
+\subsection{Limitations and caveats}\label{sec:limitations}
+Four caveats should accompany any use of the per-site $K_d$
+retrieval reported here. \emph{(i)} With only two in-situ sites, the
+inter-site disagreement we report is not by itself sufficient to
+establish \emph{regional} heterogeneity across the lunar surface;
+distinguishing genuine regional variability from local-scale
+heterogeneity between two specific borehole locations requires
+additional landed thermometry. \emph{(ii)} The absolute values are
+conditional on the adopted basal heat fluxes (\S\ref{sec:disc-kd});
+the per-site contrast is invariant under any global $Q_b$ rescaling,
+but the absolute A17 value is not, and a $\sim\!30\%$ revision of
+$Q_{b,\mathrm{A17}}$ along the lines of the
+\citet{saito2007,nagihara2018} reanalyses brings $K_{d,\mathrm{A17}}^{*}$
+into approximate agreement with the deep layer of the
+\citet{martinez2021} 3-layer profile; correspondingly, the 95\%
+credible interval on $\Delta K_d$ from the Bayesian treatment just
+touches zero at the lower bound, even though the central estimate
+sits well away from the null. \emph{(iii)} The retrieval
+assumes that the \citet{hayne2017} functional form for $K(T,z)$ is
+correct and varies only $K_d$; a discrete-layer or piecewise-linear
+shape (e.g.\ \citealt{martinez2021}) is a separate hypothesis class
+which is not tested here. \emph{(iv)} The diurnal-amplitude depth
+profile (Fig.~\ref{fig:amplitude}) is used only as a borestem
+diagnostic and not as a frequency-domain validation, because below
+$\zborestem$ both models predict amplitudes well below the
+1971--1977 digitisation noise floor.
+
 % =====================================================================
 \FloatBarrier
-\section{Conclusion}
+\section{Conclusions}\label{sec:conclusions}
 
 We have presented a per-site, single-parameter retrieval of the deep
 lunar regolith conductivity $K_d$ from the restored Apollo Heat-Flow
@@ -993,57 +1108,43 @@ supplies the spatial coverage. The two Apollo benchmarks are the
 ground truth that phase~2 is built to reproduce.
 
 % =====================================================================
-\section*{Limitations}
-Four caveats should accompany any use of the per-site $K_d$
-retrieval reported here. \emph{(i)} With only two in-situ sites, the
-inter-site disagreement we report is not by itself sufficient to
-establish \emph{regional} heterogeneity across the lunar surface;
-distinguishing genuine regional variability from local-scale
-heterogeneity between two specific borehole locations requires
-additional landed thermometry. \emph{(ii)} The absolute values are
-conditional on the adopted basal heat fluxes (\S\ref{sec:disc-kd});
-the per-site contrast is invariant under any global $Q_b$ rescaling,
-but the absolute A17 value is not, and a $\sim\!30\%$ revision of
-$Q_{b,\mathrm{A17}}$ along the lines of the
-\citet{saito2007,nagihara2018} reanalyses brings $K_{d,\mathrm{A17}}^{*}$
-into approximate agreement with the deep layer of the
-\citet{martinez2021} 3-layer profile; correspondingly, the 95\%
-credible interval on $\Delta K_d$ from the Bayesian treatment just
-touches zero at the lower bound, even though the central estimate
-sits well away from the null. \emph{(iii)} The retrieval
-assumes that the \citet{hayne2017} functional form for $K(T,z)$ is
-correct and varies only $K_d$; a discrete-layer or piecewise-linear
-shape (e.g.\ \citealt{martinez2021}) is a separate hypothesis class
-which is not tested here. \emph{(iv)} The diurnal-amplitude depth
-profile (Fig.~\ref{fig:amplitude}) is used only as a borestem
-diagnostic and not as a frequency-domain validation, because below
-$\zborestem$ both models predict amplitudes well below the
-1971--1977 digitisation noise floor.
-
+%  AGU back matter: Acknowledgments -> Open Research -> Conflict of
+%  Interest -> References (the order required by the AGU template).
 % =====================================================================
-\section*{Open Research}
-The Apollo HFE restored 1971--1977 temperature record is available
-from the supplementary material of \citet{nagihara2018}. The Diviner
-Lunar Radiometer brightness-temperature products are available from
-the NASA Planetary Data System Geosciences Node
-(\url{https://pds-geosciences.wustl.edu}). The 1-D Crank--Nicolson
-heat solver, the ephemeris-driven solar-forcing routines, the $K_d$
-retrieval and bootstrap code, the validation diagnostics, and the
-LaTeX sources for this manuscript and the supporting information are
-archived at
-\url{https://github.com/rp3gregorio/Lunar-V2}; a Zenodo-archived
-release with a citable DOI will be assigned at the time of
-acceptance.
-
-\section*{Conflict of Interest}
-The author declares no conflicts of interest related to this work.
-
-\section*{Acknowledgements}
+\section*{Acknowledgments}
 The author thanks the original Apollo HFE Principal Investigators
 and the \citet{nagihara2018} team for restoring the
 1975--1977 portion of the 1971--1977 record from the original tapes
 (the 1971--1975 portion was retained from the original PI processing),
-without which this work would not have been possible.
+without which this work would not have been possible. The author
+declares no funding sources for this work.
+
+% =====================================================================
+\section*{Open Research}
+\paragraph*{Availability Statement.}
+The restored Apollo~15 and~17 Heat-Flow Experiment temperature
+record (1971--1977) analysed here is openly available as the
+supporting information of \citet{nagihara2018}
+(\url{https://doi.org/10.1029/2018JE005579}). The Diviner Lunar
+Radiometer Global Cumulative Product used for the out-of-sample
+surface-temperature closure \citep{williams2017diviner} is available
+from the NASA Planetary Data System Geosciences Node
+(\url{https://pds-geosciences.wustl.edu}; LRO-L-DLRE-5-GCP-V1.0,
+\url{https://doi.org/10.17189/1520650}). Surface and subsurface
+geometry were computed with the NASA SPICE Toolkit
+\citep{acton1996,acton2018} and the JPL DE440 ephemeris. The 1-D
+Crank--Nicolson heat solver, the ephemeris-driven solar-forcing
+routines, the $K_d$ retrieval and bootstrap code, the validation
+diagnostics, and the data and scripts needed to reproduce every
+figure and table in this manuscript and its supporting information
+are archived at \url{https://github.com/rp3gregorio/Lunar-V2}; a
+Zenodo-archived release with a citable DOI will be issued at the
+time of acceptance and added to the reference list.
+
+% =====================================================================
+\section*{Conflict of Interest Disclosure}
+The author declares there are no conflicts of interest for this
+manuscript.
 
 % =====================================================================
 \section*{Nomenclature}
