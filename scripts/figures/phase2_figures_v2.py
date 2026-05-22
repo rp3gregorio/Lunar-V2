@@ -383,22 +383,30 @@ def fig_robustness(d, out_path):
         ax.clabel(cs, fmt="%.1f K", fontsize=FS_TICK, inline=True,
                   inline_spacing=4)
 
-        # Joint (K_d, H) RMSE minimum.  If the minimum lands on the H
-        # grid boundary the true minimum is unresolved (H unconstrained);
-        # we then draw an OPEN edge marker, not a filled star, and clamp
-        # it just inside the axis so it is not clipped by the frame.
+        # Joint (K_d, H) RMSE minimum, drawn as a filled diamond (a
+        # clean, conventional "best-fit point" marker). When the
+        # minimum sits on the H-grid boundary the true minimum is
+        # unresolved (H unconstrained); we keep the diamond on the
+        # boundary and add a short outward arrow to indicate that the
+        # surface is still descending past the edge.
         h_min_cm = j["h_min"] * 100
         h_grid_cm = np.array(j["h_grid"]) * 100
-        on_edge = (h_min_cm <= h_grid_cm.min() + 1e-6 or
-                   h_min_cm >= h_grid_cm.max() - 1e-6)
-        h_plot = min(max(h_min_cm, 0.35), 9.65)   # keep marker on-canvas
-        if on_edge:
-            ax.plot(j["kd_min"]*1e3, h_plot, marker="*", markersize=20,
-                    markerfacecolor="none", markeredgecolor=C_CORAL,
-                    markeredgewidth=2.0, zorder=5)
-        else:
-            ax.plot(j["kd_min"]*1e3, h_plot, marker="*", markersize=22,
-                    color=C_CORAL, mec="white", mew=1.5, zorder=5)
+        h_lo, h_hi = h_grid_cm.min(), h_grid_cm.max()
+        kd_min_mw = j["kd_min"] * 1e3
+        ax.plot(kd_min_mw, h_min_cm, marker="D", markersize=10,
+                color=C_CORAL, mec="white", mew=1.3, zorder=6)
+        if h_min_cm >= h_hi - 1e-6:          # minimum at the upper edge
+            ax.annotate("", xy=(kd_min_mw, h_hi + 0.40),
+                        xytext=(kd_min_mw, h_hi - 0.05),
+                        arrowprops=dict(arrowstyle="-|>", color=C_CORAL,
+                                        lw=1.6), zorder=6,
+                        annotation_clip=False)
+        elif h_min_cm <= h_lo + 1e-6:        # minimum at the lower edge
+            ax.annotate("", xy=(kd_min_mw, h_lo - 0.40),
+                        xytext=(kd_min_mw, h_lo + 0.05),
+                        arrowprops=dict(arrowstyle="-|>", color=C_CORAL,
+                                        lw=1.6), zorder=6,
+                        annotation_clip=False)
         ax.axhline(6.0, color=C_CHAR, ls="--", lw=1.1, alpha=0.7)
         kd_1d = d[name]["kd_star"] * 1e3
         ax.plot(kd_1d, 6.0, "o", markersize=11, color=C_TEAL,
@@ -408,7 +416,8 @@ def fig_robustness(d, out_path):
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
                  ylabel=r"$H$  (cm)" if ax is axB else "",
                  title=label)
-        ax.set_ylim(0, 10)
+        # y-axis spans exactly the swept H range -- no blank strip
+        ax.set_ylim(h_lo, h_hi)
         ax.set_xlim(e["kd_mw"][0], e["kd_mw"][-1])
 
     # shared colorbar for (b) and (c)
@@ -431,9 +440,9 @@ def fig_robustness(d, out_path):
                label="global rescaling diagonal  (contrast invariant)"),
         Line2D([0],[0], ls="--", color=C_CHAR, lw=1.0,
                label=r"contrast significance  ($2\sigma$, $4\sigma$, $7\sigma$)"),
-        Line2D([0],[0], marker="*", color="none", markerfacecolor="none",
-               markeredgecolor=C_CORAL, markeredgewidth=2.0, markersize=15,
-               label=r"joint $(K_d, H)$ minimum  (open: at $H$-grid edge)"),
+        Line2D([0],[0], marker="D", color="none", markerfacecolor=C_CORAL,
+               mec="white", markeredgewidth=1.3, markersize=9,
+               label=r"joint $(K_d, H)$ minimum  (arrow: at $H$-grid edge)"),
         Line2D([0],[0], marker="o", color="none", markerfacecolor=C_TEAL,
                mec="white", markersize=10,
                label=r"1-D $K_d^{*}$ at $H = 6$ cm  (panels b, c)"),
