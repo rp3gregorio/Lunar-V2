@@ -262,7 +262,9 @@ def fig_robustness(d, out_path):
     """JGR:Planets full-width. Three panels: (a) Q_b heatmap spans
     full top row; (b)(c) joint K_d × H per site below. SHARED legend
     below the figure (no in-axes legends)."""
-    fig = plt.figure(figsize=(JGR_FULL, 7.1))
+    # Height trimmed from 7.1 to 6.0 in so the figure fits on a page
+    # with text rather than being floated onto a near-empty page.
+    fig = plt.figure(figsize=(JGR_FULL, 6.0))
     # top=0.93 (legend now BELOW, not above); bottom=0.18 reserves a
     # clear strip for the three-row shared legend.
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.95],
@@ -732,9 +734,14 @@ def fig_posterior(out_path):
     # K_d sweep OR re-derive R from rmse_curve. Since json only has the
     # RMSE curve (not the residuals), build a posterior using the RMSE
     # curve directly.
-    fig = plt.figure(figsize=(12.0, 9.0))
-    gs = fig.add_gridspec(2, 2, hspace=0.46, wspace=0.32,
-                          left=0.07, right=0.93, top=0.93, bottom=0.10)
+    # JGR_FULL-wide, page-fitting height. A 12x9 in figure scaled to the
+    # text width became ~9 in tall and forced its own near-empty page.
+    # hspace is generous because panels (c)/(d) carry a TOP axis (the
+    # rescaled Q_b axis) plus a panel title, which must clear the
+    # (a)/(b) x-axis labels above them.
+    fig = plt.figure(figsize=(JGR_FULL, 6.2))
+    gs = fig.add_gridspec(2, 2, hspace=0.78, wspace=0.34,
+                          left=0.08, right=0.93, top=0.93, bottom=0.13)
     axes = [[fig.add_subplot(gs[r, c]) for c in (0, 1)] for r in (0, 1)]
 
     # Per-site explicit grid extents — chosen so the joint posterior is
@@ -768,20 +775,22 @@ def fig_posterior(out_path):
         ax = axes[0][col]
         ax.contourf(kdv_mW, qbv_mW, P, levels=20, cmap=ANTH_SEQ)
         Pmax = P.max()
+        # dark-charcoal posterior-mass contours (legible over the pale map)
         ax.contour(kdv_mW, qbv_mW, P,
                    levels=[Pmax*0.05, Pmax*0.32, Pmax*0.68],
-                   colors="white", linewidths=0.9,
-                   linestyles=["-", "--", ":"])
+                   colors=C_CHAR, linewidths=0.9,
+                   linestyles=["-", "--", ":"], alpha=0.8)
 
-        # mode
+        # mode -- filled diamond (conventional best-fit marker)
         ij = np.unravel_index(np.argmax(P), P.shape)
-        ax.plot(kdv_mW[ij[1]], qbv_mW[ij[0]], "*",
-                markersize=14, color=C_CORAL, mec="white", mew=1.3)
+        ax.plot(kdv_mW[ij[1]], qbv_mW[ij[0]], marker="D",
+                markersize=9, color=C_CORAL, mec="white", mew=1.3,
+                zorder=6)
 
-        # iso-ratio rays
+        # iso-ratio rays -- dim charcoal, not white
         for grad in [1.0, 2.0, 3.0]:
-            ax.plot(kdv_mW, grad * kdv_mW, color="white", lw=0.6,
-                    ls=":", alpha=0.6)
+            ax.plot(kdv_mW, grad * kdv_mW, color=C_DIM, lw=0.6,
+                    ls=":", alpha=0.55)
 
         fmt_axis(ax,
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
@@ -792,9 +801,9 @@ def fig_posterior(out_path):
         ax.set_xlim(kdv_mW[0], kdv_mW[-1])
         ax.set_ylim(qbv_mW[0], qbv_mW[-1])
         # legend inside top-right: just one mode marker
-        ax.legend(handles=[Line2D([0], [0], marker="*", color="none",
+        ax.legend(handles=[Line2D([0], [0], marker="D", color="none",
                                   markerfacecolor=C_CORAL, mec="white",
-                                  markersize=14, label="posterior mode")],
+                                  markersize=8, label="posterior mode")],
                   loc="upper right", borderpad=0.5,
                   facecolor="white", framealpha=0.97)
 
