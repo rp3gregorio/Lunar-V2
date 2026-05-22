@@ -96,7 +96,9 @@ boreholes. We present a site-specific thermal analysis of those two
 records as restored for 1971--1977, retrieving $K_d$ at each site by
 integrating the 1-D heat equation under ephemeris-driven solar
 forcing, with the borestem-contaminated shallow sensors excluded
-\emph{a priori}. At the published basal heat flux $Q_b$, the
+\emph{a priori}. At the published basal heat fluxes
+($Q_b=21$ and $15$\,mW\,m$^{-2}$ at A15 and A17 respectively;
+\citealp{langseth1976,nagihara2018}), the
 deep-sensor misfit is minimised at
 $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ and
 $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
@@ -454,18 +456,21 @@ selection here.
 \section{Results}\label{sec:results}
 
 \subsection{Annual-mean subsurface profile}\label{sec:results-mean}
-Fig.~\ref{fig:meanT} compares three modelled time-averaged
-$\langle T(z)\rangle$ profiles --- the \Hayne\ smooth-exponential
-form at its published global $K_d$, the \citet{martinez2021}
-$T,\rho$-dependent model, and the this-work discrete 3-layer model
---- against the Apollo HFE stability-window means at both sites. With
-\emph{no per-site tuning}, the published global \Hayne\ value
+Before any parameter is retrieved, it is worth asking how the
+published, un-tuned conductivity models perform against the HFE
+record. The answer is that none reproduces both boreholes: applied
+without per-site adjustment, the global \Hayne\ value
 ($K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$) under-predicts the deep gradient
-at both sites (Table~\ref{tab:rmse}), and neither published model
-reproduces both records simultaneously. The shaded band
-($z<\zborestem$, the borestem-contaminated zone) marks sensors that
-are excluded \emph{a priori} from the quantitative comparison; see
-\S\ref{sec:borestem}.
+at A15 and at A17 alike, and the same shortfall affects the
+\citet{martinez2021} model (Table~\ref{tab:rmse}). Fig.~\ref{fig:meanT}
+shows the comparison directly --- the three modelled time-averaged
+$\langle T(z)\rangle$ profiles against the Apollo HFE
+stability-window means --- and motivates the per-site retrieval that
+follows: a fixed global profile leaves a systematic deep-temperature
+residual, and that residual is what a site-specific $K_d$ is meant to
+absorb. The shaded band ($z<\zborestem$, the borestem-contaminated
+zone) marks sensors excluded \emph{a priori} from the quantitative
+comparison (\S\ref{sec:borestem}).
 
 \begin{figure}[!htbp]
 \centering
