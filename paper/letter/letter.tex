@@ -785,6 +785,28 @@ A15) can reduce it below $1\sigma$ --- but its \emph{sign} is robust,
 and that sign is the basis for the central claim that no single
 globally-uniform $K_d$ fits both records.
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_robustness.pdf}
+\caption{\textbf{Robustness of the per-site $K_d^{*}$ contrast.}
+(a)~Contrast $\Delta K_d^{*}$ as a function of per-site $Q_b$ rescaling
+factors $\alpha_{15},\alpha_{17}$. Solid diagonal: global rescaling
+(contrast invariant); dashed contours: bootstrap-$\sigma$
+significance; black circle: nominal $Q_b$; green square:
+\citet{saito2007} A15 reanalysis. (b),(c)~Joint $(K_d, H)$ RMSE
+surface at each site over the swept $H=1$--$\SI{11}{\centi\meter}$
+range; the coral diamond marks the joint RMSE minimum and the teal
+circle the 1-parameter retrieval at $H=\SI{6}{\centi\meter}$. The RMSE
+surface is extremely flat in $H$ --- it varies by $<\!0.02$\,K across
+$H=3$--$\SI{11}{\centi\meter}$ --- so $H$ is effectively unconstrained,
+with shallow interior minima at $H\!\approx\!\SI{10}{\centi\meter}$
+(A15) and $\SI{4}{\centi\meter}$ (A17). The retrieved $K_d$ is
+nonetheless stable: the joint minimum and the 1-D retrieval agree in
+$K_d$ to within the $\SI{0.5}{\kelvin}$ RMSE contour, confirming that
+$K_d$, not $H$, is the identified parameter.}
+\label{fig:robustness}
+\end{figure}
+
 \paragraph*{Consistency checks.}
 Three diagnostics test the per-site $K_d^{*}$ values; we are explicit
 about which is genuinely independent and which are internal. \emph{(i)}
@@ -816,6 +838,20 @@ the per-site uncertainty modestly but does not generate the inter-site
 difference: the closure test validates the diurnal \emph{shape} and
 the ephemeris forcing chain, and the albedo-perturbation test bounds
 the residual surface-state sensitivity of $K_d^{*}$.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_diviner_closure.pdf}
+\caption{\textbf{Surface-T closure against the Diviner Lunar Radiometer
+GCP.} Modelled surface T (solid) at A15 (teal) and A17 (coral) with
+per-site $K_d^{*}$, vs.\ Diviner \citep{williams2017diviner} diurnal
+composite (markers); shaded bands = night (LST $<6$ or $\geq18$\,h).
+Full-cycle RMSE $12.4$ and $17.5$\,K. The model is slightly warmer
+than Diviner across the cycle, with the largest discrepancy on the
+night side, consistent with anisothermal-footprint and sub-pixel
+rock-population effects \citep{bandfield2015,hayne2017}.}
+\label{fig:diviner}
+\end{figure}
 The remaining two diagnostics are \emph{internal consistency} checks
 --- they re-use the same boreholes and the same deep-sensor set, so
 they probe the stability of the retrieval rather than validate it
@@ -857,16 +893,17 @@ forward.
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_diviner_closure.pdf}
-\caption{\textbf{Surface-T closure against the Diviner Lunar Radiometer
-GCP.} Modelled surface T (solid) at A15 (teal) and A17 (coral) with
-per-site $K_d^{*}$, vs.\ Diviner \citep{williams2017diviner} diurnal
-composite (markers); shaded bands = night (LST $<6$ or $\geq18$\,h).
-Full-cycle RMSE $12.4$ and $17.5$\,K. The model is slightly warmer
-than Diviner across the cycle, with the largest discrepancy on the
-night side, consistent with anisothermal-footprint and sub-pixel
-rock-population effects \citep{bandfield2015,hayne2017}.}
-\label{fig:diviner}
+\includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
+\caption{\textbf{Joint $(K_d, Q_b)$ posteriors
+and marginals with the Saito--Nagihara $Q_b$ prior.} (a),(b) Joint
+posterior on the $(K_d, Q_b)$
+plane; white contours = 5/32/68\% mass levels, coral star = mode,
+dotted rays = iso-ratio degeneracy $Q_b/K_d=\mathrm{const}$.
+(c),(d) Marginals $P(K_d)$ (teal, bottom axis) and $P(Q_b)$ (coral
+dashed, top axis, rescaled). Medians:
+$K_{d,\mathrm{A15}}=3.9$, $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$;
+$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
+\label{fig:posterior-compare}
 \end{figure}
 
 % =====================================================================
@@ -979,43 +1016,6 @@ measurements. What the data constrain tightly at each borehole is the
 product $Q_b/K_d$ --- equivalently the deep gradient --- and it is on
 that better-constrained quantity, not on $K_d$ in isolation, that the
 inter-site comparison of \S\ref{sec:disc-modelcomp} rests.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_posterior_compare.pdf}
-\caption{\textbf{Joint $(K_d, Q_b)$ posteriors
-and marginals with the Saito--Nagihara $Q_b$ prior.} (a),(b) Joint
-posterior on the $(K_d, Q_b)$
-plane; white contours = 5/32/68\% mass levels, coral star = mode,
-dotted rays = iso-ratio degeneracy $Q_b/K_d=\mathrm{const}$.
-(c),(d) Marginals $P(K_d)$ (teal, bottom axis) and $P(Q_b)$ (coral
-dashed, top axis, rescaled). Medians:
-$K_{d,\mathrm{A15}}=3.9$, $K_{d,\mathrm{A17}}=13.1\,\si{\milli\watt\per\meter\per\kelvin}$;
-$P(K_d^{\rm A17}>K_d^{\rm A15})\approx 96\%$.}
-\label{fig:posterior-compare}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_robustness.pdf}
-\caption{\textbf{Robustness of the per-site $K_d^{*}$ contrast.}
-(a)~Contrast $\Delta K_d^{*}$ as a function of per-site $Q_b$ rescaling
-factors $\alpha_{15},\alpha_{17}$. Solid diagonal: global rescaling
-(contrast invariant); dashed contours: bootstrap-$\sigma$
-significance; black circle: nominal $Q_b$; green square:
-\citet{saito2007} A15 reanalysis. (b),(c)~Joint $(K_d, H)$ RMSE
-surface at each site over the swept $H=1$--$\SI{11}{\centi\meter}$
-range; the coral diamond marks the joint RMSE minimum and the teal
-circle the 1-parameter retrieval at $H=\SI{6}{\centi\meter}$. The RMSE
-surface is extremely flat in $H$ --- it varies by $<\!0.02$\,K across
-$H=3$--$\SI{11}{\centi\meter}$ --- so $H$ is effectively unconstrained,
-with shallow interior minima at $H\!\approx\!\SI{10}{\centi\meter}$
-(A15) and $\SI{4}{\centi\meter}$ (A17). The retrieved $K_d$ is
-nonetheless stable: the joint minimum and the 1-D retrieval agree in
-$K_d$ to within the $\SI{0.5}{\kelvin}$ RMSE contour, confirming that
-$K_d$, not $H$, is the identified parameter.}
-\label{fig:robustness}
-\end{figure}
 
 \subsection{If the contrast is a conductivity effect, its size is
 physically plausible}
