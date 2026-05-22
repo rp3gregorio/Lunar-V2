@@ -72,9 +72,9 @@
 \newcommand{\dT}{\Delta T}
 \newcommand{\zborestem}{80\,\si{\centi\meter}}
 
-\title{\bfseries Per-Site Retrieval of Deep Regolith Thermal
-Conductivity from the Restored Apollo 15 and 17 Heat-Flow Experiment:
-A Validation of the Global Model and Its Site-Level Error Budget}
+\title{\bfseries A Site-Specific Thermal Analysis of the Restored
+Apollo 15 and 17 Heat-Flow Experiment: Per-Site Retrieval of the
+Deep Regolith Conductivity}
 
 \author{R.~P.~Gregorio\thanks{Independent researcher.
 Correspondence to: \texttt{rp3gregorio@gmail.com}.}}
@@ -89,73 +89,65 @@ Correspondence to: \texttt{rp3gregorio@gmail.com}.}}
 \noindent
 The deep thermal conductivity of lunar regolith, $K_d$, governs the
 subsurface equilibrium temperature, and through it the stability depth
-of polar volatiles and the heat budget of buried instruments. The
-conductivity model in routine use --- \citet{hayne2017} --- was fitted
-to orbital brightness temperatures as a single Moon-wide average; how
-faithfully that global value represents any individual location has
-not been tested at depth, because the only in-situ deep-temperature
-records are the two Apollo Heat-Flow Experiment (HFE) boreholes. We
-use the restored 1971--1977 HFE record at Apollo~15 and~17 to carry
-out that test: a per-site retrieval of $K_d$ obtained by integrating
-the 1-D heat equation under ephemeris-driven solar forcing, with
-shallow sensors excluded \emph{a priori}. At the published basal heat
-flux, the deep-sensor misfit is minimised at
+of polar volatiles and the heat budget of buried instruments. Below
+about one metre it has been measured \emph{in situ} at only two
+locations --- the Apollo~15 and~17 Heat-Flow Experiment (HFE)
+boreholes. We present a site-specific thermal analysis of those two
+records as restored for 1971--1977, retrieving $K_d$ at each site by
+integrating the 1-D heat equation under ephemeris-driven solar
+forcing, with the borestem-contaminated shallow sensors excluded
+\emph{a priori}. At the published basal heat flux $Q_b$, the
+deep-sensor misfit is minimised at
 $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ and
 $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}$\,mW\,m$^{-1}$\,K$^{-1}$
-($1\sigma$ non-parametric bootstrap) --- values that bracket the
-global figure rather than reproduce it, and that we independently
-corroborate against a three-layer conductivity profile built from the
-Apollo core measurements. The two boreholes thus require distinctly
-different deep temperature gradients. Because that gradient depends
-only on the ratio $Q_b/K_d$, the difference can reside in the
-conductivity or in the basal heat flux $Q_b$; a pooled model
-comparison favours the conductivity interpretation
-($\Delta\mathrm{AICc}\approx5$ over a uniform-$K_d$ alternative) but
-does not exclude a flux contrast. The practical conclusion is an
-\emph{error budget}: applied at a specific site, a globally-averaged
-deep conductivity should be expected to depart from the local value by
-a factor of order two. We quantify that discrepancy here so that it
-can be carried, rather than ignored, in subsequent site-resolved
-thermal modelling.
+($1\sigma$ non-parametric bootstrap); each retrieval is independently
+corroborated against a three-layer conductivity profile built from
+the Apollo core measurements. The two sites therefore require
+distinctly different deep temperature gradients --- a factor of about
+two in $K_d$. Because that gradient depends only on the ratio
+$Q_b/K_d$, the inter-site difference can reside in the conductivity or
+in the basal heat flux; a pooled model comparison favours the
+conductivity interpretation ($\Delta\mathrm{AICc}\approx5$ over a
+uniform-$K_d$ alternative) but does not exclude a flux contrast. The
+two boreholes thus emerge as quantitatively distinct thermal sites,
+each characterised here with propagated uncertainties --- the
+site-specific groundwork for a subsequent, regionally-resolved
+treatment.
 \end{abstract}
 
 \begin{plainlanguagesummary}
 How well the Moon's interior is insulated from the daily surface
 heating depends largely on the thermal conductivity of the compacted
 regolith --- the broken-up rock --- a metre or more down. No
-instrument in orbit can measure that deep property directly, so the
-conductivity model used across lunar science is a single value
-averaged over the whole Moon. An average is useful, but it raises a
-fair question: how far off is it at any one place? The only way to
-check is with temperatures measured \emph{in} the ground, and those
-exist for just two locations --- thermometers the Apollo~15 and~17
-astronauts buried more than two metres deep in 1971--1972, whose full
-records were recovered from the original mission tapes only recently.
-We use those records to retrieve the deep conductivity at each of the
-two sites and find that the two values differ by roughly a factor of
-two, with the global average sitting between them rather than
-matching either. A complication is that the buried thermometers
-constrain a combination of conductivity and the heat escaping from
-the Moon's interior, not conductivity alone; weighing the
+instrument in orbit can measure that deep property directly; the only
+way to reach it is with temperatures recorded \emph{in} the ground,
+and those exist for just two places on the Moon --- thermometers the
+Apollo~15 and~17 astronauts buried more than two metres deep in
+1971--1972, whose full records were recovered from the original
+mission tapes only recently. This study analyses those two records
+site by site, working out the deep conductivity that best reproduces
+each borehole's measured temperatures. The two sites turn out to
+differ by roughly a factor of two, and that difference holds up
+against a second, independent conductivity model built from the
+Apollo soil cores. One subtlety is that the buried thermometers
+respond to a combination of the conductivity and the heat escaping
+from the Moon's interior, not to conductivity alone; weighing the
 possibilities, the difference is more likely a real conductivity
 contrast, though a difference in interior heat flow cannot be ruled
-out. The practical message is a number to carry forward: a
-globally-averaged conductivity, used at a specific site, can be wrong
-by about a factor of two --- an error that polar-ice and
-instrument-design calculations should account for rather than
-overlook.
+out. The outcome is a careful, uncertainty-quantified thermal
+characterisation of each of the two Apollo sites in its own right.
 \end{plainlanguagesummary}
 
 \medskip
 \noindent\textbf{Key Points}
 \begin{itemize}\itemsep2pt
-  \item Per-site retrieval from the Apollo 15 and 17 Heat-Flow
-        Experiment gives deep conductivities that bracket, rather than
-        match, the global model value.
+  \item We retrieve the deep regolith thermal conductivity separately
+        at the Apollo 15 and 17 Heat-Flow Experiment boreholes.
   \item The two retrieved values differ by about a factor of two and
         are corroborated by an Apollo-core-grounded three-layer model.
-  \item A global deep conductivity applied at a single site should be
-        expected to err by a comparable factor.
+  \item The deep temperature gradient constrains the conductivity and
+        the basal heat flux jointly; the inter-site difference favours
+        a conductivity contrast.
 \end{itemize}
 
 % =====================================================================
@@ -163,40 +155,26 @@ overlook.
 
 Surface and shallow-subsurface temperatures of airless bodies are
 controlled by the thermal conductivity, density, and heat capacity of
-the upper few metres of regolith. For the Moon, the conductivity
-parameterisation in routine use is that of \Hayne, who fitted a
-single $K(T,z)$ profile to the bolometric brightness temperatures of
-the Lunar Reconnaissance Orbiter Diviner radiometer
-\citep{paige2010,vasavada2012}. That profile is, by construction, a
-Moon-wide average: it is the deliberate and appropriate choice when a
-model must span the entire surface. It is now applied without
-modification to interpret Diviner-derived rock abundances, to
-calculate polar volatile stability, and to size buried-instrument
-heat budgets.
+the upper few metres of regolith. For the Moon, conductivity
+parameterisations are calibrated almost entirely against orbital
+brightness temperatures \citep{vasavada2012,hayne2017}, which sense
+only the diurnal skin. Below about one metre, the regolith's thermal
+conductivity has been measured \emph{in situ} at just two places: the
+Apollo~15 and~17 Heat-Flow Experiment (HFE) boreholes
+\citep{langseth1976,nagihara2018}. Those two records are the only
+direct window onto the deep thermal state of the lunar regolith.
 
-A global average invites a specific and answerable question: how
-closely does it match the conductivity at any one location? The
-answer matters because the quantities that depend on it --- the depth
-to which polar ice is stable, the equilibrium temperature of a buried
-probe --- respond to the \emph{local} value, not the planetary mean.
-For the shallow regolith, orbital coverage allows the question to be
-addressed map-wide. For the \emph{deep} regolith below about one
-metre, it cannot: orbital radiometry senses only the diurnal skin,
-and the sole temperature measurements made \emph{within} the deep
-regolith are the two Apollo Heat-Flow Experiment (HFE) boreholes at
-Apollo~15 and~17 \citep{langseth1976,nagihara2018}. Those two records
-are therefore the only available test of how well a globally-averaged
-deep conductivity performs at a real site.
-
-This paper is that test. We take the \citet{hayne2017} functional
-form, hold it fixed, and retrieve the single deep-conductivity
-parameter $K_d$ separately at each borehole from the restored
-1971--1977 HFE record --- a per-site validation rather than a global
-fit. The exercise has a deliberate downstream purpose: by measuring
-how far the per-site values depart from the global one, and how
-precisely each site can be pinned down, it yields a quantified
-\emph{error budget} for the use of any global deep-conductivity model
-at a specific location.
+This paper analyses them site by site. The HFE record, restored for
+1971--1977 \citep{nagihara2018}, is the most complete deep-temperature
+dataset the Moon affords; yet the two boreholes have most often been
+treated together, as a joint check on a global model. Here we instead
+characterise each site on its own terms --- retrieving the deep
+conductivity $K_d$ that best reproduces \emph{that borehole's}
+measured profile, with its own propagated uncertainty --- before any
+comparison between them is drawn. A site-specific analysis is the
+natural first step: it establishes what each location individually
+requires, and it is the empirical foundation on which any
+regionally-resolved treatment must later rest.
 
 Three features distinguish the analysis from earlier model--data
 comparisons.
@@ -206,9 +184,9 @@ comparisons.
         parameterisations as yes/no fits
         (\citealt{vasavada2012,hayne2017,nagihara2018}) or jointly
         tuned several parameters of an alternative shape
-        (\citealt{martinez2021}). Here the entire \citet{hayne2017}
-        form is held fixed and only $K_d$ is varied, so the two
-        sites are compared on a single, interpretable axis.
+        (\citealt{martinez2021}). Here the \citet{hayne2017}
+        functional form is held fixed and only $K_d$ is varied, so
+        each site is characterised on a single, interpretable axis.
   \item[(ii)] \textbf{An independent, Apollo-grounded cross-check.}
         The retrieved $K_d$ is corroborated against a discrete
         three-layer conductivity profile constructed from the Apollo
@@ -218,7 +196,7 @@ comparisons.
         non-parametric bootstrap ($N_\mathrm{boot}=1500$) and an
         \emph{a priori}, physics-based exclusion of the
         borestem-contaminated shallow sensors together ensure the
-        reported error budget is neither understated nor
+        reported uncertainties are neither understated nor
         circularly tuned.
 \end{enumerate}
 An ephemeris-accurate solar-forcing chain (JPL DE440 lunar and solar
@@ -1180,48 +1158,43 @@ noise floor.
 \FloatBarrier
 \section{Conclusions}\label{sec:conclusions}
 
-We set out to test how faithfully a globally-averaged deep regolith
-conductivity represents an individual location, using the only data
-that can answer the question at depth: the restored Apollo~15 and~17
-Heat-Flow Experiment record. A single-parameter retrieval, performed
-within the \citet{hayne2017} functional form and propagated through a
-non-parametric bootstrap, gives
+This paper has analysed the restored Apollo~15 and~17 Heat-Flow
+Experiment record site by site, retrieving for each borehole the deep
+regolith conductivity that best reproduces its measured temperature
+profile. Within the \citet{hayne2017} functional form, and with
+uncertainties propagated through a non-parametric bootstrap, the
+retrieval gives
 $K_{d,\mathrm{A15}}^{*}=4.86^{+1.12}_{-0.54}$ and
 $K_{d,\mathrm{A17}}^{*}=11.23^{+8.12}_{-0.77}\,\si{\milli\watt\per\meter\per\kelvin}$
-at the published basal heat flux. The two values bracket the global
-figure rather than reproduce it, and an independent three-layer
-profile built from the Apollo core measurements returns the same
-ordering --- so the per-site departure is a property of the data, not
-of the assumed functional form.
+at the published basal heat flux. An independent three-layer profile
+built from the Apollo core measurements returns the same two values
+to within their uncertainties, so each site characterisation is a
+property of the data rather than of the assumed functional form.
 
-These absolute values are conditional on the adopted $Q_b$: the deep
-gradient constrains the ratio $Q_b/K_d$, not $K_d$ alone. We addressed
-the resulting ambiguity with a pooled three-model comparison. A
-variable-$K_d$ model is preferred over a uniform-$K_d$ model with
-site-specific $Q_b$, though by a modest $\Delta\mathrm{AICc}\approx5$,
-and the uniform-$K_d$ fit succeeds only when the two basal fluxes are
-driven to opposite extremes of their published ranges. The record
-therefore favours a genuine inter-site conductivity contrast of
-roughly a factor of two, without excluding a heat-flux contrast of
-comparable effect; the underlying observation --- that the two
-boreholes demand distinctly different deep gradients --- is itself
-robust to the borestem exclusion depth, the three-layer profile, a
-joint $K_d$--$H$ fit, and independent Diviner surface-temperature
-closure.
+The two retrievals differ by roughly a factor of two. Because the
+deep gradient constrains the ratio $Q_b/K_d$ rather than $K_d$ alone,
+that inter-site difference may reside in the conductivity or in the
+basal heat flux; a pooled three-model comparison favours the
+conductivity interpretation --- a variable-$K_d$ model is preferred
+over a uniform-$K_d$ alternative by $\Delta\mathrm{AICc}\approx5$, and
+the uniform-$K_d$ fit succeeds only when the two basal fluxes are
+driven to opposite extremes of their published ranges --- but does not
+exclude a heat-flux contrast of comparable effect. The underlying
+observation, that the two boreholes demand distinctly different deep
+temperature gradients, is itself robust to the borestem exclusion
+depth, the three-layer profile, a joint $K_d$--$H$ fit, and
+independent Diviner surface-temperature closure.
 
-The practical outcome is the error budget this study was designed to
-deliver. A deep conductivity taken from a Moon-wide average and
-applied at a specific site should be expected to differ from the
-local value by a factor of order two, with the residual ambiguity
-between conductivity and basal flux folded into that figure. This is a
-quantity to be carried explicitly --- in polar volatile-stability
-calculations, in buried-instrument heat budgets, and in any
-site-resolved thermal model --- rather than left as a silent
-assumption of uniformity. Narrowing it further is no longer a
-modelling problem but a measurement one: it requires deep
-temperatures from more than two locations, for which forthcoming
-landed heat-flow instruments (e.g.\ Chang'E and ChaSTE-class
-experiments) are the natural next data.
+The result of this Phase~1 analysis is therefore a pair of
+quantitatively distinct, individually characterised in-situ thermal
+sites, each with a retrieved deep conductivity and a fully propagated
+uncertainty. Establishing what each Apollo borehole requires in its
+own right is the necessary first step; extending the picture beyond
+two points --- to a regionally-resolved treatment of the deep lunar
+thermal state --- is a measurement problem, calling for deep
+temperatures from additional locations such as those expected from
+forthcoming landed heat-flow instruments (e.g.\ Chang'E and
+ChaSTE-class experiments).
 
 % =====================================================================
 %  AGU back matter: Acknowledgments -> Open Research -> Conflict of
