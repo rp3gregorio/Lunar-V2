@@ -255,11 +255,13 @@ def fig_robustness(d, out_path):
     """JGR:Planets full-width. Three panels: (a) Q_b heatmap spans
     full top row; (b)(c) joint K_d × H per site below. SHARED legend
     below the figure (no in-axes legends)."""
-    fig = plt.figure(figsize=(JGR_FULL, 6.8))
+    fig = plt.figure(figsize=(JGR_FULL, 7.1))
+    # top=0.93 (legend now BELOW, not above); bottom=0.18 reserves a
+    # clear strip for the three-row shared legend.
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.95],
                           width_ratios=[1.0, 1.0],
                           hspace=0.55, wspace=0.32,
-                          left=0.09, right=0.92, top=0.82, bottom=0.08)
+                          left=0.09, right=0.92, top=0.93, bottom=0.18)
     axA = fig.add_subplot(gs[0, :])      # full-width Q_b heatmap
     axB = fig.add_subplot(gs[1, 0])
     axC = fig.add_subplot(gs[1, 1])
@@ -299,7 +301,7 @@ def fig_robustness(d, out_path):
                         cmap=ANTH_DIVERGE, vmin=-3, vmax=12,
                         shading="nearest")
     # vertical dotted line separating analytical extension from computed region
-    axA.axvline(alphas[0], color="white", lw=1.0, ls=":", alpha=0.55)
+    axA.axvline(alphas[0], color=C_CHAR, lw=1.0, ls=":", alpha=0.5)
 
     cbar = fig.colorbar(im, ax=axA, pad=0.02, fraction=0.04, aspect=18)
     cbar.ax.set_ylabel(r"$\Delta K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
@@ -313,9 +315,11 @@ def fig_robustness(d, out_path):
     axA.clabel(cs, fmt=lambda x: f"{int(x)}σ",
                fontsize=FS_TICK, inline=True, inline_spacing=4)
 
-    # Diagonal (global rescaling, a15=a17) only where both axes overlap
+    # Diagonal (global rescaling, a15=a17) only where both axes overlap.
+    # Drawn in dark charcoal (not white) so it stays legible over the
+    # pale centre of the diverging colour map.
     diag_a = np.linspace(alphas[0], alphas[-1], 100)
-    axA.plot(diag_a, diag_a, color="white", lw=2.6, alpha=0.85,
+    axA.plot(diag_a, diag_a, color=C_CHAR, lw=2.6, alpha=0.9,
              solid_capstyle="butt")
     axA.plot(1.0, 1.0, "o", color=C_CHAR, markersize=10, mec="white", mew=1.4,
              label="nominal $Q_b$ (both sites)")
@@ -336,41 +340,22 @@ def fig_robustness(d, out_path):
     # (no in-axes legend — shared legend below the figure)
 
     # ── (b)(c) joint K_d × H per site ───────────────────────────────────────
-    # The pipeline computes only H ∈ [4, 6, 8] cm (3 pts). We extrapolate
-    # the RMSE surface to H ∈ [0, 10] cm using a 2-D quadratic fit to the
-    # 3×3 computed grid — physically sound because RMSE is convex near its
-    # minimum.  The computed boundary is marked with a faint dotted box.
-    from numpy.linalg import lstsq as _lstsq
+    # The dense 8×8 K_d–H sweep is taken from phase_a_results.json -- the
+    # SAME authoritative file the manuscript K_d values come from -- and
+    # plotted directly with no extrapolation. (An earlier version read a
+    # coarse 3×3 grid from phase2_results.json and quadratically
+    # extrapolated it; the two files disagreed, so we now use the dense
+    # grid as the single source of truth.)
+    _pa = json.loads((_ROOT / "output" / "phase_a_results.json").read_text())
 
-    def _extend_rmse(kd_grid_mw, h_grid_cm, rmse2d, rmse_min,
-                     h_lo=0.2, h_hi=10.0, n_fine=70):
-        """Return (kd_fine, h_fine, rmse_fine) on an extended grid."""
-        KD2, HH2 = np.meshgrid(kd_grid_mw, h_grid_cm)
-        A_mat = np.column_stack([
-            np.ones(9), KD2.ravel(), HH2.ravel(),
-            KD2.ravel()**2, KD2.ravel()*HH2.ravel(), HH2.ravel()**2,
-        ])
-        coeffs, _, _, _ = _lstsq(A_mat, rmse2d.ravel(), rcond=None)
-        kd_fine = np.linspace(kd_grid_mw[0], kd_grid_mw[-1], n_fine)
-        h_fine  = np.linspace(h_lo, h_hi, n_fine)
-        KDF, HHF = np.meshgrid(kd_fine, h_fine)
-        A_ext = np.column_stack([
-            np.ones(n_fine**2), KDF.ravel(), HHF.ravel(),
-            KDF.ravel()**2, KDF.ravel()*HHF.ravel(), HHF.ravel()**2,
-        ])
-        r_ext = (A_ext @ coeffs).reshape(HHF.shape)
-        r_ext = np.maximum(r_ext, rmse_min)              # physical floor
-        r_ext = np.minimum(r_ext, rmse2d.max() * 1.8)   # cap wild extrapolation
-        return kd_fine, h_fine, r_ext
-
-    # Pre-compute both extended grids to share colorbar levels
+    # Pre-load both joint grids to share colorbar levels
     site_ext = {}
     for name in ["A15", "A17"]:
-        j = d[name]["joint_kd_h"]
+        j = _pa[name]["joint_kd_h"]
         kd_mw = np.array(j["kd_grid"]) * 1e3
         h_cm  = np.array(j["h_grid"])  * 100
         rmse  = np.array(j["rmse2d"])
-        kd_f, h_f, r_f = _extend_rmse(kd_mw, h_cm, rmse, j["rmse_min"])
+        kd_f, h_f, r_f = kd_mw, h_cm, rmse        # no extrapolation
         site_ext[name] = dict(kd_f=kd_f, h_f=h_f, r_f=r_f,
                                kd_mw=kd_mw, h_cm=h_cm, rmse=rmse, j=j)
 
@@ -390,29 +375,34 @@ def fig_robustness(d, out_path):
             cf_handle = cf
 
         rmse_min = j["rmse_min"]
-        levels_white = [rmse_min + dx for dx in [0.5, 1.0, 2.0, 3.0]]
+        # RMSE iso-contours, dark charcoal (legible over the pale map)
+        levels_iso = [rmse_min + dx for dx in [0.5, 1.0, 2.0, 3.0]]
         cs = ax.contour(e["kd_f"], e["h_f"], e["r_f"],
-                        levels=levels_white, colors="white",
-                        linewidths=1.2, alpha=0.85)
+                        levels=levels_iso, colors=C_CHAR,
+                        linewidths=1.1, alpha=0.8)
         ax.clabel(cs, fmt="%.1f K", fontsize=FS_TICK, inline=True,
                   inline_spacing=4)
 
-        # Faint dotted box marking the computed (non-extrapolated) region
-        from matplotlib.patches import Rectangle
-        rect = Rectangle(
-            (e["kd_mw"][0], e["h_cm"][0]),
-            e["kd_mw"][-1] - e["kd_mw"][0],
-            e["h_cm"][-1]  - e["h_cm"][0],
-            linewidth=0.9, edgecolor="white", facecolor="none",
-            linestyle=":", alpha=0.6, zorder=4)
-        ax.add_patch(rect)
-
-        ax.plot(j["kd_min"]*1e3, j["h_min"]*100, marker="*",
-                markersize=22, color=C_CORAL, mec="white", mew=1.5, zorder=5)
-        ax.axhline(6.0, color="white", ls="--", lw=1.2, alpha=0.85)
+        # Joint (K_d, H) RMSE minimum.  If the minimum lands on the H
+        # grid boundary the true minimum is unresolved (H unconstrained);
+        # we then draw an OPEN edge marker, not a filled star, and clamp
+        # it just inside the axis so it is not clipped by the frame.
+        h_min_cm = j["h_min"] * 100
+        h_grid_cm = np.array(j["h_grid"]) * 100
+        on_edge = (h_min_cm <= h_grid_cm.min() + 1e-6 or
+                   h_min_cm >= h_grid_cm.max() - 1e-6)
+        h_plot = min(max(h_min_cm, 0.35), 9.65)   # keep marker on-canvas
+        if on_edge:
+            ax.plot(j["kd_min"]*1e3, h_plot, marker="*", markersize=20,
+                    markerfacecolor="none", markeredgecolor=C_CORAL,
+                    markeredgewidth=2.0, zorder=5)
+        else:
+            ax.plot(j["kd_min"]*1e3, h_plot, marker="*", markersize=22,
+                    color=C_CORAL, mec="white", mew=1.5, zorder=5)
+        ax.axhline(6.0, color=C_CHAR, ls="--", lw=1.1, alpha=0.7)
         kd_1d = d[name]["kd_star"] * 1e3
         ax.plot(kd_1d, 6.0, "o", markersize=11, color=C_TEAL,
-                mec="white", mew=1.4, zorder=4)
+                mec="white", mew=1.4, zorder=6)
 
         fmt_axis(ax,
                  xlabel=r"$K_d$  (mW m$^{-1}$ K$^{-1}$)",
@@ -437,19 +427,19 @@ def fig_robustness(d, out_path):
         Line2D([0],[0], marker="s", color="none", markerfacecolor=C_FOREST,
                mec="white", markersize=10,
                label=r"Saito reanalysis  ($\alpha_{15}=0.7$)"),
-        Line2D([0],[0], color="white", lw=2.4,
+        Line2D([0],[0], color=C_CHAR, lw=2.4,
                label="global rescaling diagonal  (contrast invariant)"),
         Line2D([0],[0], ls="--", color=C_CHAR, lw=1.0,
                label=r"contrast significance  ($2\sigma$, $4\sigma$, $7\sigma$)"),
-        Line2D([0],[0], marker="*", color="none", markerfacecolor=C_CORAL,
-               mec="white", markersize=14,
-               label=r"joint $(K_d, H)$ minimum  (panels b, c)"),
+        Line2D([0],[0], marker="*", color="none", markerfacecolor="none",
+               markeredgecolor=C_CORAL, markeredgewidth=2.0, markersize=15,
+               label=r"joint $(K_d, H)$ minimum  (open: at $H$-grid edge)"),
         Line2D([0],[0], marker="o", color="none", markerfacecolor=C_TEAL,
                mec="white", markersize=10,
                label=r"1-D $K_d^{*}$ at $H = 6$ cm  (panels b, c)"),
     ]
-    fig.legend(handles=handles, loc="upper center",
-               bbox_to_anchor=(0.5, 0.99), ncols=3, frameon=True,
+    fig.legend(handles=handles, loc="lower center",
+               bbox_to_anchor=(0.5, 0.005), ncols=3, frameon=True,
                edgecolor=C_GRID, framealpha=0.97, fontsize=8.5,
                handlelength=1.6, borderpad=0.4, columnspacing=1.2,
                labelspacing=0.3)
