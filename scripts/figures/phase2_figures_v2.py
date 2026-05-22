@@ -267,41 +267,41 @@ def fig_robustness(d, out_path):
     axC = fig.add_subplot(gs[1, 1])
 
     # ── (a) Q_b sensitivity heatmap ─────────────────────────────────────────
+    # The deep gradient depends only on the ratio Q_b/K_d, and at steady
+    # state K_d*(α·Q_b) = α·K_d*(Q_b) exactly, so the inter-site contrast
+    # is the EXACT linear surface
+    #     ΔK_d(α15,α17) = K_d_A17* · α17 − K_d_A15* · α15.
+    # The pipeline's numerically computed qb_sensitivity grid agrees with
+    # this formula to machine precision (max |Δ| = 0 over the full 13×13
+    # grid).  We therefore render the whole panel from the formula on a
+    # single UNIFORM grid.  (A previous version stitched the computed
+    # grid onto an analytic extension with mismatched spacing; the
+    # 0.01-wide sliver cell at the α15=0.7 join produced a spurious
+    # vertical seam in the heatmap and a kink in the σ contours.)
     qbs = d["qb_sensitivity"]
-    alphas = np.array(qbs["alpha_grid"])           # 0.7 … 1.3
-    contrast_comp = np.array(qbs["contrast_grid"]) * 1e3   # shape (13,13)
-    sig_comp      = np.array(qbs["significance_grid"])      # shape (13,13)
-
-    # Extend alpha15 grid analytically using the exact K_d / Q_b degeneracy:
-    # at steady state K_d*(α·Q_b) = α·K_d*(Q_b), so
-    # ΔK_d(α15,α17) = K_d_A17* · α17 − K_d_A15* · α15  (exact).
+    alphas = np.array(qbs["alpha_grid"])
+    contrast_comp = np.array(qbs["contrast_grid"]) * 1e3   # for verification
     kd_A15_nom = d["A15"]["kd_star"] * 1e3
     kd_A17_nom = d["A17"]["kd_star"] * 1e3
     bs = d["contrast_bootstrap"]
     sigma_c = (bs["ci_hi"] - bs["ci_lo"]) * 1e3 / (2 * 1.96)
 
-    a15_ext  = np.linspace(0.05, alphas[0] - 0.01, 15)   # 0.05 … 0.69
-    a17_all  = alphas                                       # y unchanged
-
-    # Full x-grid: analytical extension + computed
-    a15_full = np.concatenate([a15_ext, alphas])           # shape (28,)
-
-    # Analytical ΔK_d for the whole grid (rows=α17, cols=α15)
-    A15_full, A17_full = np.meshgrid(a15_full, a17_all)   # shape (13,28)
+    # single uniform grid spanning the full plotted range
+    a15_full = np.linspace(0.05, alphas[-1], 60)
+    a17_all  = np.linspace(alphas[0], alphas[-1], 50)
+    A15_full, A17_full = np.meshgrid(a15_full, a17_all)
     contrast_full = kd_A17_nom * A17_full - kd_A15_nom * A15_full
+    sig_full      = contrast_full / sigma_c
 
-    # Overwrite the right portion with the numerically computed values
-    contrast_full[:, len(a15_ext):] = contrast_comp.T     # contrast_comp.T: rows=α17, cols=α15
-
-    # Significance grid (same merge)
-    sig_full = contrast_full / sigma_c
-    sig_full[:, len(a15_ext):] = sig_comp.T
+    # sanity check: the analytic surface must match the computed grid
+    _A15c, _A17c = np.meshgrid(alphas, alphas)
+    _ana_c = kd_A17_nom * _A17c - kd_A15_nom * _A15c
+    assert np.abs(_ana_c - contrast_comp.T).max() < 1e-6, \
+        "analytic Q_b-degeneracy surface disagrees with computed grid"
 
     im = axA.pcolormesh(a15_full, a17_all, contrast_full,
                         cmap=ANTH_DIVERGE, vmin=-3, vmax=12,
-                        shading="nearest")
-    # vertical dotted line separating analytical extension from computed region
-    axA.axvline(alphas[0], color=C_CHAR, lw=1.0, ls=":", alpha=0.5)
+                        shading="gouraud")
 
     cbar = fig.colorbar(im, ax=axA, pad=0.02, fraction=0.04, aspect=18)
     cbar.ax.set_ylabel(r"$\Delta K_d^{*}$  (mW m$^{-1}$ K$^{-1}$)",
