@@ -659,8 +659,11 @@ def fig_cold_trap(d, out_path):
     axA_r.spines["top"].set_visible(False)
 
     # ────────────── Panel (b): dimensionless residual eta ──────────────
-    axB.plot(Kd, eta, color=C_TEAL, lw=2.4,
+    # Coral (not teal) so the eta curve is visually distinct from the
+    # depth curve in panel (a) -- they are different quantities.
+    axB.plot(Kd, eta, color=C_CORAL, lw=2.4,
              label=r"$\eta(K_d)$ from Hayne $K(T,z)$ integration")
+    axB.fill_between(Kd, eta, 1.0, color=C_CORAL_L, alpha=0.18)
     axB.axhline(1.0, color=C_DIM, ls="--", lw=1.0, alpha=0.7)
     axB.text(0.02, 0.04, r"dashed: deep-limit ($K_s\!=\!0$, $\chi\!=\!0$)",
              transform=axB.transAxes,
@@ -1097,6 +1100,9 @@ def main():
     # fig_kd_sweep_v2 is superseded by the two-panel fig_kd_sweep() in
     # make_letter_unified_figs.py and is no longer generated.
     fig_lab_comparison(d, APPENDIX_FIGS / "fig_lab_comparison.pdf")
+    # fig_cold_trap_depth is used by BOTH the letter (Fig 9) and the
+    # appendix -- write both copies so neither goes stale.
+    fig_cold_trap(d, LETTER_FIGS / "fig_cold_trap_depth.pdf")
     fig_cold_trap(d, APPENDIX_FIGS / "fig_cold_trap_depth.pdf")
     fig_posterior(APPENDIX_FIGS / "fig_kd_qb_posterior.pdf")
     print("Done.")

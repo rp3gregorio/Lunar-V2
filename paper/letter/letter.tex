@@ -1111,14 +1111,17 @@ flux there departs from the global mean.
 \caption{\textbf{Polar cold-trap depth vs.\ $K_d$ (Schorghofer-2005-style
 estimate at $T_\mathrm{surf}=80\,\si{\kelvin}$,
 $Q_b=12\,\si{\milli\watt\per\meter\squared}$).} (a) $z_\mathrm{stable}$
-from forward-integrating $dT/dz=Q_b/K(T,z)$ through the Hayne profile
-until $T=T_\mathrm{stable}=110\,\si{\kelvin}$; right axis recasts the
-same depth as the column heat-flow drop $\Delta T=Q_b\,z$. (b)~Ratio
+from RK4 forward-integration of $dT/dz=Q_b/K(T,z)$ through the Hayne
+$K(T,z)$ profile until $T=T_\mathrm{stable}=110\,\si{\kelvin}$; the
+right axis recasts the same depth as the column heat-flow drop
+$\Delta T=Q_b\,z$. The curve is close to linear because the
+$Q_b/K_d$ term dominates. (b)~Ratio
 $\eta=z_\mathrm{stable}/[(\Delta T)\,K_d/Q_b]$ relative to the
-constant-$K$ Fourier limit; $\eta\!\approx\!1.04$--$1.05$ quantifies
-the shallow-$K_s$ + radiative-term correction.}
+constant-$K$ Fourier limit; $\eta\!\approx\!1.04$--$1.05$ resolves the
+mild ($\sim\!5\%$) departure from linearity from the shallow-$K_s$
+layer and the radiative term.}
 \label{fig:cold-trap}
-\vspace{0.8em}
+\vspace{-0.4em}
 
 \refstepcounter{figure}\label{fig:thermal-profiles}
 \includegraphics[width=\linewidth]{figures/fig_thermal_profiles.pdf}
