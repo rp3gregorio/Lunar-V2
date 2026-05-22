@@ -715,11 +715,11 @@ Component & $\sigma$ (A15) & $\sigma$ (A17) \\
 $\sigma_\mathrm{stat}$ (sensor composition + 2.5 cm depth jitter) & 0.83 & 4.44 \\
 $\sigma_{Q_b}$  (Saito--Nagihara $\pm 30\%$)                       & 1.47 & 3.45 \\
 $\sigma_\chi$   (radiative $\chi\,\pm 30\%$, $\Delta K_d/K_d\!\approx\!15\%$) & 0.73 & 1.73 \\
-$\sigma_H$      (data-driven, joint $K_d$--$H$ sweep)              & 0.21 & 0.45 \\
+$\sigma_H$      (data-driven, joint $K_d$--$H$ sweep)              & 0.31 & 1.44 \\
 $\sigma_{K_s}$  ($K_s\,\pm 2\%$)                                    & 0.10 & 0.23 \\
 $\sigma_\rho$   ($\rho\,\pm 0.5\%$)                                 & 0.02 & 0.06 \\
 \midrule
-\textbf{Total (quadrature sum)}                                     & \textbf{1.85} & \textbf{5.91} \\
+\textbf{Total (quadrature sum)}                                     & \textbf{1.87} & \textbf{6.06} \\
 Bootstrap median $K_d^{*}$                                          & 4.88 & 11.51 \\
 \bottomrule
 \end{tabular}
@@ -733,7 +733,7 @@ envelope mapped through the steady-state $K_d/Q_b$ degeneracy.
 $\sigma_\chi$ is the chain-rule shift ($\Delta K_d/K_d\!\approx\!15\%$)
 from a $\pm 30\%$ perturbation of the radiative coefficient $\chi$.
 $\sigma_H$ is the half-range of the per-$H$ $K_d^{*}$ across the joint
-$8\times8$ $K_d$--$H$ sweep ($H=3$--$10$\,cm); $\sigma_{K_s}$ and
+$11\times8$ $K_d$--$H$ sweep ($H=1$--$11$\,cm); $\sigma_{K_s}$ and
 $\sigma_\rho$ follow from $\pm 2\%$ and $\pm 0.5\%$ perturbations of
 $K_s$ and $\rho$. The decomposition makes clear which terms dominate.
 At Apollo~15 the budget is led by the basal-flux uncertainty
@@ -1004,17 +1004,16 @@ factors $\alpha_{15},\alpha_{17}$. Solid diagonal: global rescaling
 (contrast invariant); dashed contours: bootstrap-$\sigma$
 significance; black circle: nominal $Q_b$; green square:
 \citet{saito2007} A15 reanalysis. (b),(c)~Joint $(K_d, H)$ RMSE
-surface at each site over the swept $H=3$--$\SI{10}{\centi\meter}$
+surface at each site over the swept $H=1$--$\SI{11}{\centi\meter}$
 range; the coral diamond marks the joint RMSE minimum and the teal
 circle the 1-parameter retrieval at $H=\SI{6}{\centi\meter}$. The RMSE
 surface is extremely flat in $H$ --- it varies by $<\!0.02$\,K across
-the full $H$ range --- so $H$ is effectively unconstrained: at A15 the
-joint minimum sits at the upper $H$-grid edge (diamond with arrow,
-indicating the surface still descends past the boundary), while at
-A17 it is shallow but interior. The retrieved $K_d$ is nonetheless
-stable: the joint minimum and the 1-D retrieval agree in $K_d$ to
-within the $\SI{0.5}{\kelvin}$ RMSE contour, confirming that $K_d$,
-not $H$, is the identified parameter.}
+$H=3$--$\SI{11}{\centi\meter}$ --- so $H$ is effectively unconstrained,
+with shallow interior minima at $H\!\approx\!\SI{10}{\centi\meter}$
+(A15) and $\SI{4}{\centi\meter}$ (A17). The retrieved $K_d$ is
+nonetheless stable: the joint minimum and the 1-D retrieval agree in
+$K_d$ to within the $\SI{0.5}{\kelvin}$ RMSE contour, confirming that
+$K_d$, not $H$, is the identified parameter.}
 \label{fig:robustness}
 \end{figure}
 

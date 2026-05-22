@@ -442,7 +442,7 @@ def fig_robustness(d, out_path):
                label=r"contrast significance  ($2\sigma$, $4\sigma$, $7\sigma$)"),
         Line2D([0],[0], marker="D", color="none", markerfacecolor=C_CORAL,
                mec="white", markeredgewidth=1.3, markersize=9,
-               label=r"joint $(K_d, H)$ minimum  (arrow: at $H$-grid edge)"),
+               label=r"joint $(K_d, H)$ RMSE minimum  (panels b, c)"),
         Line2D([0],[0], marker="o", color="none", markerfacecolor=C_TEAL,
                mec="white", markersize=10,
                label=r"1-D $K_d^{*}$ at $H = 6$ cm  (panels b, c)"),
