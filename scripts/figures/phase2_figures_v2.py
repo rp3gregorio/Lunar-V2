@@ -124,7 +124,14 @@ ANTH_SEQ = LinearSegmentedColormap.from_list(
 
 # Output paths
 _ROOT         = pathlib.Path(__file__).parents[2]   # Lunar-V2/
-RESULTS       = _ROOT / "output" / "phase2_results.json"
+# phase_a_results.json is the single authoritative results file: it is
+# what the manuscript text and tables are built from (bootstrap with
+# N_boot = 1500), and it now also carries the cold_trap and
+# qb_sensitivity blocks. A previous version read phase2_results.json
+# here, which held a *different* bootstrap run (N_boot = 2000, contrast
+# CI [3.8,13.3] instead of [-3.2,16.6]) -- so the figures disagreed
+# with the text. Do not point this back at phase2_results.json.
+RESULTS       = _ROOT / "output" / "phase_a_results.json"
 LETTER_FIGS   = _ROOT / "paper" / "letter"     / "figures"
 APPENDIX_FIGS = _ROOT / "paper" / "appendix"   / "figures"
 

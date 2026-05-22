@@ -1081,6 +1081,24 @@ a several-fold spread in a quantity of direct exploration interest.
 Future mapping efforts should therefore treat the deep regolith
 thermal state as spatially variable rather than globally uniform.
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
+\caption{\textbf{Polar cold-trap depth vs.\ $K_d$ (Schorghofer-2005-style
+estimate at $T_\mathrm{surf}=80\,\si{\kelvin}$,
+$Q_b=12\,\si{\milli\watt\per\meter\squared}$).} (a) $z_\mathrm{stable}$
+from RK4 forward-integration of $dT/dz=Q_b/K(T,z)$ through the Hayne
+$K(T,z)$ profile until $T=T_\mathrm{stable}=110\,\si{\kelvin}$; the
+right axis recasts the same depth as the column heat-flow drop
+$\Delta T=Q_b\,z$. The curve is close to linear because the
+$Q_b/K_d$ term dominates. (b)~Ratio
+$\eta=z_\mathrm{stable}/[(\Delta T)\,K_d/Q_b]$ relative to the
+constant-$K$ Fourier limit; $\eta\!\approx\!1.04$--$1.05$ resolves the
+mild ($\sim\!5\%$) departure from linearity from the shallow-$K_s$
+layer and the radiative term.}
+\label{fig:cold-trap}
+\end{figure}
+
 \subsection{Existing globally-calibrated conductivity models miss
 A17}
 With the per-site retrieved $K_d^{*}$, the \Hayne\ form reproduces
@@ -1105,34 +1123,17 @@ itself isolate the conductivity as the variable --- a globally
 calibrated model could equally be failing at A17 because the basal
 flux there departs from the global mean.
 
-\begin{figure}[p]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_cold_trap_depth.pdf}
-\caption{\textbf{Polar cold-trap depth vs.\ $K_d$ (Schorghofer-2005-style
-estimate at $T_\mathrm{surf}=80\,\si{\kelvin}$,
-$Q_b=12\,\si{\milli\watt\per\meter\squared}$).} (a) $z_\mathrm{stable}$
-from RK4 forward-integration of $dT/dz=Q_b/K(T,z)$ through the Hayne
-$K(T,z)$ profile until $T=T_\mathrm{stable}=110\,\si{\kelvin}$; the
-right axis recasts the same depth as the column heat-flow drop
-$\Delta T=Q_b\,z$. The curve is close to linear because the
-$Q_b/K_d$ term dominates. (b)~Ratio
-$\eta=z_\mathrm{stable}/[(\Delta T)\,K_d/Q_b]$ relative to the
-constant-$K$ Fourier limit; $\eta\!\approx\!1.04$--$1.05$ resolves the
-mild ($\sim\!5\%$) departure from linearity from the shallow-$K_s$
-layer and the radiative term.}
-\label{fig:cold-trap}
-\vspace{-0.4em}
-
-\refstepcounter{figure}\label{fig:thermal-profiles}
 \includegraphics[width=\linewidth]{figures/fig_thermal_profiles.pdf}
-\caption*{\textbf{Figure \thefigure.} \textbf{Annual-mean $T(z)$:
-three conductivity models against the Apollo HFE deep sensors.}
-Solid teal: \Hayne\ at the per-site retrieved $K_d^{*}$; dashed red:
-parameter-free \citet{martinez2021}; dotted green: this-work 3-layer
-at its per-site retrieved $K_d^{*}$. Top panels: full profile;
-bottom panels: deep-sensor zoom. Coloured markers: HFE deep sensors
-(used in retrieval); grey markers: borestem-affected shallow sensors
-(excluded).}
+\caption{\textbf{Annual-mean $T(z)$: three conductivity models against
+the Apollo HFE deep sensors.} Solid teal: \Hayne\ at the per-site
+retrieved $K_d^{*}$; dashed red: parameter-free \citet{martinez2021};
+dotted green: this-work 3-layer at its per-site retrieved $K_d^{*}$.
+Top panels: full profile; bottom panels: deep-sensor zoom. Coloured
+markers: HFE deep sensors (used in retrieval); grey markers:
+borestem-affected shallow sensors (excluded).}
+\label{fig:thermal-profiles}
 \end{figure}
 
 \subsection{Limitations and caveats}\label{sec:limitations}
