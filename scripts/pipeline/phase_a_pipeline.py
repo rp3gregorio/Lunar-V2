@@ -81,12 +81,18 @@ DEPTH_SIGMA_CM = 2.5    # Nagihara 2018 sensor placement uncertainty
 #   >20 cm     compacted deep layer, K = K_d (the swept parameter)
 TL_Z1, TL_Z2 = 0.02, 0.20          # layer boundaries (m)
 TL_RHO_REF   = 1800.0              # Hayne (2017) nominal deep density
-TL_RHO_SITE  = {'A15': 1825.0, 'A17': 1960.0}   # per-site deep bulk density,
-                                                # Grott, Knollenberg & Krause
-                                                # (2010, JGR 115, E11005);
-                                                # within the Apollo-core range
-                                                # 1700-2000 kg/m^3 (Mitchell
-                                                # 1973; Carrier 1991)
+TL_RHO_SITE  = {'A15': 1825.0, 'A17': 1960.0}   # representative per-site deep
+                                                # bulk densities within the
+                                                # Apollo-core range 1700-2000
+                                                # kg/m^3 (Mitchell 1973;
+                                                # Carrier 1991); inter-site
+                                                # split follows the mare /
+                                                # highland compositional
+                                                # contrast (A17 basaltic
+                                                # embayment; A15 mixed margin).
+                                                # NOTE: previously credited to
+                                                # Grott+ 2010 -- pending source
+                                                # verification.
 
 
 def conductivity_3layer(T, z, Kd, rho_deep=TL_RHO_REF):

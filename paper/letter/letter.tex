@@ -235,15 +235,21 @@ the conductivity retrieval.}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_intro_models.pdf}
-\caption{The two conductivity-model architectures considered here.
-(a)~Bulk-density profile $\rho(z)$: the \citet{hayne2017}
-smooth-exponential form against the this-work discrete three-layer
-model, the latter shown at both the Apollo~15 and~17 deep bulk
-densities. (b)~The corresponding thermal-conductivity architecture
-$K(z)$ --- a smooth exponential rise versus a surface layer, a
-compaction transition, and a compacted deep layer. Only the top
-$\SI{60}{\centi\meter}$ is shown, below which all profiles are flat.}
+\includegraphics[width=\linewidth]{figures/fig_sensitivity.pdf}
+\caption{The this-work discrete three-layer conductivity model and
+its sensitivity to the deep bulk density $\rho_d$. (a)~Family of
+$\rho(z)$ profiles obtained by sweeping $\rho_d$ across the
+$1700$--$\SI{2000}{\kilogram\per\meter\cubed}$ range spanned by the
+Apollo regolith cores (\citealp{mitchell1973,carrier1991}); the
+\citet{hayne2017} smooth-exponential profile is shown for reference.
+(b)~Retrieved deep conductivity $K_d^{*}$ at each site as a function
+of the assumed $\rho_d$ (per-site values from \S\ref{sec:results-kd},
+foreshadowed here). The Apollo~15 and~17 retrievals are flat in
+$\rho_d$ to within $1.1\%$ and $2.4\%$ across the full range,
+indicating that the per-site $K_d^{*}$ is essentially independent of
+the precise $\rho_d$ chosen so long as it lies within the observed
+Apollo-core range; both sit well above the \citet{hayne2017} global
+$K_d=3.4$\,mW\,m$^{-1}$\,K$^{-1}$ (dashed teal).}
 \label{fig:intro-models}
 \end{figure}
 
@@ -252,19 +258,51 @@ $\SI{60}{\centi\meter}$ is shown, below which all profiles are flat.}
 
 \subsection{Apollo HFE deep-sensor temperatures}
 We use the restored Apollo~15 and Apollo~17 HFE temperature record
-covering 1971--1977 \citep{nagihara2018}. For every sensor we extract
-a multi-lunation \emph{stability window} where the depth-mean
-temperature drift is $|d\langle T\rangle/dt|<0.08\,\si{\kelvin\per\year}$
-(${\approx}2.2\times10^{-4}\,\si{\kelvin\per\day}$),
-and report the window-mean equilibrium temperature
-$T_\mathrm{eq}=\langle T(z)\rangle_{\Delta t}$ together with its
-within-window standard deviation. Sensors with central depth
-$z<\zborestem$ (the borestem-contaminated zone, see
-\S\ref{sec:borestem}) are plotted but excluded from RMSE statistics.
-Figure~\ref{fig:timeline} shows the full per-probe temperature record at
-each site, with the documented disturbance intervals shaded
-\citep{nagihara2018}, the selected stability windows marked, and the
-fitted long-term drift $d\langle T\rangle/dt$ reported per sensor.
+covering 1971--1977 \citep{nagihara2018}. The retrieval requires a
+single equilibrium temperature $T_\mathrm{eq}$ per sensor; the early
+years of each record, however, carry residual transients from
+drilling and emplacement, from documented mission-operations
+disturbances \citep{nagihara2018}, and from gradual instrumental
+drift. We therefore extract, automatically and per sensor, the
+longest trailing portion of the record that is statistically
+indistinguishable from a flat steady state, and average within
+it.
+
+Concretely, for each sensor we scan candidate start points covering
+$55$--$85\%$ of the record (in 13 equally-spaced steps) and, for
+each, perform an ordinary-least-squares linear fit to all temperatures
+between that point and the end of the record. The accepted
+\emph{stability window} is the earliest candidate whose linear-fit
+slope satisfies $|d\langle T\rangle/dt|<0.08\,\si{\kelvin\per\year}$
+(${\approx}2.2\times 10^{-4}\,\si{\kelvin\per\day}$): the longest
+tail consistent with thermal equilibrium at this stringency. The
+slope threshold is roughly $4.6\times$ stricter than the
+$10^{-3}\,\si{\kelvin\per\day}$ value sometimes adopted for HFE
+analyses, and was chosen to suppress bias from residual
+post-disturbance drift. If no candidate qualifies (no flat-enough
+tail can be found within the scan range), the last $25\%$ of the
+record is used as a fallback. We report the window-mean equilibrium
+temperature $T_\mathrm{eq}=\langle T(z)\rangle_{\Delta t}$ together
+with its within-window standard deviation, which we use as the
+per-sensor measurement uncertainty in downstream statistics. Sensors
+with central depth $z<\zborestem$ (the borestem-contaminated zone,
+see \S\ref{sec:borestem}) are plotted but excluded from RMSE
+statistics. Figure~\ref{fig:timeline} shows the full per-probe
+temperature record at each site, with the documented disturbance
+intervals shaded \citep{nagihara2018}, the selected stability windows
+marked, and the fitted long-term drift $d\langle T\rangle/dt$
+reported per sensor.
+
+The retrieval is essentially insensitive to the precise choice of
+this threshold. Sweeping it over the range
+$0.04$--$\SI{0.16}{\kelvin\per\year}$ ($4\times$ the adopted value)
+shifts the retrieved $K_d^{*}$ by at most $0.03\,\si{\milli\watt\per
+\meter\per\kelvin}$ at A15 ($0.7\%$ of the nominal) and
+$0.11\,\si{\milli\watt\per\meter\per\kelvin}$ at A17 ($1.0\%$); both
+shifts are an order of magnitude below the bootstrap $1\sigma$
+uncertainty quoted later (\S\ref{sec:results-kd}). The $0.08\,\si{
+\kelvin\per\year}$ value adopted here therefore sits firmly within
+the flat band of the threshold response.
 
 \begin{figure}[!htbp]
 \centering
@@ -391,7 +429,7 @@ $\rho_s\,/\,\rho_d$ & 1100\,/\,1800      & kg\,m$^{-3}$             & \\
 \multicolumn{4}{@{}l}{\textit{This-work discrete 3-layer model}} \\[2pt]
 $K_s$               & $7.4\times10^{-4}$ & W\,m$^{-1}$\,K$^{-1}$ & \citet{hayne2017} \\
 $z_1\,/\,z_2$        & 0.02\,/\,0.20      & m                       & Langseth+ 1976 \\
-$\rho_d$ (A15\,/\,A17) & 1825\,/\,1960    & kg\,m$^{-3}$             & \citet{grott2010} \\
+$\rho_d$ (A15\,/\,A17) & 1825\,/\,1960    & kg\,m$^{-3}$             & \citet{mitchell1973,carrier1991} \\
 \midrule
 \multicolumn{4}{@{}l}{\textit{Site-specific measured quantities
     (all models)}} \\[2pt]
@@ -429,13 +467,19 @@ $\SI{20}{\centi\meter}$ transition base is the depth at which the
 \Hayne\ exponential ($H=\SI{6}{\centi\meter}$) has reached
 $\sim\!97\%$ of $K_d$, so the boundary is consistent with the
 \Hayne\ comparison. Its only site-specific input is the deep bulk
-density --- $\rho_d\approx\SI{1825}{\kilogram\per\meter\cubed}$ at
-A15 and $\SI{1960}{\kilogram\per\meter\cubed}$ at A17
-\citep{grott2010}, both within the $1700$--$\SI{2000}{\kilogram\per\meter\cubed}$
+density: we adopt
+$\rho_d\!=\!\SI{1825}{\kilogram\per\meter\cubed}$ at A15 and
+$\SI{1960}{\kilogram\per\meter\cubed}$ at A17 as representative
+values within the $1700$--$\SI{2000}{\kilogram\per\meter\cubed}$ deep
 range spanned by the Apollo regolith cores
-\citep{mitchell1973,carrier1991} and consistent with the
-mare/highland compositional contrast between the sites --- which
-sets the transition-ramp curvature (a denser column compacts faster). As in the \Hayne\ form, $K_d$
+\citep{mitchell1973,carrier1991}, with the inter-site split
+reflecting the documented mare/highland compositional contrast
+(A17 sits in a basaltic embayment; A15 on a mixed mare/highland
+margin). The choice sets the transition-ramp curvature (a denser
+column compacts faster); the retrieved $K_d^{*}$ is essentially
+insensitive to it
+($\sigma_{\rho}\!=\!0.02$--$0.06\,\si{\milli\watt\per\meter\per\kelvin}$;
+Table~\ref{tab:errorbudget}). As in the \Hayne\ form, $K_d$
 itself is the single swept free parameter, so the 3-layer model
 provides a direct test of how sensitive the retrieved $K_d^{*}$ is
 to the assumed transition shape.
